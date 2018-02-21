@@ -1,0 +1,68 @@
+{
+  "name": "typexs-auth",
+  "version": "0.0.2",
+  "description": "Auth module for typexs",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs/de"
+  },
+  "scripts": {
+    "test": "nyc mocha --opts test/mocha.all.opts",
+    "posttest": "nyc report --reporter=json && codecov -f coverage/*.json",
+    "ng": "ng",
+    "start": "concurrently \"ng serve -pc proxy.conf.json --open\" \"typexs server default\"",
+    "build": "ng build --prod",
+    "lint": "ng lint",
+    "e2e": "ng e2e"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/typexs/typexs-auth.git"
+  },
+  "author": "Robert Kania",
+  "license": "MIT",
+  "keywords": [
+    "commons",
+    "typescript"
+  ],
+  "bugs": {
+    "url": "https://github.com/typexs/typexs-auth/issues"
+  },
+  "homepage": "https://github.com/typexs/typexs-auth#readme",
+  "devDependencies": {
+    "@types/gulp": "^4.0.5",
+    "@types/gulp-watch": "^4.1.34",
+    "gulp-watch": "^5.0.0",
+    "gulpclass": "^0.1.2",
+    "typexs-base": "file:../typexs-base/build/package",
+    "typexs-ng": "file:../typexs-ng/build/package",
+    "typexs-server": "file:../typexs-server/build/package"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "typexs-base": ">=0.0.1",
+    "typexs-server": ">=0.0.1",
+    "typexs-ng": ">=0.0.2"
+  },
+  "private": true,
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "exclude": [
+      "**/*.d.ts",
+      "tmp/",
+      "build/"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "sourceMap": true,
+    "instrument": true,
+    "cache": false
+  },
+  "typexs": {
+    "name": "typexs-auth"
+  }
+}

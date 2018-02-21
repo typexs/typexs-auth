@@ -1,0 +1,9 @@
+## User Module
+
+Dependencies:
+
+ npm install --save bcrypt-nodejs jsonwebtoken morgan passport passport-jwt
+
+### Links:
+
+ * https://auth0.com/blog/angular-2-authentication/
