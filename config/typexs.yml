@@ -1,0 +1,9 @@
+
+
+logging:
+  enable: true
+  level: debug
+  transports:
+  - console: {}
+
+
