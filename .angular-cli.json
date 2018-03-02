@@ -5,7 +5,7 @@
   },
   "apps": [
     {
-      "root": "src/app/app",
+      "root": "src/app",
       "outDir": "dist",
       "assets": [
         "assets",
@@ -36,11 +36,11 @@
   },
   "lint": [
     {
-      "project": "src/app/app/tsconfig.app.json",
+      "project": "src/app/tsconfig.app.json",
       "exclude": "**/node_modules/**"
     },
     {
-      "project": "src/app/app/tsconfig.spec.json",
+      "project": "src/app/tsconfig.spec.json",
       "exclude": "**/node_modules/**"
     },
     {

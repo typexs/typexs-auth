@@ -3,7 +3,10 @@
 
 module.exports = function (config) {
   config.set({
+
     basePath: '',
+    files:['src/**/*.spec.ts','src/**/*.spec.js'],
+    exclude:['test/**'],
     frameworks: ['mocha','chai', '@angular/cli'],
     plugins: [
       require('karma-mocha'),

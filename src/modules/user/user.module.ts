@@ -1,16 +1,15 @@
-/*
-import {BrowserModule} from '@angular/platform-browser';
+
 import {NgModule} from '@angular/core';
-import {RouterModule} from "@angular/router";
-import {UserProfile} from "./user_profile";
+import {RouterModule} from '@angular/router';
+import {UserProfileComponent} from './user_profile.component';
 import { HttpClientModule } from '@angular/common/http';
 
 
 @NgModule({
-  declarations: [UserProfile],
+  declarations: [UserProfileComponent],
   imports: [
     RouterModule.forChild([
-        {path: 'user', component: UserProfile, data: {label: 'Profile'}}
+        {path: 'user', component: UserProfileComponent, data: {label: 'Profile'}}
       ]
     ),
     HttpClientModule
@@ -18,7 +17,4 @@ import { HttpClientModule } from '@angular/common/http';
   exports: [RouterModule]
 })
 export class UserModule {
-
-
 }
-*/

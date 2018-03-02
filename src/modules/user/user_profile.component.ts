@@ -1,5 +1,4 @@
-import {Component} from "@angular/core";
-import {NgRoute} from "../../decorators/NgRoute";
+import {Component} from '@angular/core';
 
 /*
 @NgRoute({
@@ -13,7 +12,7 @@ import {NgRoute} from "../../decorators/NgRoute";
   selector: 'user-profile',
   templateUrl: './user_profile.html',
 })
-export class UserProfile {
+export class UserProfileComponent {
 
 
 }

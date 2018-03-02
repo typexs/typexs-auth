@@ -1,4 +1,6 @@
 
+app:
+  name: typexs-auth
 
 logging:
   enable: true
@@ -7,3 +9,14 @@ logging:
   - console: {}
 
 
+server:
+  default:
+    type: web
+    framework: express
+    host: localhost
+    port: 4500
+
+    routes:
+    - type: routing_controller
+      context: api
+      routePrefix: api
