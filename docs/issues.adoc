@@ -1,0 +1,5 @@
+## Issues
+
+*@ISSUE {counter:task} 20180303* +
+Impl. and use PropertyTypes in Entities to extend the entities.
+Per Type create a new tables.

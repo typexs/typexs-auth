@@ -1,6 +1,13 @@
-
 app:
-  name: typexs-auth
+  name: fake_app
+
+
+storage:
+  default:
+    synchronize: true
+    type: sqlite
+    database: ':memory:'
+
 
 logging:
   enable: true
@@ -20,11 +27,3 @@ server:
     - type: routing_controller
       context: api
       routePrefix: api
-
-storage:
-  default:
-    synchronize: true
-    type: sqlite
-    database: ':memory:'
-
-

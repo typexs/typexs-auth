@@ -2,36 +2,57 @@ import {
   AfterInsert,
   AfterLoad,
   AfterUpdate,
+  Index,
   BeforeInsert,
   BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   UpdateDateColumn
 } from "typeorm";
-import {User} from "./User";
+
 import * as _ from "lodash";
+import {AuthUser} from "./AuthUser";
 
 
 @Entity()
-export class Auth {
+@Index(["identifier","username"],{unique:true})
+export class AuthMethod {
 
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn()
   id: number;
 
+  @ManyToOne(type => AuthUser, user => user.authMethods, {nullable:true})
+  user: AuthUser;
+
+  userId: number;
+
   @Column()
-  type: number;
+  identifier: string;
+
+
+  @Column()
+  type: string;
+
+  @Column()
+  mail: string;
 
   @Column()
   username: string;
 
-  @Column()
+  @Column({nullable:true})
   secret: string;
 
-  @ManyToOne(type => User, user => user.auths)
-  user: User;
+  @Column()
+  failed: number = 0;
+
+  @Column()
+  failLimit: number = 100;
+
+  @Column()
+  disabled: boolean = false;
 
   @CreateDateColumn()
   created_at: Date;

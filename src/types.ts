@@ -1,4 +1,6 @@
 
 
 
-export const K_LIB_AUTH_ADAPTERS_PASSPORT = 'auth.adapters.passport';
+export const K_LIB_AUTH_ADAPTERS = 'auth.adapters';
+
+export type AuthLifeCycle = "signup" | "login" | "logout";

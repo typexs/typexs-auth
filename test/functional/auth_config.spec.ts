@@ -14,8 +14,9 @@ import {
   Container,
   RuntimeLoader
 } from "typexs-base";
-import {User} from "../../src/entities/User";
-import {IAuthConfig, Passport} from "../../src/middleware/Passport";
+
+import {IAuthConfig, Auth} from "../../src/middleware/Passport";
+import {AuthUser} from "../../src/entities/AuthUser";
 
 
 @suite('functional/auth_config')
@@ -35,13 +36,13 @@ class AuthConfigSpec {
   @test
   async 'auth config'() {
     let auth:IAuthConfig = {
-      userClass: User, // ./User as string
+      userClass: AuthUser, // ./User as string
       methods:{
         default:{
           type:'database'
         }
       }
-    }
+    };
 
     let json = FileUtils.getJsonSync(__dirname + '/../../package.json');
     let loader = new RuntimeLoader({
@@ -53,7 +54,7 @@ class AuthConfigSpec {
     Container.set("RuntimeLoader", loader);
     Config.set('auth',auth);
 
-    let passport = Container.get(Passport);
+    let passport = Container.get(Auth);
     await passport.prepare({});
 
     let adapters = passport.getDefinedAdapters();

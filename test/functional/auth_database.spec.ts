@@ -12,60 +12,124 @@ import {
   FileUtils,
   ClassesLoader,
   Container,
-  RuntimeLoader
+  RuntimeLoader, ITypexsOptions, Log
 } from "typexs-base";
-import {User} from "../../src/entities/User";
-import {IAuthConfig, Passport} from "../../src/middleware/Passport";
 
+import {IAuthConfig, Auth} from "../../src/middleware/Auth";
+import {AuthUser} from "../../src/entities/AuthUser";
+import * as path from "path";
+import {AuthUserSignup} from "../../src/libs/models/AuthUserSignup";
+import {AuthUserLogin} from "../../src/libs/models/AuthUserLogin";
+import {inspect} from "util";
 
-@suite('functional/auth_config')
+let bootstrap: Bootstrap = null;
+let web: WebServer = null;
+
+@suite('functional/auth_database')
 class AuthConfigSpec {
 
+  static async before() {
+    bootstrap = Bootstrap
+      .configure(<ITypexsOptions>{
+        auth: {
+          methods: {
+            default: {
+              type: 'database'
+            }
+          }
+        }
+      })
+      .activateErrorHandling()
+      .activateLogger();
 
-  before() {
+    await bootstrap.prepareRuntime();
+    await bootstrap.activateStorage();
+
+    web = Container.get(WebServer);
+    await web.initialize({
+      type: 'web', framework: 'express', routes: [{
+        type: K_ROUTE_CONTROLLER,
+        routePrefix: 'api',
+        context: 'api'
+      }]
+    });
+
+    await web.prepare();
+    let uri = web.getUri();
+    let routes = web.getRoutes();
+
+    //let c = await Bootstrap._().getStorage().get('default').connect();
+    //c.manager.query('')
+
+    console.log(routes);
+    console.log("URI=" + uri);
+    let started = await web.start();
 
   }
 
-
-  after() {
-
+  static async after() {
+    await web.stop();
+    Bootstrap.reset();
   }
 
 
   @test
-  async 'auth config'() {
+  async 'database signup'() {
+    let auth = <Auth>Container.get("Auth");
+    let signUp: AuthUserSignup = auth.getInstanceForSignup();
+    signUp.username = 'superman';
+    signUp.mail = 'superman@test.me';
+    signUp.password = 'password';
 
+    let res = await request(web.getUri())
+      .post('/api/user/signup')
+      .send(signUp)
+      .expect(200);
 
-
-    let auth:IAuthConfig = {
-      userClass: User, // ./User as string
-      methods:{
-        default:{
-          type:'database'
-        }
-      }
-    }
-
-    let json = FileUtils.getJsonSync(__dirname + '/../../package.json');
-    let loader = new RuntimeLoader({
-      appdir: PlatformUtils.pathResolve('.'),
-      libs: json.typexs.declareLibs
-    });
-
-    await loader.prepare();
-    Container.set("RuntimeLoader", loader);
-    Config.set('auth',auth);
-
-    let passport = Container.get(Passport);
-    await passport.prepare({});
-
-    let adapters = passport.getDefinedAdapters();
-    let authMethods = passport.getUsedAuthMethods();
-
-    expect(adapters.map(x => x.name)).to.deep.eq(['database']);
-    expect(adapters.map(x => x.className)).to.deep.eq(['DatabaseAdapter']);
-    expect(authMethods.map(x => x.identifier)).to.deep.eq(['default']);
-
+    expect(res.body.success).to.be.true;
+    expect(res.body.password).to.be.null;
   }
+
+  @test.only()
+  async 'database lifecycle signup -> login -> get user -> logout'() {
+    let auth = <Auth>Container.get("Auth");
+
+    let signUp: AuthUserSignup = auth.getInstanceForSignup();
+    signUp.username = 'testmann';
+    signUp.mail = 'testman@test.tx';
+    signUp.password = 'password';
+
+    let res = await request(web.getUri())
+      .post('/api/user/signup')
+      .send(signUp)
+      .expect(200);
+
+    Log.info(res.body);
+
+    let c = await bootstrap.getStorage().get("default").connect()
+    let data = await c.manager.query("select * from auth_method");
+    Log.info(data);
+    //data = await c.manager.query("PRAGMA table_info(auth_session);");
+    //Log.info(data);
+
+
+    expect(res.body.success).to.be.true;
+    expect(res.body.password).to.be.null;
+
+
+    let logIn: AuthUserLogin = auth.getInstanceForLogin();
+    logIn.username = 'testmann';
+    logIn.password = 'password';
+
+    res = await request(web.getUri())
+      .post('/api/user/login')
+      .send(logIn)
+      .expect(200);
+
+    console.log(inspect(res.body,false,10));
+    expect(res.body.success).to.be.true;
+    expect(res.body.isAuthenticated).to.be.true;
+  }
+
 }
 
