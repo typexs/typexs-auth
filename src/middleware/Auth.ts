@@ -1,4 +1,3 @@
-import *  as passport from 'passport';
 import {
   Config, Inject, RuntimeLoader, ClassesLoader, StorageRef, Container, CryptUtils,
   ConnectionWrapper, Log
@@ -6,58 +5,33 @@ import {
 import {Action, IApplication, IMiddleware, IRoutingController, K_ROUTE_CONTROLLER} from 'typexs-server';
 import {AuthLifeCycle, K_LIB_AUTH_ADAPTERS} from "../types";
 import * as _ from 'lodash';
+import {
+  EntityManager
+} from "typeorm";
 import {AuthUser} from "../entities/AuthUser";
 import {AuthSession} from "../entities/AuthSession";
-import {IAuthAdapter} from "../libs/IAuthAdapter";
 import {AuthMethod} from "../entities/AuthMethod";
 import {EmptyHttpRequestError} from "../libs/exceptions/EmptyHttpRequestError";
 import {validate} from "class-validator";
 import * as bcrypt from "bcrypt";
 import {BadRequestError} from "routing-controllers";
 import {log} from "util";
+import {IAuthConfig} from "../libs/auth/IAuthConfig";
+import {IAdapterDef} from "../libs/adapter/IAdapterDef";
+import {IAuthAdapter} from "../libs/adapter/IAuthAdapter";
+import {IAuthOptions} from "../libs/auth/IAuthOptions";
+import {AbstractUserSignup} from "../libs/models/AbstractUserSignup";
+import {AbstractUserLogin} from "../libs/models/AbstractUserLogin";
+import {IAuthData} from "../libs/adapter/IAuthData";
 
-
-export interface IAuthOptions {
-  type: string
-
-  identifier?: string;
-
-  clazz?: Function
-
-}
-
-export interface ISessionOptions {
-  secret?: string;
-}
-
-export interface IAuthConfig {
-
-  httpAuthKey?: string;
-
-  allowRegistration: true;
-
-  saltRounds?: number;
-
-  session?: ISessionOptions;
-
-  userClass?: string | Function
-
-  methods?: { [key: string]: IAuthOptions }
-
-}
-
-export interface IAdapterDef {
-  name: string;
-  moduleName: string;
-  className: string;
-  filepath: string;
-}
 
 const DEFAULT_CONFIG_OPTIONS = {
   httpAuthKey: 'txs-auth',
   allowRegistration: false,
   saltRounds: 5,
   userClass: AuthUser,
+
+
   session: {
     secret: CryptUtils.shorthash(new Date() + ''),
     resave: true,
@@ -118,15 +92,15 @@ export class Auth implements IMiddleware {
         };
 
         if (!_.isEmpty(this.authConfig) && !_.isEmpty(this.authConfig.methods)) {
-          for (let identifier in this.authConfig.methods) {
-            let methodOptions = this.authConfig.methods[identifier];
-            methodOptions.identifier = identifier;
+          for (let authId in this.authConfig.methods) {
+            let methodOptions = this.authConfig.methods[authId];
+            methodOptions.authId = authId;
             if (methodOptions.type === obj.type) {
               methodOptions.clazz = cls;
               let adapterInstance = <IAuthAdapter>Container.get(cls);
-              adapterInstance.identifier = identifier;
+              adapterInstance.authId = authId;
               this.adapters.push(adapterInstance);
-              await adapterInstance.prepare(passport, methodOptions);
+              await adapterInstance.prepare(methodOptions);
             }
           }
         }
@@ -167,8 +141,9 @@ export class Auth implements IMiddleware {
     return this.adapters;
   }
 
-  getAdapterByIdentifier(identifier: string): IAuthAdapter {
-    return _.find(this.getAdapters(), a => a.identifier === identifier);
+
+  getAdapterByIdentifier(authId: string): IAuthAdapter {
+    return _.find(this.getAdapters(), a => a.authId === authId);
   }
 
 
@@ -179,32 +154,53 @@ export class Auth implements IMiddleware {
     }
   }
 
-  private getInstanceFor(stage: AuthLifeCycle, identifier: string = 'default', values: any = null): any {
-    let adapter = this.getAdapterByIdentifier(identifier);
+
+  private getInstanceFor(stage: AuthLifeCycle, authId: string = 'default', values: any = null): any {
+    let adapter = this.getAdapterByIdentifier(authId);
     if (adapter && adapter.getModelFor(stage)) {
       let clazz = adapter.getModelFor(stage);
       let signup = Reflect.construct(clazz, []);
       if (values) {
         _.assign(signup, values);
       }
-      signup.identifier = identifier;
+      signup.authId = authId;
       return signup;
     }
     return null;
   }
 
 
-  getInstanceForSignup(identifier: string = 'default', values: any = null): any {
-    return this.getInstanceFor("signup", identifier, values);
+  getInstanceForSignup(authId: string = 'default', values: any = null): any {
+    return this.getInstanceFor("signup", authId, values);
   }
 
-  getInstanceForLogin(identifier: string = 'default', values: any = null): any {
-    return this.getInstanceFor("login", identifier, values);
+
+  getInstanceForLogin(authId: string = 'default', values: any = null): any {
+    return this.getInstanceFor("login", authId, values);
   }
 
-  async doSignup(signup: any, req: any, res: any) {
+
+  private getAuthIdFromObject(data: AbstractUserLogin | AbstractUserSignup) {
+    return _.get(data, "authId", "default");
+  }
+
+
+  async doSignup(signup: AbstractUserSignup, req: any, res: any) {
     if (!_.isEmpty(signup)) {
-      let id = _.get(signup, "identifier", "default");
+      let id = this.getAuthIdFromObject(signup);
+      let adapter = this.getAdapterByIdentifier(id);
+
+      if (!adapter.canSignup()) {
+        signup.addError({
+          property: "username",
+          value: "username",
+          constraints: {
+            signup_not_allowed_error: 'signup not allowed'
+          }
+        });
+        return signup;
+      }
+
       signup = this.getInstanceForSignup(id, signup);
       let errors = await validate(signup, {validationError: {target: false}});
       if (_.isEmpty(errors)) {
@@ -212,43 +208,27 @@ export class Auth implements IMiddleware {
         // check if username for type is already given
         let adapter = this.getAdapterByIdentifier(id);
 
-        // TODO normalize username like adapter.normalize(username);
-        let mgr = this.connection.manager;
-        let [authMethod, authUser] = await Promise.all([
-          mgr.findOne(AuthMethod, {
-            where: {
-              identifier: adapter.identifier,
-              username: signup.username
-            }
-          }), mgr.findOne(AuthUser, {
-            where: {
-              username: signup.username
-            }
-          })
+        let signupData = adapter.extractAccessData(signup);
+        let [method, user] = await Promise.all([
+          this.getMethodByUsername(id, signupData.identifier),
+          this.getUserByUsername(signupData.identifier)
         ]);
 
-        if (_.isEmpty(authMethod) && _.isEmpty(authUser)) {
+
+        if (_.isEmpty(method) && _.isEmpty(user)) {
+          // for signup none entry in authuser or authmethod should exists
           // create method first then user
           // TODO impl. adapter method to generate entry
           try {
-            await mgr.transaction(async em => {
-              let method = new AuthMethod();
-              method.username = signup.username;
-              method.identifier = signup.identifier;
-              method.secret = await bcrypt.hash(signup.password, this.authConfig.saltRounds);
-              method.type = adapter.type;
-              method.mail = signup.mail;
-              method = await mgr.save(method);
+            let isSignuped = await adapter.signup(signup);
 
-              let user = new AuthUser();
-              user.username = signup.username;
-              user.mail = signup.mail;
-              user.preferedMethod = method;
-              user = await mgr.save(user);
+            if (isSignuped) {
+              method = await this.createUserAndMethod(adapter, signupData);
+              signup.success = isSignuped;
+            } else {
+              // TODO
+            }
 
-              method.user = user;
-              method = await mgr.save(method);
-            });
 
           } catch (err) {
             // TODO
@@ -258,24 +238,23 @@ export class Auth implements IMiddleware {
 
           // TODO: auto sign in
           // TODO: verify mail
-          signup.password = null;
-          signup.success = true;
+          signup.resetSecret();
           return signup;
 
         } else {
-          signup.password = null;
-          signup.errors = [{
+          signup.resetSecret();
+          signup.addError({
             property: "username", // Object's property that haven't pass validation.
             value: "username", // Value that haven't pass a validation.
             constraints: { // Constraints that failed validation with error messages.
               exists: "$property already assigned."
             }
-          }];
+          });
           return signup;
         }
 
       } else {
-        signup.password = null;
+        signup.resetSecret();
         signup.errors = errors;
         return signup;
       }
@@ -285,62 +264,165 @@ export class Auth implements IMiddleware {
   }
 
 
-  async doLogin(login: any, req: any, res: any) {
+  /**
+   *
+   * TODO impl. possibility to create account on first positiv login, like ldap
+   *
+   * @param {AbstractUserLogin} login
+   * @param req
+   * @param res
+   * @returns {Promise<AbstractUserLogin>}
+   */
+  async doLogin(login: AbstractUserLogin, req: any, res: any) {
     // if logged in
     // passport.authenticate()
     let isAuthenticated = await this.isAuthenticated(req);
     if (isAuthenticated) {
       login.isAuthenticated = isAuthenticated;
-      delete login.password;
+      login.resetSecret();
       return login;
     } else {
-
       if (!_.isEmpty(login)) {
-        let id = _.get(login, "identifier", "default");
-        login = this.getInstanceForLogin(id, login);
-        let errors = await validate(login, {validationError: {target: false}});
-        if (_.isEmpty(errors)) {
-          // everything is okay
-          // check if username for type is already given
-          let adapter = this.getAdapterByIdentifier(id);
-
-          isAuthenticated = await adapter.authenticate(login);
-          if (isAuthenticated) {
-            let mgr = this.connection.manager;
-
-            let authMethod = await adapter.getAuth(login);
-            let authUser = authMethod.user;
-
-            try {
-              await mgr.transaction(async em => {
-                let q =  em.createQueryBuilder(AuthSession, "s").delete().where("userId = :userId", {userId: authUser.id});
-                await q.execute();
-                let session = new AuthSession();
-                session.ip = req.connection.remoteAddress;
-                session.user = authUser;
-                session.authMethod = authMethod;
-                session.token = CryptUtils.shorthash(new Date().getTime() + '' + session.ip);
-                await em.save(session);
-                res.setHeader(this.getHttpAuthKey(), session.token);
-              });
-              delete login.password;
-              login.isAuthenticated = isAuthenticated;
-              login.success = true;
-              return login;
-            } catch (err) {
-              throw err;
-            }
+        let authIdsChain = this.authChain();
+        let loginInstance: AbstractUserLogin = null;
+        for (let authId of authIdsChain) {
+          loginInstance = await this.doLoginForAdapter(authId, login);
+          if (loginInstance.isAuthenticated) {
+            break;
           }
         }
 
-        login.isAuthenticated = isAuthenticated;
-        delete login.password;
-        return login;
+        if (loginInstance && loginInstance.isAuthenticated) {
+          let mgr = this.connection.manager;
+          let adapter = this.getAdapterByIdentifier(loginInstance.authId);
 
+          let accessData = adapter.extractAccessData(loginInstance);
+          let method = await this.getMethodByUsername(loginInstance.authId, accessData.identifier);
+          let user: AuthUser = null;
+          if (_.isEmpty(method)) {
+            // empty method => no account exists
+            if (adapter.canCreateOnLogin()) {
+              // create method and user
+              user = await this.getUserByUsername(accessData.identifier);
+
+              if (_.isEmpty(user)) {
+                // user with name does not exists
+                try {
+                  method = await this.createUserAndMethod(adapter, accessData);
+                  user = method.user;
+                } catch (err) {
+                  Log.error(err);
+                  loginInstance.addError({
+                    property: 'user',
+                    value: err.message,
+                    constraints: {
+                      user_create_error: "$property error thrown $value."
+                    }
+                  })
+                }
+              } else {
+                // username already used
+                loginInstance.addError({
+                  property: 'username',
+                  value: accessData.identifier,
+                  constraints: {
+                    user_already_exists: "$property already reserved."
+                  }
+                })
+              }
+
+            } else {
+              // no user found and auto create not allowed
+              loginInstance.addError({
+                property: 'user',
+                value: accessData.identifier,
+                constraints: {
+                  user_not_exists: "$property can not be created for this authentication."
+                }
+              })
+
+            }
+          } else {
+            user = method.user;
+          }
+
+          try {
+            await mgr.transaction(async em => {
+
+              let q = em.createQueryBuilder(AuthSession, "s").delete().where("userId = :userId",
+                {userId: user.id}
+              );
+              await q.execute();
+
+              let session = new AuthSession();
+              session.ip = req.connection.remoteAddress;
+              session.user = user;
+              session.authId = adapter.authId;
+              session.token = CryptUtils.shorthash(new Date().getTime() + '' + session.ip);
+              await Promise.all([em.save(session), em.save(user), em.save(method)]);
+              loginInstance.user = user;
+              loginInstance.success = true;
+              res.setHeader(this.getHttpAuthKey(), session.token);
+            });
+
+          } catch (err) {
+            Log.error(err);
+            loginInstance.addError({
+              property: 'user',
+              value: err.message,
+              constraints: {
+                session_error: "$property can not be created for this authentication."
+              }
+            })
+          }
+        }
+
+
+        return loginInstance;
       } else {
-        throw new EmptyHttpRequestError();
+        login.addError({
+          property: 'username',
+          value: null,
+          constraints: {
+            empty_request_error: "$property empty, no access data passed."
+          }
+        })
+        return login;
       }
+
     }
+  }
+
+
+  private authChain(): string[] {
+    if (this.authConfig.chain && !_.isEmpty(this.authConfig.chain)) {
+      return this.authConfig.chain;
+    } else {
+      let first = _.first(this.getAdapters());
+      return [first.authId];
+    }
+  }
+
+
+  private async doLoginForAdapter(authId: string, _login: AbstractUserLogin): Promise<AbstractUserLogin> {
+
+    let login = this.getInstanceForLogin(authId, _login);
+    let errors = await validate(login, {validationError: {target: false}});
+
+    login.isAuthenticated = false;
+
+    if (_.isEmpty(errors)) {
+      // everything is okay
+      // check if username for type is already given
+      let adapter = this.getAdapterByIdentifier(authId);
+      login.isAuthenticated = await adapter.authenticate(login);
+    } else {
+      login.errors = errors;
+    }
+
+    login.resetSecret();
+    return login;
+
   }
 
 
@@ -399,34 +481,89 @@ export class Auth implements IMiddleware {
   }
 
 
-  async getSessionByToken(token: string) {
-    return await this.connection.manager.findOneById(AuthSession, token, {relations:["user"]});
+  getUserByUsername(username: string) {
+    return this.connection.manager.findOne(AuthUser, {
+      where: {
+        username: username
+      }
+    });
+  }
+
+
+  getMethodByUsername(authId: string, username: string) {
+    return this.connection.manager.findOne(AuthMethod, {
+      relations: ["user"],
+      where: {
+        identifier: username,
+        authId: authId
+      }
+    });
+  }
+
+
+  getSessionByToken(token: string) {
+    return this.connection.manager.findOneById(AuthSession, token, {relations: ["user"]});
+  }
+
+
+  createUserAndMethod(adapter: IAuthAdapter, signupData: IAuthData): Promise<AuthMethod> {
+    let mgr = this.connection.manager;
+    return mgr.transaction(async em => {
+      let method = await this.createMethod(em, adapter, signupData);
+      method.user = await this.createUser(em, method, adapter, signupData);
+      return await mgr.save(method);
+    });
+  }
+
+
+  private async createMethod(em: EntityManager, adapter: IAuthAdapter, signupData: IAuthData) {
+    let method = new AuthMethod();
+    method.identifier = signupData.identifier;
+    method.authId = adapter.authId;
+    method.secret = signupData.secret ? await bcrypt.hash(signupData.secret, this.authConfig.saltRounds) : null;
+    method.type = adapter.type;
+    method.mail = signupData.mail;
+    if (signupData.data) {
+      method.data = signupData.data;
+    }
+    return await em.save(method);
+  }
+
+
+  private async createUser(em: EntityManager, method: AuthMethod, adapter: IAuthAdapter, signupData: IAuthData) {
+    let user = new AuthUser();
+    user.username = signupData.identifier;
+    user.mail = signupData.mail;
+    user.preferedMethod = method;
+    return await em.save(user);
   }
 
 
   use(app: IApplication): void {
     if (this.isEnabled()) {
+      /*
       for (let adapter of this.adapters) {
         if (adapter.beforeUse) {
           adapter.beforeUse(app);
         }
       }
+      */
 
       if (this.frameworkId === 'express') {
         const session = require('express-session');
         // TODO config session stuff
         app.use(session(this.authConfig.session))
       }
+      /*
+            app.use(passport.initialize());
 
-      app.use(passport.initialize());
-
-      for (let adapter of this.adapters) {
-        if (adapter.afterUse) {
-          adapter.afterUse(app);
-        }
-      }
-      app.use(passport.session());
-
+            for (let adapter of this.adapters) {
+              if (adapter.afterUse) {
+                adapter.afterUse(app);
+              }
+            }
+            app.use(passport.session());
+      */
     }
   }
 

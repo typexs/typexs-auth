@@ -15,23 +15,23 @@ import {
 
 import * as _ from "lodash";
 import {AuthUser} from "./AuthUser";
+import {IAuthData} from "../libs/adapter/IAuthData";
 
 
 @Entity()
-@Index(["identifier","username"],{unique:true})
-export class AuthMethod {
+@Index(["authId", "identifier"], {unique: true})
+export class AuthMethod implements IAuthData{
 
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(type => AuthUser, user => user.authMethods, {nullable:true})
+  @ManyToOne(type => AuthUser, user => user.authMethods, {nullable: true})
   user: AuthUser;
 
   userId: number;
 
   @Column()
-  identifier: string;
-
+  authId: string;
 
   @Column()
   type: string;
@@ -40,9 +40,9 @@ export class AuthMethod {
   mail: string;
 
   @Column()
-  username: string;
+  identifier: string;
 
-  @Column({nullable:true})
+  @Column({nullable: true})
   secret: string;
 
   @Column()

@@ -3,3 +3,28 @@
 *@ISSUE {counter:task} 20180303* +
 Impl. and use PropertyTypes in Entities to extend the entities.
 Per Type create a new tables.
+
+
+*@ISSUE {counter:task} 20180311* +
+
+Impl. LDAP Adapter
+
+
+*@ISSUE {counter:task} 20180311* +
+
+Impl. IP Auth Adapter
+
+
+*@ISSUE {counter:task} 20180311* +
+
+Impl. API Token Auth Adapter
+
+
+*@ISSUE {counter:task} 20180311* +
+
+Impl. Chain of adapter authentications
+
+
+*@ISSUE {counter:task} 20180311* +
+
+On first install create the admin user, if not forbidden by configuration

@@ -31,9 +31,8 @@ export class AuthSession {
   user: AuthUser = null;
 
 
-  @OneToOne(type => AuthMethod,{nullable:true})
-  @JoinColumn()
-  authMethod: AuthMethod = null;
+  @Column({nullable: false})
+  authId: string;
 
 
 

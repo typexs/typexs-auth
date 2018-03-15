@@ -1,42 +1,34 @@
 //import * as passport from "passport";
 import * as bcrypt from "bcrypt";
 import * as _ from "lodash";
-import {Strategy as LocalStrategy} from "passport-local";
-import {IAuthOptions} from "../../middleware/Auth";
-import {IAuthAdapter} from "../../libs/IAuthAdapter";
+
 import {ConnectionWrapper, Inject, StorageRef} from "typexs-base";
 import {AuthMethod} from "../../entities/AuthMethod";
 import {UserNotFoundError} from "../../libs/exceptions/UserNotFoundError";
 import {PasswordIsWrongError} from "../../libs/exceptions/PasswordIsWrongError";
-import {AuthUserSignup} from "../../libs/models/AuthUserSignup";
+
 import {AuthLifeCycle} from "../../types";
-import {AuthUserLogin} from "../../libs/models/AuthUserLogin";
+import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
+import {IDatabaseAuthOptions} from "./db/IDatabaseAuthOptions";
+import {AbstractAuthAdapter} from "../../libs/adapter/AbstractAuthAdapter";
+import {IAuthData} from "../../libs/adapter/IAuthData";
+import {DefaultUserSignup} from "../../libs/models/DefaultUserSignup";
 
 export const K_AUTH_DATABASE = 'database';
 
-export interface IDatabaseAuthOptions extends IAuthOptions {
-  usernameField?: string;
-
-  passwordField?: string;
-
-  passReqToCallback?: boolean;
-
-  badRequestMessage?: string;
-
-  saltRound?: number;
-
-}
 
 const DEFAULTS: IDatabaseAuthOptions = {
   type: 'database',
+  /*
   passReqToCallback: false,
-  usernameField: 'username',
+  usernameField: 'authId',
   passwordField: 'password',
+  */
   saltRound: 5
 };
 
 
-export class DatabaseAdapter implements IAuthAdapter {
+export class DatabaseAdapter extends AbstractAuthAdapter {
 
 
   @Inject('storage.default')
@@ -46,10 +38,6 @@ export class DatabaseAdapter implements IAuthAdapter {
 
   type: string = K_AUTH_DATABASE;
 
-  identifier: string = null;
-
-  strategy: LocalStrategy;
-
 
   hasRequirements() {
     // TODO check if database is enabled
@@ -57,14 +45,12 @@ export class DatabaseAdapter implements IAuthAdapter {
   }
 
 
-  async prepare(passport: any, opts: IDatabaseAuthOptions) {
+  async prepare(opts: IDatabaseAuthOptions) {
     _.defaults(opts, DEFAULTS);
     this.connection = await this.storage.connect();
-    //  this.strategy = new LocalStrategy(<IStrategyOptions>opts, opts.passReqToCallback ? this.verifyReq.bind(this) : this.verify.bind(this));
-    // passport.use(this.strategy);
   }
 
-  async authenticate(login: AuthUserLogin) {
+  async authenticate(login: DefaultUserLogin) {
     try {
       let authMethod = await this.getAuth(login);
       if (authMethod) {
@@ -78,7 +64,7 @@ export class DatabaseAdapter implements IAuthAdapter {
           property: "password", // Object's property that haven't pass validation.
           value: "password", // Value that haven't pass a validation.
           constraints: { // Constraints that failed validation with error messages.
-            exists: "$property or username is wrong."
+            exists: "$property or authId is wrong."
           }
         }];
       } else if (err instanceof UserNotFoundError) {
@@ -98,29 +84,39 @@ export class DatabaseAdapter implements IAuthAdapter {
 
   }
 
-  /*
-    async verify(username: string, password: string, verified: (err: Error, user?: AuthUser, info?: any) => void) {
-      try {
-        let user = await this.findUser(username, password);
-        verified(null, user);
-      } catch (err) {
-        verified(err);
-      }
+
+  async signup(data:DefaultUserSignup){
+    // TODO impl method
+    return true;
+  }
+
+
+  extractAccessData(data: DefaultUserLogin | DefaultUserSignup): IAuthData {
+    return {
+      identifier:data.username,
+      secret: data.password,
+      mail: data instanceof DefaultUserSignup ? data.mail : null,
+      data: data.data ? data.data : null
     }
+  }
 
 
-    async verifyReq(req: Request, username: string, password: string, verified: (err: Error, user: AuthUser, info: any) => void) {
-      await this.verify(username, password, verified);
-    }
-  */
-
-  async getAuth(login: AuthUserLogin): Promise<AuthMethod> {
+  async getAuth(login: DefaultUserLogin): Promise<AuthMethod> {
 
     let username = login.username;
     let password = login.password;
 
     let auth = await this.connection.manager.findOne(AuthMethod,
-      {where: {username: username, identifier: this.identifier, type: K_AUTH_DATABASE}, relations: ["user"]});
+      {
+        where:
+          {
+            username: username,
+            identifier: this.authId,
+            type: this.type
+          },
+        relations: ["user"]
+      });
+
     if (!auth) {
       throw new UserNotFoundError(username);
     }
@@ -138,17 +134,6 @@ export class DatabaseAdapter implements IAuthAdapter {
     await this.connection.save(auth);
 
     return auth;
-  }
-
-
-  getModelFor(lifecycle: AuthLifeCycle) {
-    switch (lifecycle) {
-      case "login":
-        return AuthUserLogin;
-      case "signup":
-        return AuthUserSignup;
-    }
-    throw new Error("No model for lifecycle " + lifecycle + ' in ' + this.identifier);
   }
 
 

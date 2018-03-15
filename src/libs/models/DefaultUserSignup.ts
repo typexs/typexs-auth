@@ -1,14 +1,14 @@
 import {IsEmail, MaxLength, MinLength} from "class-validator";
+import {DefaultUserLogin} from "./DefaultUserLogin";
+import {AbstractUserSignup} from "./AbstractUserSignup";
 
-export class AuthUserSignup {
-
-  identifier: string;
+export class DefaultUserSignup extends AbstractUserSignup {
 
   @MinLength(8, {
-        message: "username is too short"
+        message: "authId is too short"
   })
   @MaxLength(32, {
-    message: "username is too long"
+    message: "authId is too long"
   })
   username: string;
 
@@ -23,7 +23,9 @@ export class AuthUserSignup {
   @IsEmail()
   mail: string;
 
-  errors: any = null;
+  resetSecret(){
+    this.password = null;
+  }
 
-  success:boolean = false;
+
 }
