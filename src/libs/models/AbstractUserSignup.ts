@@ -1,6 +1,6 @@
 import {AbstractInputData} from "./AbstractInputData";
 
-export abstract class AbstractUserSignup extends AbstractInputData{
+export abstract class AbstractUserSignup extends AbstractInputData {
 
   authId: string;
 
@@ -12,5 +12,9 @@ export abstract class AbstractUserSignup extends AbstractInputData{
 
 
   abstract resetSecret(): void;
+
+  abstract getSecret():string;
+  abstract getIdentifier():string;
+  abstract getMail():string;
 
 }

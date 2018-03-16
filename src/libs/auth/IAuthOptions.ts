@@ -12,7 +12,7 @@ export interface IAuthOptions {
   createOnLogin?: boolean
 
   /**
-   * Allow signup form
+   * Allow signup for this adapter if it is supported
    */
   allowSignup?:boolean
 

@@ -1,8 +1,10 @@
 import {IAuthOptions} from "../auth/IAuthOptions";
 import {AuthLifeCycle} from "../../types";
 import {AuthMethod} from "../../entities/AuthMethod";
-import {IAuthData} from "./IAuthData";
+
 import {AbstractUserSignup} from "../models/AbstractUserSignup";
+import {AbstractInputData} from "../models/AbstractInputData";
+import {AuthUser} from "../../entities/AuthUser";
 
 export interface IAuthAdapter {
 
@@ -29,6 +31,8 @@ export interface IAuthAdapter {
 
   signup?(signup:AbstractUserSignup): boolean;
 
-  extractAccessData(data: any): IAuthData;
+
+
+  extend(obj:AuthUser | AuthMethod, data: AbstractInputData):void;
 
 }

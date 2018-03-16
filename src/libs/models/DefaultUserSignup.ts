@@ -28,4 +28,15 @@ export class DefaultUserSignup extends AbstractUserSignup {
   }
 
 
+  getIdentifier(){
+    return this.username;
+  }
+
+  getSecret(){
+    return this.password;
+  }
+
+  getMail(){
+    return this.mail;
+  }
 }

@@ -1,29 +1,14 @@
 import {suite, test} from "mocha-typescript";
-import {expect} from 'chai';
-import * as _ from 'lodash';
-import * as request from 'supertest';
+import {Bootstrap, Container, ITypexsOptions, Log, StorageRef} from "typexs-base";
 
-import {ServerRegistry, WebServer, K_ROUTE_CONTROLLER, C_DEFAULT} from "typexs-server";
-import {
-  Bootstrap,
-  Config,
-  IFileConfigOptions,
-  PlatformUtils,
-  FileUtils,
-  ClassesLoader,
-  Container,
-  RuntimeLoader, ITypexsOptions, Log
-} from "typexs-base";
-
-import {IAuthConfig, Auth} from "../../src/middleware/Auth";
+import {Auth} from "../../src/middleware/Auth";
+import {DefaultUserSignup} from "../../src/libs/models/DefaultUserSignup";
 import {AuthUser} from "../../src/entities/AuthUser";
-import * as path from "path";
-import {AuthUserSignup} from "../../src/libs/models/AuthUserSignup";
-import {AuthUserLogin} from "../../src/libs/models/AuthUserLogin";
-import {inspect} from "util";
+import {AuthMethod} from "../../src/entities/AuthMethod";
 
 let bootstrap: Bootstrap = null;
-let web: WebServer = null;
+
+let auth: Auth = null;
 
 @suite('functional/auth_database')
 class AuthConfigSpec {
@@ -34,7 +19,8 @@ class AuthConfigSpec {
         auth: {
           methods: {
             default: {
-              type: 'database'
+              type: 'database',
+              allowSignup: true
             }
           }
         }
@@ -45,90 +31,38 @@ class AuthConfigSpec {
     await bootstrap.prepareRuntime();
     await bootstrap.activateStorage();
 
-    web = Container.get(WebServer);
-    await web.initialize({
-      type: 'web', framework: 'express', routes: [{
-        type: K_ROUTE_CONTROLLER,
-        routePrefix: 'api',
-        context: 'api'
-      }]
-    });
-
-    await web.prepare();
-    let uri = web.getUri();
-    let routes = web.getRoutes();
-
-    //let c = await Bootstrap._().getStorage().get('default').connect();
-    //c.manager.query('')
-
-    console.log(routes);
-    console.log("URI=" + uri);
-    let started = await web.start();
-
+    auth = Container.get(Auth);
+    await auth.prepare();
   }
 
   static async after() {
-    await web.stop();
+    // await web.stop();
     Bootstrap.reset();
   }
 
 
-  @test
-  async 'database signup'() {
-    let auth = <Auth>Container.get("Auth");
-    let signUp: AuthUserSignup = auth.getInstanceForSignup();
+  @test.only()
+  async 'do signup'() {
+    let signUp: DefaultUserSignup = auth.getInstanceForSignup('default');
     signUp.username = 'superman';
     signUp.mail = 'superman@test.me';
     signUp.password = 'password';
+    let res: any = {};
+    let req: any = {};
+    let doingSignup = await auth.doSignup(signUp, req, res);
+    Log.info(doingSignup);
 
-    let res = await request(web.getUri())
-      .post('/api/user/signup')
-      .send(signUp)
-      .expect(200);
+    // TODO catch error signup not allowed
 
-    expect(res.body.success).to.be.true;
-    expect(res.body.password).to.be.null;
-  }
+    // TODO catch validation error username contains wrong chars
 
-  @test.only()
-  async 'database lifecycle signup -> login -> get user -> logout'() {
-    let auth = <Auth>Container.get("Auth");
+    let storageRef:StorageRef = Container.get('storage.default');
+    let c = await storageRef.connect();
+    let users = await c.manager.getRepository(AuthUser).find();
+    let methods = await c.manager.getRepository(AuthMethod).find();
 
-    let signUp: AuthUserSignup = auth.getInstanceForSignup();
-    signUp.username = 'testmann';
-    signUp.mail = 'testman@test.tx';
-    signUp.password = 'password';
+    Log.info(users,methods);
 
-    let res = await request(web.getUri())
-      .post('/api/user/signup')
-      .send(signUp)
-      .expect(200);
-
-    Log.info(res.body);
-
-    let c = await bootstrap.getStorage().get("default").connect()
-    let data = await c.manager.query("select * from auth_method");
-    Log.info(data);
-    //data = await c.manager.query("PRAGMA table_info(auth_session);");
-    //Log.info(data);
-
-
-    expect(res.body.success).to.be.true;
-    expect(res.body.password).to.be.null;
-
-
-    let logIn: AuthUserLogin = auth.getInstanceForLogin();
-    logIn.username = 'testmann';
-    logIn.password = 'password';
-
-    res = await request(web.getUri())
-      .post('/api/user/login')
-      .send(logIn)
-      .expect(200);
-
-    console.log(inspect(res.body,false,10));
-    expect(res.body.success).to.be.true;
-    expect(res.body.isAuthenticated).to.be.true;
   }
 
 }

@@ -1,6 +1,8 @@
 import {IErrorMessage} from "../auth/IErrorMessage";
+import {IProcessData} from "./IProcessData";
 
-export abstract class AbstractInputData {
+
+export abstract class AbstractInputData implements IProcessData {
 
   authId: string;
 
@@ -25,4 +27,6 @@ export abstract class AbstractInputData {
     }
     this.errors.push(error);
   }
+
+
 }

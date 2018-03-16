@@ -6,7 +6,7 @@ export interface IAuthConfig {
 
   httpAuthKey?: string;
 
-  allowRegistration: true;
+  allowSignup?: boolean;
 
   saltRounds?: number;
 

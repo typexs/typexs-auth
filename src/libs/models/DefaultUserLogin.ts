@@ -9,4 +9,12 @@ export class DefaultUserLogin extends AbstractUserLogin {
   resetSecret(){
     this.password = null;
   }
+
+  getIdentifier(){
+    return this.username;
+  }
+
+  getSecret(){
+    return this.password;
+  }
 }

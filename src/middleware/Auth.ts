@@ -1,36 +1,39 @@
 import {
-  Config, Inject, RuntimeLoader, ClassesLoader, StorageRef, Container, CryptUtils,
-  ConnectionWrapper, Log
+  ClassesLoader,
+  Config,
+  ConnectionWrapper,
+  Container,
+  CryptUtils,
+  Inject,
+  Log,
+  RuntimeLoader,
+  StorageRef
 } from 'typexs-base';
 import {Action, IApplication, IMiddleware, IRoutingController, K_ROUTE_CONTROLLER} from 'typexs-server';
 import {AuthLifeCycle, K_LIB_AUTH_ADAPTERS} from "../types";
 import * as _ from 'lodash';
-import {
-  EntityManager
-} from "typeorm";
+import {EntityManager} from "typeorm";
 import {AuthUser} from "../entities/AuthUser";
 import {AuthSession} from "../entities/AuthSession";
 import {AuthMethod} from "../entities/AuthMethod";
 import {EmptyHttpRequestError} from "../libs/exceptions/EmptyHttpRequestError";
 import {validate} from "class-validator";
-import * as bcrypt from "bcrypt";
 import {BadRequestError} from "routing-controllers";
-import {log} from "util";
 import {IAuthConfig} from "../libs/auth/IAuthConfig";
 import {IAdapterDef} from "../libs/adapter/IAdapterDef";
 import {IAuthAdapter} from "../libs/adapter/IAuthAdapter";
 import {IAuthOptions} from "../libs/auth/IAuthOptions";
 import {AbstractUserSignup} from "../libs/models/AbstractUserSignup";
 import {AbstractUserLogin} from "../libs/models/AbstractUserLogin";
-import {IAuthData} from "../libs/adapter/IAuthData";
+
+import {IProcessData} from "../libs/models/IProcessData";
 
 
 const DEFAULT_CONFIG_OPTIONS = {
   httpAuthKey: 'txs-auth',
-  allowRegistration: false,
+  allowSignup: true,
   saltRounds: 5,
   userClass: AuthUser,
-
 
   session: {
     secret: CryptUtils.shorthash(new Date() + ''),
@@ -72,7 +75,7 @@ export class Auth implements IMiddleware {
   }
 
 
-  async prepare(opts: any) {
+  async prepare(options: any = {}) {
     Container.set("Auth", this);
     let x = Config.get("auth");
     this.authConfig = <IAuthConfig>x;
@@ -155,6 +158,10 @@ export class Auth implements IMiddleware {
   }
 
 
+  config(): IAuthConfig {
+    return _.clone(this.authConfig);
+  }
+
   private getInstanceFor(stage: AuthLifeCycle, authId: string = 'default', values: any = null): any {
     let adapter = this.getAdapterByIdentifier(authId);
     if (adapter && adapter.getModelFor(stage)) {
@@ -184,13 +191,20 @@ export class Auth implements IMiddleware {
     return _.get(data, "authId", "default");
   }
 
+  private canSignup(adapter: IAuthAdapter) {
+    return adapter.canSignup() && _.get(this.authConfig, 'allowSignup', false);
+  }
 
-  async doSignup(signup: AbstractUserSignup, req: any, res: any) {
+
+  async doSignup(signup: AbstractUserSignup, req: any, res: any):Promise<IProcessData> {
+    // check if data is present
     if (!_.isEmpty(signup)) {
+
+      // check if signup is allowed
       let id = this.getAuthIdFromObject(signup);
       let adapter = this.getAdapterByIdentifier(id);
 
-      if (!adapter.canSignup()) {
+      if (!this.canSignup(adapter)) {
         signup.addError({
           property: "username",
           value: "username",
@@ -201,34 +215,33 @@ export class Auth implements IMiddleware {
         return signup;
       }
 
+      // validate passed data
       signup = this.getInstanceForSignup(id, signup);
       let errors = await validate(signup, {validationError: {target: false}});
       if (_.isEmpty(errors)) {
-        // everything is okay
+
         // check if username for type is already given
         let adapter = this.getAdapterByIdentifier(id);
 
-        let signupData = adapter.extractAccessData(signup);
         let [method, user] = await Promise.all([
-          this.getMethodByUsername(id, signupData.identifier),
-          this.getUserByUsername(signupData.identifier)
+          this.getMethodByUsername(id, signup.getIdentifier()),
+          this.getUserByUsername(signup.getIdentifier())
         ]);
 
-
+        // exist method or user with the given identifier then set error
         if (_.isEmpty(method) && _.isEmpty(user)) {
           // for signup none entry in authuser or authmethod should exists
           // create method first then user
+
           // TODO impl. adapter method to generate entry
           try {
             let isSignuped = await adapter.signup(signup);
-
             if (isSignuped) {
-              method = await this.createUserAndMethod(adapter, signupData);
+              method = await this.createUserAndMethod(adapter, signup);
               signup.success = isSignuped;
             } else {
               // TODO
             }
-
 
           } catch (err) {
             // TODO
@@ -273,7 +286,7 @@ export class Auth implements IMiddleware {
    * @param res
    * @returns {Promise<AbstractUserLogin>}
    */
-  async doLogin(login: AbstractUserLogin, req: any, res: any) {
+  async doLogin(login: AbstractUserLogin, req: any, res: any):Promise<IProcessData> {
     // if logged in
     // passport.authenticate()
     let isAuthenticated = await this.isAuthenticated(req);
@@ -296,19 +309,18 @@ export class Auth implements IMiddleware {
           let mgr = this.connection.manager;
           let adapter = this.getAdapterByIdentifier(loginInstance.authId);
 
-          let accessData = adapter.extractAccessData(loginInstance);
-          let method = await this.getMethodByUsername(loginInstance.authId, accessData.identifier);
+          let method = await this.getMethodByUsername(loginInstance.authId, login.getIdentifier());
           let user: AuthUser = null;
           if (_.isEmpty(method)) {
             // empty method => no account exists
             if (adapter.canCreateOnLogin()) {
               // create method and user
-              user = await this.getUserByUsername(accessData.identifier);
+              user = await this.getUserByUsername(login.getIdentifier());
 
               if (_.isEmpty(user)) {
                 // user with name does not exists
                 try {
-                  method = await this.createUserAndMethod(adapter, accessData);
+                  method = await this.createUserAndMethod(adapter, login);
                   user = method.user;
                 } catch (err) {
                   Log.error(err);
@@ -324,7 +336,7 @@ export class Auth implements IMiddleware {
                 // username already used
                 loginInstance.addError({
                   property: 'username',
-                  value: accessData.identifier,
+                  value: login.getIdentifier(),
                   constraints: {
                     user_already_exists: "$property already reserved."
                   }
@@ -335,7 +347,7 @@ export class Auth implements IMiddleware {
               // no user found and auto create not allowed
               loginInstance.addError({
                 property: 'user',
-                value: accessData.identifier,
+                value: login.getIdentifier(),
                 constraints: {
                   user_not_exists: "$property can not be created for this authentication."
                 }
@@ -506,36 +518,41 @@ export class Auth implements IMiddleware {
   }
 
 
-  createUserAndMethod(adapter: IAuthAdapter, signupData: IAuthData): Promise<AuthMethod> {
+  createUserAndMethod(adapter: IAuthAdapter, data: AbstractUserSignup | AbstractUserLogin): Promise<AuthMethod> {
     let mgr = this.connection.manager;
     return mgr.transaction(async em => {
-      let method = await this.createMethod(em, adapter, signupData);
-      method.user = await this.createUser(em, method, adapter, signupData);
+      let method = await this.createMethod(adapter, data);
+      method = await em.save(method);
+      let user = await this.createUser(adapter, data);
+      method.user = await em.save(user);;
       return await mgr.save(method);
     });
   }
 
 
-  private async createMethod(em: EntityManager, adapter: IAuthAdapter, signupData: IAuthData) {
+  private async createMethod(adapter: IAuthAdapter, signup: AbstractUserSignup | AbstractUserLogin) {
     let method = new AuthMethod();
-    method.identifier = signupData.identifier;
+    method.identifier = signup.getIdentifier();
     method.authId = adapter.authId;
-    method.secret = signupData.secret ? await bcrypt.hash(signupData.secret, this.authConfig.saltRounds) : null;
     method.type = adapter.type;
-    method.mail = signupData.mail;
-    if (signupData.data) {
-      method.data = signupData.data;
+
+    if(signup instanceof AbstractUserSignup){
+      method.mail = signup.getMail();
     }
-    return await em.save(method);
+
+    await adapter.extend(method, signup);
+    return method;
   }
 
 
-  private async createUser(em: EntityManager, method: AuthMethod, adapter: IAuthAdapter, signupData: IAuthData) {
+  private async createUser(adapter: IAuthAdapter, signup: AbstractUserSignup | AbstractUserLogin) {
     let user = new AuthUser();
-    user.username = signupData.identifier;
-    user.mail = signupData.mail;
-    user.preferedMethod = method;
-    return await em.save(user);
+    user.username = signup.getIdentifier();
+    if(signup instanceof AbstractUserSignup){
+      user.mail = signup.getMail();
+    }
+    await adapter.extend(user, signup);
+    return user;
   }
 
 

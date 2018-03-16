@@ -1,22 +1,10 @@
 import {suite, test} from "mocha-typescript";
 import {expect} from 'chai';
-import * as _ from 'lodash';
-import * as request from 'supertest';
+import {Config, Container, FileUtils, PlatformUtils, RuntimeLoader, Storage} from "typexs-base";
 
-import {ServerRegistry, WebServer, K_ROUTE_CONTROLLER, C_DEFAULT} from "typexs-server";
-import {
-  Bootstrap,
-  Config,
-  IFileConfigOptions,
-  PlatformUtils,
-  FileUtils,
-  ClassesLoader,
-  Container,
-  RuntimeLoader
-} from "typexs-base";
-
-import {IAuthConfig, Auth} from "../../src/middleware/Passport";
+import {Auth} from "../../src/middleware/Auth";
 import {AuthUser} from "../../src/entities/AuthUser";
+import {IAuthConfig} from "../../src/libs/auth/IAuthConfig";
 
 
 @suite('functional/auth_config')
@@ -35,11 +23,12 @@ class AuthConfigSpec {
 
   @test
   async 'auth config'() {
-    let auth:IAuthConfig = {
+    let authCfg: IAuthConfig = {
       userClass: AuthUser, // ./User as string
-      methods:{
-        default:{
-          type:'database'
+      methods: {
+        default: {
+          type: 'database',
+
         }
       }
     };
@@ -52,17 +41,26 @@ class AuthConfigSpec {
 
     await loader.prepare();
     Container.set("RuntimeLoader", loader);
-    Config.set('auth',auth);
+    Config.set('auth', authCfg);
+    let storage = new Storage();
+    let storageRef = storage.register('default', <any>{
+      name: 'default',
+      type: "sqlite",
+      database: ":memory:"
+    })
+    await storageRef.prepare();
+    Container.set('storage.default', storageRef);
 
-    let passport = Container.get(Auth);
-    await passport.prepare({});
 
-    let adapters = passport.getDefinedAdapters();
-    let authMethods = passport.getUsedAuthMethods();
+    let auth = Container.get(Auth);
+    await auth.prepare({});
+
+    let adapters = auth.getDefinedAdapters();
+    let authMethods = auth.getUsedAuthMethods();
 
     expect(adapters.map(x => x.name)).to.deep.eq(['database']);
     expect(adapters.map(x => x.className)).to.deep.eq(['DatabaseAdapter']);
-    expect(authMethods.map(x => x.identifier)).to.deep.eq(['default']);
+    expect(authMethods.map(x => x.authId)).to.deep.eq(['default']);
 
   }
 }

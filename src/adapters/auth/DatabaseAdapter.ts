@@ -11,8 +11,10 @@ import {AuthLifeCycle} from "../../types";
 import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
 import {IDatabaseAuthOptions} from "./db/IDatabaseAuthOptions";
 import {AbstractAuthAdapter} from "../../libs/adapter/AbstractAuthAdapter";
-import {IAuthData} from "../../libs/adapter/IAuthData";
+
 import {DefaultUserSignup} from "../../libs/models/DefaultUserSignup";
+import {AbstractInputData} from "../../libs/models/AbstractInputData";
+import {AuthUser} from "../../entities/AuthUser";
 
 export const K_AUTH_DATABASE = 'database';
 
@@ -38,6 +40,8 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
 
   type: string = K_AUTH_DATABASE;
 
+  options:IDatabaseAuthOptions;
+
 
   hasRequirements() {
     // TODO check if database is enabled
@@ -47,6 +51,7 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
 
   async prepare(opts: IDatabaseAuthOptions) {
     _.defaults(opts, DEFAULTS);
+    super.prepare(opts);
     this.connection = await this.storage.connect();
   }
 
@@ -91,15 +96,12 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
   }
 
 
-  extractAccessData(data: DefaultUserLogin | DefaultUserSignup): IAuthData {
-    return {
-      identifier:data.username,
-      secret: data.password,
-      mail: data instanceof DefaultUserSignup ? data.mail : null,
-      data: data.data ? data.data : null
+
+  async extend(obj:AuthUser | AuthMethod, data: AbstractInputData):Promise<void>{
+    if(obj instanceof AuthMethod && data instanceof DefaultUserSignup){
+      obj.secret = data.password ? await bcrypt.hash(data.password, this.options.saltRound) : null;
     }
   }
-
 
   async getAuth(login: DefaultUserLogin): Promise<AuthMethod> {
 

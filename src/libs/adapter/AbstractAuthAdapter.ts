@@ -4,8 +4,10 @@ import {DefaultUserLogin} from "../models/DefaultUserLogin";
 import {DefaultUserSignup} from "../models/DefaultUserSignup";
 import {IAuthOptions} from "../auth/IAuthOptions";
 import {AuthMethod} from "../../entities/AuthMethod";
-import {IAuthData} from "./IAuthData";
+
 import * as _ from "lodash";
+import {AuthUser} from "../../entities/AuthUser";
+import {AbstractInputData} from "../models/AbstractInputData";
 
 
 export abstract class AbstractAuthAdapter implements IAuthAdapter {
@@ -15,26 +17,31 @@ export abstract class AbstractAuthAdapter implements IAuthAdapter {
 
   authId: string = null;
 
-  options:IAuthOptions;
+  options: IAuthOptions;
 
 
-
-  abstract prepare(authOptions: IAuthOptions): void;
+  prepare(authOptions: IAuthOptions): void {
+    this.options = authOptions;
+  }
 
   abstract authenticate(login: any): Promise<boolean> | boolean;
 
-  abstract extractAccessData(data:any):IAuthData;
 
 
-  canCreateOnLogin(): boolean{
-    return this.options && !_.isEmpty(this.options.createOnLogin) && this.options.createOnLogin;
+  extend(obj:AuthUser | AuthMethod, data: AbstractInputData):void{
   }
 
-  canSignup(): boolean{
-    return this.options && !_.isEmpty(this.options.allowSignup) && this.options.allowSignup && this['signup'];
+
+  canCreateOnLogin(): boolean {
+    return  _.get(this.options,'createOnLogin', false) && _.isFunction(this['createOnLogin']);
   }
 
-  getModelFor(lifecycle: AuthLifeCycle):Function {
+  canSignup(): boolean {
+    let res =  _.get(this.options,'allowSignup', false) && _.isFunction(this['signup']);
+    return res;
+  }
+
+  getModelFor(lifecycle: AuthLifeCycle): Function {
     switch (lifecycle) {
       case "login":
         return DefaultUserLogin;

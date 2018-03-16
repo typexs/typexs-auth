@@ -15,12 +15,11 @@ import {
 
 import * as _ from "lodash";
 import {AuthUser} from "./AuthUser";
-import {IAuthData} from "../libs/adapter/IAuthData";
 
 
 @Entity()
 @Index(["authId", "identifier"], {unique: true})
-export class AuthMethod implements IAuthData{
+export class AuthMethod {
 
   @PrimaryGeneratedColumn()
   id: number;

@@ -4,6 +4,7 @@ import {Inject, StorageRef} from "typexs-base";
 import {ContextGroup} from "typexs-server";
 import {Auth} from "../middleware/Auth";
 import {AuthUser} from "../entities/AuthUser";
+import {IProcessData} from "../libs/models/IProcessData";
 
 
 @ContextGroup('api')
@@ -20,13 +21,13 @@ export class AuthUserController {
 
 
   @Post('/user/signup')
-  register(@Body() signup: any, @Req() req: Request, @Res() res: Response) {
+  register(@Body() signup: any, @Req() req: Request, @Res() res: Response):Promise<IProcessData> {
     return this.auth.doSignup(signup,req, res);
   }
 
 
   @Post('/user/login')
-  login(@Body() login: any, @Req() req: Request, @Res() res: Response) {
+  login(@Body() login: any, @Req() req: Request, @Res() res: Response):Promise<IProcessData> {
     return this.auth.doLogin(login, req, res);
   }
 
