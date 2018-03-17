@@ -8,7 +8,7 @@ let bootstrap: Bootstrap = null;
 
 let auth: Auth = null;
 
-@suite('functional/auth_database_errors')
+@suite('functional/auth_database_config')
 class AuthConfigSpec {
 
   static before(){

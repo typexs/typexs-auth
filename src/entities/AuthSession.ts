@@ -24,7 +24,7 @@ export class AuthSession {
   token: string;
 
   @Column({type: 'varchar', length: 15})
-  ip: number;
+  ip: string;
 
   @OneToOne(type => AuthUser,{nullable:true})
   @JoinColumn()

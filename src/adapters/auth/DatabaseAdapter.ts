@@ -6,8 +6,6 @@ import {ConnectionWrapper, Inject, StorageRef} from "typexs-base";
 import {AuthMethod} from "../../entities/AuthMethod";
 import {UserNotFoundError} from "../../libs/exceptions/UserNotFoundError";
 import {PasswordIsWrongError} from "../../libs/exceptions/PasswordIsWrongError";
-
-import {AuthLifeCycle} from "../../types";
 import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
 import {IDatabaseAuthOptions} from "./db/IDatabaseAuthOptions";
 import {AbstractAuthAdapter} from "../../libs/adapter/AbstractAuthAdapter";
@@ -20,12 +18,20 @@ export const K_AUTH_DATABASE = 'database';
 
 
 const DEFAULTS: IDatabaseAuthOptions = {
-  type: 'database',
+
+  type: K_AUTH_DATABASE,
+
   /*
   passReqToCallback: false,
   usernameField: 'authId',
   passwordField: 'password',
   */
+
+  /**
+   * Database auth can't support create on login
+   */
+  createOnLogin: false,
+
   saltRound: 5
 };
 
@@ -40,7 +46,7 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
 
   type: string = K_AUTH_DATABASE;
 
-  options:IDatabaseAuthOptions;
+  options: IDatabaseAuthOptions;
 
 
   hasRequirements() {
@@ -54,6 +60,7 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
     super.prepare(opts);
     this.connection = await this.storage.connect();
   }
+
 
   async authenticate(login: DefaultUserLogin) {
     try {
@@ -69,7 +76,7 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
           property: "password", // Object's property that haven't pass validation.
           value: "password", // Value that haven't pass a validation.
           constraints: { // Constraints that failed validation with error messages.
-            exists: "$property or authId is wrong."
+            exists: "username or password is wrong."
           }
         }];
       } else if (err instanceof UserNotFoundError) {
@@ -77,29 +84,34 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
           property: "username", // Object's property that haven't pass validation.
           value: "username", // Value that haven't pass a validation.
           constraints: { // Constraints that failed validation with error messages.
-            exists: "$property not found."
+            exists: "username not found"
           }
         }];
       } else {
         throw err;
       }
-
     }
     return false;
-
   }
 
 
-  async signup(data:DefaultUserSignup){
+  async signup(data: DefaultUserSignup) {
     // TODO impl method
     return true;
   }
 
 
+  async crypt(str: string) {
+    return bcrypt.hash(str, this.options.saltRound);
+  }
 
-  async extend(obj:AuthUser | AuthMethod, data: AbstractInputData):Promise<void>{
-    if(obj instanceof AuthMethod && data instanceof DefaultUserSignup){
-      obj.secret = data.password ? await bcrypt.hash(data.password, this.options.saltRound) : null;
+  async cryptCompare(str: string, secret: string) {
+    return bcrypt.compare(str, secret);
+  }
+
+  async extend(obj: AuthUser | AuthMethod, data: AbstractInputData): Promise<void> {
+    if (obj instanceof AuthMethod && data instanceof DefaultUserSignup) {
+      obj.secret = data.password ? await this.crypt(data.password) : null;
     }
   }
 
@@ -112,8 +124,8 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
       {
         where:
           {
-            username: username,
-            identifier: this.authId,
+            identifier: username,
+            authId: this.authId,
             type: this.type
           },
         relations: ["user"]
@@ -125,7 +137,7 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
     // TODO: if password was  wrongly submitted multiple times then disable account and inform user
     // TODO: if disabled the admin should be contacted for re-enabling
 
-    let equal = await bcrypt.compare(password, auth.secret);
+    let equal = await this.cryptCompare(password, auth.secret);
     if (!equal) {
       auth.failed += 1;
       await this.connection.save(auth);

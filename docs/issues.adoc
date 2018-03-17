@@ -28,3 +28,13 @@ Impl. Chain of adapter authentications
 *@ISSUE {counter:task} 20180311* +
 
 On first install create the admin user, if not forbidden by configuration
+
+
+*@ISSUE {counter:task} 20180317* +
+
+Angular parts:
+
+* DefaultUserLogin Form (in future develop a FormBuilder)
+* DefaultUserSignup Form
+* UserService which communicates with the AuthUserController and which can also
+be used by other module to retrieve user information

@@ -8,6 +8,7 @@ import {AuthMethod} from "../../entities/AuthMethod";
 import * as _ from "lodash";
 import {AuthUser} from "../../entities/AuthUser";
 import {AbstractInputData} from "../models/AbstractInputData";
+import {DefaultUserLogout} from "../models/DefaultUserLogout";
 
 
 export abstract class AbstractAuthAdapter implements IAuthAdapter {
@@ -47,6 +48,8 @@ export abstract class AbstractAuthAdapter implements IAuthAdapter {
         return DefaultUserLogin;
       case "signup":
         return DefaultUserSignup;
+      case "logout":
+        return DefaultUserLogout;
     }
     throw new Error("No model for lifecycle " + lifecycle + ' in ' + this.authId);
   }

@@ -6,7 +6,7 @@ export abstract class AbstractUserSignup extends AbstractInputData {
 
   user: any = null;
 
-  errors: any = null;
+  errors: any = [];
 
   success: boolean = false;
 
@@ -14,7 +14,9 @@ export abstract class AbstractUserSignup extends AbstractInputData {
   abstract resetSecret(): void;
 
   abstract getSecret():string;
+
   abstract getIdentifier():string;
+
   abstract getMail():string;
 
 }

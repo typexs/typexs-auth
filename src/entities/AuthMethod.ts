@@ -35,7 +35,7 @@ export class AuthMethod {
   @Column()
   type: string;
 
-  @Column()
+  @Column({nullable: true})
   mail: string;
 
   @Column()

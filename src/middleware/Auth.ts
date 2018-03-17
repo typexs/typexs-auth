@@ -25,8 +25,9 @@ import {IAuthAdapter} from "../libs/adapter/IAuthAdapter";
 import {IAuthOptions} from "../libs/auth/IAuthOptions";
 import {AbstractUserSignup} from "../libs/models/AbstractUserSignup";
 import {AbstractUserLogin} from "../libs/models/AbstractUserLogin";
-
+import * as bcrypt from "bcrypt";
 import {IProcessData} from "../libs/models/IProcessData";
+import {AbstractUserLogout} from "../libs/models/AbstractUserLogout";
 
 
 const DEFAULT_CONFIG_OPTIONS = {
@@ -126,6 +127,14 @@ export class Auth implements IMiddleware {
     return this.authConfig.httpAuthKey.toLocaleLowerCase();
   }
 
+  getRemoteAddress(req: any): string {
+    if (_.has(req, 'connection.remoteAddress')) {
+      return _.get(req, 'connection.remoteAddress');
+    } else {
+      return '127.0.0.2';
+    }
+  }
+
 
   getDefinedAdapters(): IAdapterDef[] {
     return this.allAdapters;
@@ -186,6 +195,9 @@ export class Auth implements IMiddleware {
     return this.getInstanceFor("login", authId, values);
   }
 
+  getInstanceForLogout(authId: string = 'default', values: any = null): any {
+    return this.getInstanceFor("logout", authId, values);
+  }
 
   private getAuthIdFromObject(data: AbstractUserLogin | AbstractUserSignup) {
     return _.get(data, "authId", "default");
@@ -196,7 +208,7 @@ export class Auth implements IMiddleware {
   }
 
 
-  async doSignup(signup: AbstractUserSignup, req: any, res: any):Promise<IProcessData> {
+  async doSignup(signup: AbstractUserSignup, req: any, res: any): Promise<IProcessData> {
     // check if data is present
     if (!_.isEmpty(signup)) {
 
@@ -277,6 +289,10 @@ export class Auth implements IMiddleware {
   }
 
 
+  async createToken(session: AuthSession) {
+    return bcrypt.hash(new Date().getTime() + '' + session.ip, 5);
+  }
+
   /**
    *
    * TODO impl. possibility to create account on first positiv login, like ldap
@@ -286,7 +302,7 @@ export class Auth implements IMiddleware {
    * @param res
    * @returns {Promise<AbstractUserLogin>}
    */
-  async doLogin(login: AbstractUserLogin, req: any, res: any):Promise<IProcessData> {
+  async doLogin(login: AbstractUserLogin, req: any, res: any): Promise<IProcessData> {
     // if logged in
     // passport.authenticate()
     let isAuthenticated = await this.isAuthenticated(req);
@@ -367,11 +383,14 @@ export class Auth implements IMiddleware {
               await q.execute();
 
               let session = new AuthSession();
-              session.ip = req.connection.remoteAddress;
+              session.ip = this.getRemoteAddress(req);
               session.user = user;
               session.authId = adapter.authId;
-              session.token = CryptUtils.shorthash(new Date().getTime() + '' + session.ip);
-              await Promise.all([em.save(session), em.save(user), em.save(method)]);
+              session.token = await this.createToken(session);
+              await Promise.all([
+                em.save(session),
+                em.save(user),
+                em.save(method)]);
               loginInstance.user = user;
               loginInstance.success = true;
               res.setHeader(this.getHttpAuthKey(), session.token);
@@ -438,15 +457,45 @@ export class Auth implements IMiddleware {
   }
 
 
-  async doLogout(user: AuthUser, req: any, res: any) {
+  async doLogout(user:AuthUser, req: any, res: any) {
+    let logout = this.getInstanceForLogout();
     const token = this.getToken(req);
-//    let c = await this.storage.connect();
-//    let session = await c.manager.findOneById(AuthSession, token);
+    logout.success = false;
+
+    if (!_.isEmpty(token)) {
+      let session = await this.getSessionByToken(token);
+      if (!_.isEmpty(session) && session.user.id === user.id) {
+        let repo = this.connection.manager.getRepository(AuthSession);
+        let q = repo.createQueryBuilder( "s").delete().where("userId = :userId",
+          {userId: user.id}
+        );
+        await q.execute();
+        logout.success = true;
+        res.removeHeader(this.getHttpAuthKey());
+      } else {
+        logout.addError({
+          property: 'session',
+          value: 'session',
+          constraints: {
+            session_error: "No valid session found."
+          }
+        })
+      }
+    } else {
+      logout.addError({
+        property: 'token',
+        value: 'token',
+        constraints: {
+          token_error: "No auth token in request found."
+        }
+      })
+    }
+    return logout;
   }
 
 
   getToken(req: any) {
-    return req.headers[this.getHttpAuthKey()];
+    return req.headers && _.get(req.headers, this.getHttpAuthKey());
   }
 
 
@@ -483,13 +532,19 @@ export class Auth implements IMiddleware {
   // (action: Action) => Promise<any> | any;
   async currentUserChecker(action: Action): Promise<any> {
     if (this.isEnabled()) {
-      const token = this.getToken(action.request);
-      let session = await this.getSessionByToken(token);
-      if (!_.isEmpty(session)) {
-        return session.user;
-      }
+      return this.getUserByRequest(action.request)
     }
     return null;
+  }
+
+  async getUserByRequest(request: any) {
+    const token = this.getToken(request);
+    let session = await this.getSessionByToken(token);
+    if (!_.isEmpty(session)) {
+      return session.user;
+    }
+    return null;
+
   }
 
 
@@ -524,7 +579,8 @@ export class Auth implements IMiddleware {
       let method = await this.createMethod(adapter, data);
       method = await em.save(method);
       let user = await this.createUser(adapter, data);
-      method.user = await em.save(user);;
+      method.user = await em.save(user);
+      ;
       return await mgr.save(method);
     });
   }
@@ -536,7 +592,7 @@ export class Auth implements IMiddleware {
     method.authId = adapter.authId;
     method.type = adapter.type;
 
-    if(signup instanceof AbstractUserSignup){
+    if (signup instanceof AbstractUserSignup) {
       method.mail = signup.getMail();
     }
 
@@ -548,7 +604,7 @@ export class Auth implements IMiddleware {
   private async createUser(adapter: IAuthAdapter, signup: AbstractUserSignup | AbstractUserLogin) {
     let user = new AuthUser();
     user.username = signup.getIdentifier();
-    if(signup instanceof AbstractUserSignup){
+    if (signup instanceof AbstractUserSignup) {
       user.mail = signup.getMail();
     }
     await adapter.extend(user, signup);
