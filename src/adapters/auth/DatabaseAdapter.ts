@@ -32,6 +32,8 @@ const DEFAULTS: IDatabaseAuthOptions = {
    */
   createOnLogin: false,
 
+  allowSignup: true,
+
   saltRound: 5
 };
 

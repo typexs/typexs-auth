@@ -1,0 +1,10 @@
+## LDAP
+
+
+### Start docker
+
+```
+docker run --env LDAP_ORGANISATION="My Company" --env LDAP_DOMAIN="my-company.com" \
+  --env LDAP_ADMIN_PASSWORD="JonSn0w"  osixia/openldap:1.2.0
+
+```

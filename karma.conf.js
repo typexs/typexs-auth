@@ -3,36 +3,50 @@
 
 module.exports = function (config) {
   config.set({
-
-    basePath: '',
-    files:['src/**/*.spec.ts','src/**/*.spec.js'],
-    exclude:['test/**'],
-    frameworks: ['mocha','chai', '@angular/cli'],
+    basePath: 'src',
+    exclude: ['test/**'],
+    frameworks: ['mocha', 'chai', 'sinon-chai', '@angular/cli'],
     plugins: [
       require('karma-mocha'),
       require('karma-chai'),
-      require('karma-chai-as-promised'),
-      require('karma-chrome-launcher'),
+      require('karma-sinon'),
+      require('karma-sinon-chai'),
+       require('karma-chrome-launcher'),
+      require('karma-firefox-launcher'),
+      require('karma-phantomjs-launcher'),
       require('karma-mocha-reporter'),
-      require('karma-coverage-istanbul-reporter'),
+//      require('karma-coverage-istanbul-reporter'),
+//      require('karma-istanbul-threshold'),
       require('@angular/cli/plugins/karma')
     ],
-    client:{
+    client: {
       clearContext: false // leave Jasmine Spec Runner output visible in browser
     },
+    /*
     coverageIstanbulReporter: {
-      reports: [ 'html', 'lcovonly' ],
+      reports: ['html', 'lcovonly'],
       fixWebpackSourcePaths: true
     },
+    */
     angularCli: {
+      config:'./angular-cli.json',
       environment: 'dev'
     },
-    reporters: ['progress', 'mocha'],
     port: 9876,
+    proxies: {
+      "/api":"http://localhost:4500/api"
+    },
     colors: true,
-    logLevel: config.LOG_INFO,
+    logLevel: config.LOG_DEBUG,
     autoWatch: true,
-    browsers: ['Chrome'],
-    singleRun: false
+    browsers: ['PhantomJS'],
+    singleRun: false,
+    preprocessors: {
+      './src/app/test.ts': ['@angular/cli']
+    },
+    reporters:  [ 'mocha'],
+    mime: {
+      'text/x-typescript': ['ts','tsx']
+    },
   });
 };

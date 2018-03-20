@@ -16,12 +16,12 @@ exports.config = {
   framework: 'mocha',
   mochaOpts: {
     reporter: "spec",
-    slow: 3000
+    slow: 3000,
     showColors: true,
     defaultTimeoutInterval: 30000,
     print: function() {}
   },
-  onPrepare() {
+  onPrepare: function() {
     require('ts-node').register({
       project: 'e2e/tsconfig.e2e.json'
     });

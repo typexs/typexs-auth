@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "build/out-tsc/spec",
+
+    "target": "es5",
+    "moduleResolution": "node",
+    "types": [
+      "mocha",
+      "node"
+    ]
+  },
+  "files": [
+    "src/app/test.ts"
+  ],
+  "include": [
+    "src/app/**/*.spec.ts",
+    "src/modules/**/*.spec.ts",
+    "src/modules/**/*.d.ts"
+  ]
+}

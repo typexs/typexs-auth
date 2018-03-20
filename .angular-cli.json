@@ -6,6 +6,7 @@
   "apps": [
     {
       "root": "src/app",
+
       "outDir": "dist",
       "assets": [
         "assets",
@@ -15,9 +16,10 @@
       "main": "main.ts",
       "polyfills": "polyfills.ts",
       "test": "test.ts",
-      "tsconfig": "tsconfig.app.json",
-      "testTsconfig": "tsconfig.spec.json",
-      "prefix": "app",
+      "tsconfig": "../../tsconfig.app.json",
+      "testTsconfig": "../../tsconfig.spec.json",
+
+
       "styles": [
         "styles.css"
       ],
@@ -36,11 +38,11 @@
   },
   "lint": [
     {
-      "project": "src/app/tsconfig.app.json",
+      "project": "tsconfig.app.json",
       "exclude": "**/node_modules/**"
     },
     {
-      "project": "src/app/tsconfig.spec.json",
+      "project": "tsconfig.spec.json",
       "exclude": "**/node_modules/**"
     },
     {

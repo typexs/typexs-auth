@@ -19,17 +19,25 @@ export class AuthUserController {
   @Inject("Auth")
   auth: Auth;
 
+  @Get('/user/_config')
+  config() {
+    return {
+      authKey: this.auth.getHttpAuthKey()
+    };
+  }
+
 
   @Post('/user/signup')
-  register(@Body() signup: any, @Req() req: Request, @Res() res: Response):Promise<IProcessData> {
-    return this.auth.doSignup(signup,req, res);
+  register(@Body() signup: any, @Req() req: Request, @Res() res: Response): Promise<IProcessData> {
+    return this.auth.doSignup(signup, req, res);
   }
 
 
   @Post('/user/login')
-  login(@Body() login: any, @Req() req: Request, @Res() res: Response):Promise<IProcessData> {
+  login(@Body() login: any, @Req() req: Request, @Res() res: Response): Promise<IProcessData> {
     return this.auth.doLogin(login, req, res);
   }
+
 
   @Authorized()
   @Get('/user')

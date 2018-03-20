@@ -9,10 +9,11 @@ import {
   UpdateDateColumn
 } from "typeorm";
 import {AuthMethod} from "./AuthMethod";
+import {IAuthUser} from "../libs/models/IAuthUser";
 
 
 @Entity()
-export class AuthUser {
+export class AuthUser implements IAuthUser {
 
   @PrimaryGeneratedColumn()
   id: number;

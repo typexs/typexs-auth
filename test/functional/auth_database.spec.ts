@@ -70,7 +70,8 @@ class AuthConfigSpec {
     // too long username
     signUp = auth.getInstanceForSignup('default');
     signUp.username = 's123456789123456789123456789123456789123456789123456789123456789';
-    signUp.mail = `superman${inc++}@test.me`;;
+    signUp.mail = `superman${inc++}@test.me`;
+    ;
     signUp.password = 'paSsword1';
     doingSignup = await auth.doSignup(signUp, req, res);
     expect(doingSignup.success).to.be.false;
@@ -80,7 +81,8 @@ class AuthConfigSpec {
     // wrong chars in username and password
     signUp = auth.getInstanceForSignup('default');
     signUp.username = 'su$perman';
-    signUp.mail = `superman${inc++}@test.me`;;
+    signUp.mail = `superman${inc++}@test.me`;
+    ;
     signUp.password = 'paSsw ord';
     doingSignup = await auth.doSignup(signUp, req, res);
     expect(doingSignup.success).to.be.false;
@@ -91,7 +93,8 @@ class AuthConfigSpec {
     // signup per db
     signUp = auth.getInstanceForSignup('default');
     signUp.username = 'superman';
-    signUp.mail = `superman${inc++}@test.me`;;
+    signUp.mail = `superman${inc++}@test.me`;
+    ;
     let pwd = signUp.password = 'password';
     doingSignup = await auth.doSignup(signUp, req, res);
     expect(doingSignup.success).to.be.true;
@@ -133,7 +136,8 @@ class AuthConfigSpec {
 
     let signUp = auth.getInstanceForSignup('default');
     signUp.username = 'supermann';
-    signUp.mail = `superman${inc++}@test.me`;;
+    signUp.mail = `superman${inc++}@test.me`;
+    ;
     signUp.password = 'password2';
     await auth.doSignup(signUp, req, res);
 
@@ -210,7 +214,8 @@ class AuthConfigSpec {
 
     let signUp = auth.getInstanceForSignup('default');
     signUp.username = 'testmann';
-    signUp.mail = `superman${inc++}@test.me`;;
+    signUp.mail = `superman${inc++}@test.me`;
+    ;
     signUp.password = 'password2';
     await auth.doSignup(signUp, req, res);
 
@@ -220,13 +225,13 @@ class AuthConfigSpec {
     await auth.doLogin(login, req, res);
     req = res;
 
-    let action:Action ={
-      request:req,
-      response:res,
+    let action: Action = {
+      request: req,
+      response: res,
       //context:null,
     };
 
-    let isAuthenticated = await auth.authorizationChecker(action,[]);
+    let isAuthenticated = await auth.authorizationChecker(action, []);
     expect(isAuthenticated).to.be.true;
 
     let currentUser = await auth.getUserByRequest(req);
@@ -238,8 +243,6 @@ class AuthConfigSpec {
     expect(currentUser.username).to.be.eq("testmann");
 
 
-
-
   }
 
   @test
@@ -249,7 +252,8 @@ class AuthConfigSpec {
 
     let signUp = auth.getInstanceForSignup('default');
     signUp.username = 'supermann';
-    signUp.mail = `superman${inc++}@test.me`;;
+    signUp.mail = `superman${inc++}@test.me`;
+    ;
     signUp.password = 'password2';
     await auth.doSignup(signUp, req, res);
 
@@ -272,7 +276,7 @@ class AuthConfigSpec {
 
 
     req2 = new MockRequest();
-    req2.setHeader(auth.getHttpAuthKey(),'abcdy');
+    req2.setHeader(auth.getHttpAuthKey(), 'abcdy');
     res2 = new MockResponse();
 
     // no session found for token
@@ -287,9 +291,15 @@ class AuthConfigSpec {
     doingLogout = await auth.doLogout(user, req, res);
     expect(doingLogout.success).to.be.true;
     expect(doingLogout.errors).to.be.null;
+  }
 
+  @test.skip()
+  async 'do unregister'() {
 
   }
 
-}
+  @test.skip()
+  async 'do reset password'() {
 
+  }
+}

@@ -78,7 +78,7 @@ export class Auth implements IMiddleware {
 
   async prepare(options: any = {}) {
     Container.set("Auth", this);
-    let x = Config.get("auth");
+    let x = Config.get("auth",{});
     this.authConfig = <IAuthConfig>x;
     _.defaults(this.authConfig, DEFAULT_CONFIG_OPTIONS);
 
@@ -215,6 +215,7 @@ export class Auth implements IMiddleware {
       // check if signup is allowed
       let id = this.getAuthIdFromObject(signup);
       let adapter = this.getAdapterByIdentifier(id);
+      signup = this.getInstanceForSignup(id, signup);
 
       if (!this.canSignup(adapter)) {
         signup.addError({
@@ -325,18 +326,18 @@ export class Auth implements IMiddleware {
           let mgr = this.connection.manager;
           let adapter = this.getAdapterByIdentifier(loginInstance.authId);
 
-          let method = await this.getMethodByUsername(loginInstance.authId, login.getIdentifier());
+          let method = await this.getMethodByUsername(loginInstance.authId, loginInstance.getIdentifier());
           let user: AuthUser = null;
           if (_.isEmpty(method)) {
             // empty method => no account exists
             if (adapter.canCreateOnLogin()) {
               // create method and user
-              user = await this.getUserByUsername(login.getIdentifier());
+              user = await this.getUserByUsername(loginInstance.getIdentifier());
 
               if (_.isEmpty(user)) {
                 // user with name does not exists
                 try {
-                  method = await this.createUserAndMethod(adapter, login);
+                  method = await this.createUserAndMethod(adapter, loginInstance);
                   user = method.user;
                 } catch (err) {
                   Log.error(err);
@@ -457,7 +458,7 @@ export class Auth implements IMiddleware {
   }
 
 
-  async doLogout(user:AuthUser, req: any, res: any) {
+  async doLogout(user: AuthUser, req: any, res: any) {
     let logout = this.getInstanceForLogout();
     const token = this.getToken(req);
     logout.success = false;
@@ -466,7 +467,7 @@ export class Auth implements IMiddleware {
       let session = await this.getSessionByToken(token);
       if (!_.isEmpty(session) && session.user.id === user.id) {
         let repo = this.connection.manager.getRepository(AuthSession);
-        let q = repo.createQueryBuilder( "s").delete().where("userId = :userId",
+        let q = repo.createQueryBuilder("s").delete().where("userId = :userId",
           {userId: user.id}
         );
         await q.execute();

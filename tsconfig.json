@@ -3,10 +3,11 @@
     "lib": [
       "dom",
       "es5",
-      "es6"
+      "es6",
+      "es2017"
     ],
     "outDir": "./build/compiled",
-    "target": "es6",
+    "target": "es5",
     "module": "CommonJS",
     "moduleResolution": "node",
     "rootDir": ".",
@@ -25,6 +26,11 @@
       "./node_modules/@types"
     ]
   },
+  "include": [
+    "*.ts",
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ],
   "exclude": [
     "**/files/*.ts",
     "archive",

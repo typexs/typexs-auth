@@ -1,5 +1,6 @@
 import {IErrorMessage} from "../auth/IErrorMessage";
 import {IProcessData} from "./IProcessData";
+import * as _ from "lodash";
 
 
 export abstract class AbstractInputData implements IProcessData {
@@ -26,6 +27,10 @@ export abstract class AbstractInputData implements IProcessData {
       this.errors = []
     }
     this.errors.push(error);
+  }
+
+  parse(obj:any){
+    _.assign(this, obj);
   }
 
 
