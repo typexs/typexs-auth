@@ -1,0 +1,47 @@
+<div class="card">
+
+  <div class="card-header">
+    <h2>Login</h2>
+  </div>
+
+  <div class="card-body">
+    <form role="form" (ngSubmit)="onSubmit()" id="user_login">
+
+      <input name="utf8" type="hidden" value="✓">
+      <input type="hidden" name="authenticity_token" value="{{ auth_token }}">
+
+      <div class="form-group">
+        <label class="control-label" for="user_name">Username</label>
+        <input autofocus="autofocus"
+               class="form-control"
+               type="text"
+               name="user[name]"
+               id="user_name" required
+               [(ngModel)]="user.username">
+        <!--
+                  <div [hidden]="name.valid || name.pristine"
+             class="alert alert-danger">
+          Name is required
+        </div>
+        -->
+        <label class="control-label" for="user_password">Password</label>
+        <input autocomplete="off"
+               class="form-control"
+               type="password"
+               name="user[password]"
+               id="user_password" required
+               [(ngModel)]="user.password">
+      </div>
+
+
+      <div class="actions">
+        <input type="submit" name="commit" value="Log in" class="btn btn-default">
+      </div>
+    </form>
+
+  </div>
+
+  <div class="card-footer">
+    <p class="meta"></p>
+  </div>
+</div>

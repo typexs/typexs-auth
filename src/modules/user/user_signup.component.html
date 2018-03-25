@@ -1,0 +1,83 @@
+<div class="card">
+
+  <div class="card-header">
+    <h2>Signup</h2>
+  </div>
+
+  <div class="card-body">
+    <div *ngIf="isAuthenticated()">
+      Can't signup because you're already authenticated.
+    </div>
+    <div *ngIf="!isAuthenticated()">
+      <form role="form" (ngSubmit)="onSubmit()" id="user_signup">
+
+        <input name="utf8" type="hidden" value="✓">
+        <input type="hidden" name="authenticity_token" value="{{ auth_token }}">
+
+
+        <div class="form-group">
+          <label class="control-label" for="user_mail">E-Mail</label>
+          <input autofocus="autofocus"
+                 class="form-control"
+                 type="text"
+                 name="user[mail]"
+                 id="user_mail" required
+                 [(ngModel)]="user.mail">
+
+          <div [hidden]="!(validation.mail.checked && !validation.mail.valid)" class="alert alert-danger">
+            <ul>
+              <li *ngFor="let message of validation.mail.messages">{{ message.type }} - {{ message.content }}</li>
+            </ul>
+          </div>
+
+          <label class="control-label" for="user_name">Username</label>
+          <input autofocus="autofocus"
+                 class="form-control"
+                 type="text"
+                 name="user[name]"
+                 id="user_name" required
+                 [(ngModel)]="user.username">
+
+          <div [hidden]="!(validation.username.checked && !validation.username.valid)" class="alert alert-danger">
+            <ul>
+              <li *ngFor="let message of validation.username.messages">{{ message.type }} - {{ message.content }}</li>
+            </ul>
+          </div>
+
+
+          <label class="control-label" for="user_password">Password</label>
+          <input autocomplete="off"
+                 class="form-control" placeholder="Password"
+                 type="password"
+                 name="user[password]"
+                 id="user_password" required
+                 [(ngModel)]="user.password">
+
+          <div [hidden]="!(validation.password.checked && !validation.password.valid)" class="alert alert-danger">
+            <ul>
+              <li *ngFor="let message of validation.password.messages">{{ message.type }} - {{ message.content }}</li>
+            </ul>
+          </div>
+
+
+          <label class="control-label" for="user_password_confirm">Confirm password</label>
+          <input autocomplete="off"
+                 class="form-control" placeholder="Password"
+                 type="password"
+                 name="password_confirm"
+                 id="user_password_confirm" required
+                 [(ngModel)]="password_confirm">
+        </div>
+
+
+        <div class="actions">
+          <input type="submit" name="commit" value="Log in" class="btn btn-default">
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card-footer">
+    <p class="meta"></p>
+  </div>
+</div>

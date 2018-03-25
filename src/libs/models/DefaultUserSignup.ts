@@ -7,10 +7,10 @@ export class DefaultUserSignup extends AbstractUserSignup {
 
 
   @MinLength(8, {
-        message: "authId is too short"
+        message: "username is too short"
   })
   @MaxLength(32, {
-    message: "authId is too long"
+    message: "username is too long"
   })
   @AllowedString(/^(\w|\d|_)+$/,{message:'username contains wrongs chars'})
   username: string;

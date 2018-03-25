@@ -26,6 +26,11 @@ export class AuthUserController {
     };
   }
 
+  @Get('/user/isAuthenticated')
+  isAuthenticated(@Req() req: Request, @Res() res: Response) {
+    return this.auth.isAuthenticated(req);
+  }
+
 
   @Post('/user/signup')
   register(@Body() signup: any, @Req() req: Request, @Res() res: Response): Promise<IProcessData> {

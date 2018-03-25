@@ -6,14 +6,17 @@ import {IAuthUser} from "../../libs/models/IAuthUser";
 
 import {Observable} from "rxjs/Observable";
 import "rxjs/add/operator/publish";
+import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
+import {DefaultUserSignup} from "../../libs/models/DefaultUserSignup";
+import { HttpRequest } from '@angular/common/http';
+
 
 @Injectable()
-export class AuthUserService {
+export class AuthService {
 
   private _initialized:boolean = false;
 
   private  _config:any = {
-
     authKey: "txs-auth"
   };
 
@@ -23,7 +26,7 @@ export class AuthUserService {
   private user: IAuthUser;
 
   constructor(private http: HttpClient) {
-    this.configure();
+    // this.configure();
   }
 
   public isInitialized(){
@@ -40,14 +43,54 @@ export class AuthUserService {
   }
 
 
+  public getTokenKey(){
+    return this._config.authKey;
+  }
+
+
+  public getToken(): string {
+    return localStorage.getItem('token.'+this.getTokenKey());
+  }
+
+
+  isAuthenticated() /*:Observable<boolean>*/{
+    // TODO check if token is expired
+    return this.getToken() != null;
+    //return this.http.get()
+  }
+
+  signup(signup: AbstractUserSignup):Observable<any>{
+    return this.http.post('/api/user/signup', signup);
+  }
+
+
+  /**
+   * Method for getting the suitable user login model, depending of used adapter
+   *
+   * TODO Impl. support mulitple adapter
+   *
+   * @returns {DefaultUserLogin}
+   */
+  newUserLogin():DefaultUserLogin{
+    return new DefaultUserLogin();
+  }
+
+  /**
+   * Method for getting the suitable user login model, depending of used adapter
+   *
+   * TODO Impl. support mulitple adapter
+   *
+   * @returns {DefaultUserLogin}
+   */
+  newUserSignup():DefaultUserSignup{
+    return new DefaultUserSignup();
+  }
+
   get() {
 
   }
 
 
-  signup(signup: AbstractUserSignup):Observable<any>{
-    return this.http.post('/api/user/signup', signup);
-  }
 
   /*
 
