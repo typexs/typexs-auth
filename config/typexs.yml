@@ -25,7 +25,8 @@ storage:
   default:
     synchronize: true
     type: sqlite
-    database: ':memory:'
+    # database: ':memory:'
+    database: 'tmp/db_${app.name}.db'
 
 
 auth:

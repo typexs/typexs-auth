@@ -80,6 +80,7 @@ export class UserSignupComponent implements OnInit {
     if(validation){
       // redirect to login
       await this.auth.signup(this.user).toPromise();
+      // TODO check results for problems maybe account a
       await this.router.navigateByUrl('/user/login');
     }
 

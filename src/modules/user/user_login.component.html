@@ -11,6 +11,13 @@
       <input type="hidden" name="authenticity_token" value="{{ auth_token }}">
 
       <div class="form-group">
+        <div [hidden]="!(validation.errors.checked && !validation.errors.valid)" class="alert alert-danger">
+          <ul>
+            <li *ngFor="let message of validation.errors.messages">{{ message.type }} - {{ message.content }}</li>
+          </ul>
+        </div>
+
+
         <label class="control-label" for="user_name">Username</label>
         <input autofocus="autofocus"
                class="form-control"
@@ -24,6 +31,12 @@
           Name is required
         </div>
         -->
+        <div [hidden]="!(validation.username.checked && !validation.username.valid)" class="alert alert-danger">
+          <ul>
+            <li *ngFor="let message of validation.username.messages">{{ message.type }} - {{ message.content }}</li>
+          </ul>
+        </div>
+
         <label class="control-label" for="user_password">Password</label>
         <input autocomplete="off"
                class="form-control"
@@ -31,6 +44,13 @@
                name="user[password]"
                id="user_password" required
                [(ngModel)]="user.password">
+
+        <div [hidden]="!(validation.password.checked && !validation.password.valid)" class="alert alert-danger">
+          <ul>
+            <li *ngFor="let message of validation.password.messages">{{ message.type }} - {{ message.content }}</li>
+          </ul>
+        </div>
+
       </div>
 
 

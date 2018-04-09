@@ -376,15 +376,19 @@ export class Auth implements IMiddleware {
           }
 
           try {
+
+            let remoteAddress = this.getRemoteAddress(req);
             await mgr.transaction(async em => {
 
-              let q = em.createQueryBuilder(AuthSession, "s").delete().where("userId = :userId",
+              // delete old user sessions which where last updated 24*60*60s
+              let q = em.createQueryBuilder(AuthSession, "s").delete()
+                .where("userId = :userId",
                 {userId: user.id}
               );
               await q.execute();
 
               let session = new AuthSession();
-              session.ip = this.getRemoteAddress(req);
+              session.ip = remoteAddress;
               session.user = user;
               session.authId = adapter.authId;
               session.token = await this.createToken(session);

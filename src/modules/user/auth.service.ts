@@ -9,6 +9,7 @@ import "rxjs/add/operator/publish";
 import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
 import {DefaultUserSignup} from "../../libs/models/DefaultUserSignup";
 import { HttpRequest } from '@angular/common/http';
+import {AbstractUserLogin} from "../../libs/models/AbstractUserLogin";
 
 
 @Injectable()
@@ -24,6 +25,8 @@ export class AuthService {
   private token: string;
 
   private user: IAuthUser;
+
+  private loading:boolean = false;
 
   constructor(private http: HttpClient) {
     // this.configure();
@@ -52,6 +55,10 @@ export class AuthService {
     return localStorage.getItem('token.'+this.getTokenKey());
   }
 
+  public setToken(token:string): void {
+    this.token = token;
+  }
+
 
   isAuthenticated() /*:Observable<boolean>*/{
     // TODO check if token is expired
@@ -59,10 +66,38 @@ export class AuthService {
     //return this.http.get()
   }
 
+
   signup(signup: AbstractUserSignup):Observable<any>{
     return this.http.post('/api/user/signup', signup);
   }
 
+
+  authenticate(login: AbstractUserLogin):Promise<AbstractUserLogin>{
+    this.loading = true;
+    let loginReq = this.http.post('/api/user/login', login);
+
+    return new Promise((resolve, reject) => {
+      loginReq.subscribe(
+        (user:AbstractUserLogin) => {
+          this.loading = false;
+          console.log(user);
+          localStorage.setItem('token.'+this.getTokenKey(),this.token);
+          resolve(user);
+        },
+        (error:Error) => {
+          this.loading = false;
+          login.addError({property:'error',value:error.message,error:error});
+          login.resetSecret();
+          console.error(error);
+          resolve(login);
+        }
+      );
+
+    })
+
+
+
+  }
 
   /**
    * Method for getting the suitable user login model, depending of used adapter
