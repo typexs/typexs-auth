@@ -46,8 +46,8 @@ export class AuthUserController {
 
   @Authorized()
   @Get('/user')
-  user(@CurrentUser({required: true}) user: AuthUser) {
-    return user;
+  user(@CurrentUser({required: true}) user: AuthUser): Promise<IProcessData> {
+    return this.auth.getUserData(user);
   }
 
 

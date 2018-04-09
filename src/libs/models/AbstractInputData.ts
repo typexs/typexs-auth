@@ -16,7 +16,7 @@ export abstract class AbstractInputData implements IProcessData {
   data:any = null;
 
 
-  abstract resetSecret(): void;
+
 
   addErrors(){
 

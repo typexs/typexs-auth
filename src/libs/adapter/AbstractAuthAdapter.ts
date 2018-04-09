@@ -9,6 +9,7 @@ import * as _ from "lodash";
 import {AuthUser} from "../../entities/AuthUser";
 import {AbstractInputData} from "../models/AbstractInputData";
 import {DefaultUserLogout} from "../models/DefaultUserLogout";
+import {DefaultUserData} from "../models/DefaultUserData";
 
 
 export abstract class AbstractAuthAdapter implements IAuthAdapter {
@@ -25,8 +26,8 @@ export abstract class AbstractAuthAdapter implements IAuthAdapter {
     this.options = authOptions;
   }
 
-  abstract authenticate(login: any): Promise<boolean> | boolean;
 
+  abstract authenticate(login: any): Promise<boolean> | boolean;
 
 
   extend(obj:AuthUser | AuthMethod, data: AbstractInputData):void{
@@ -37,10 +38,12 @@ export abstract class AbstractAuthAdapter implements IAuthAdapter {
     return  _.get(this.options,'createOnLogin', false) && _.isFunction(this['createOnLogin']);
   }
 
+
   canSignup(): boolean {
     let res =  _.get(this.options,'allowSignup', false) && _.isFunction(this['signup']);
     return res;
   }
+
 
   getModelFor(lifecycle: AuthLifeCycle): Function {
     switch (lifecycle) {
@@ -50,6 +53,8 @@ export abstract class AbstractAuthAdapter implements IAuthAdapter {
         return DefaultUserSignup;
       case "logout":
         return DefaultUserLogout;
+      case "data":
+        return DefaultUserData;
     }
     throw new Error("No model for lifecycle " + lifecycle + ' in ' + this.authId);
   }

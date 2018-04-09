@@ -78,7 +78,7 @@ export class Auth implements IMiddleware {
 
   async prepare(options: any = {}) {
     Container.set("Auth", this);
-    let x = Config.get("auth",{});
+    let x = Config.get("auth", {});
     this.authConfig = <IAuthConfig>x;
     _.defaults(this.authConfig, DEFAULT_CONFIG_OPTIONS);
 
@@ -195,13 +195,26 @@ export class Auth implements IMiddleware {
     return this.getInstanceFor("login", authId, values);
   }
 
+
   getInstanceForLogout(authId: string = 'default', values: any = null): any {
     return this.getInstanceFor("logout", authId, values);
   }
 
+
+  getInstanceForData(authId: string = 'default', values: any = null): any {
+    return this.getInstanceFor("data", authId, values);
+  }
+
+
+  getUserData(user:AuthUser, authId:string = 'default'){
+    return this.getInstanceForData(authId,{user:user});
+  }
+
+
   private getAuthIdFromObject(data: AbstractUserLogin | AbstractUserSignup) {
     return _.get(data, "authId", "default");
   }
+
 
   private canSignup(adapter: IAuthAdapter) {
     return adapter.canSignup() && _.get(this.authConfig, 'allowSignup', false);
@@ -378,13 +391,14 @@ export class Auth implements IMiddleware {
           try {
 
             let remoteAddress = this.getRemoteAddress(req);
+            let current = new Date((new Date()).getTime() - 24 * 60 * 60 * 1000);
+
             await mgr.transaction(async em => {
 
               // delete old user sessions which where last updated 24*60*60s
-              let q = em.createQueryBuilder(AuthSession, "s").delete()
-                .where("userId = :userId",
-                {userId: user.id}
-              );
+              let q = em.createQueryBuilder(AuthSession, "s").delete();
+              q.where("userId = :userId and ip = :ip", {userId: user.id, ip: remoteAddress});
+              q.orWhere("userId = :userId and updated_at < :updated_at", {userId: user.id, updated_at: current });
               await q.execute();
 
               let session = new AuthSession();
@@ -396,6 +410,7 @@ export class Auth implements IMiddleware {
                 em.save(session),
                 em.save(user),
                 em.save(method)]);
+
               loginInstance.user = user;
               loginInstance.success = true;
               res.setHeader(this.getHttpAuthKey(), session.token);
@@ -471,9 +486,8 @@ export class Auth implements IMiddleware {
       let session = await this.getSessionByToken(token);
       if (!_.isEmpty(session) && session.user.id === user.id) {
         let repo = this.connection.manager.getRepository(AuthSession);
-        let q = repo.createQueryBuilder("s").delete().where("userId = :userId",
-          {userId: user.id}
-        );
+        let q = repo.createQueryBuilder("s").delete();
+        q.where("token = :token",{token:token});
         await q.execute();
         logout.success = true;
         res.removeHeader(this.getHttpAuthKey());

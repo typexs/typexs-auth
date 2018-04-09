@@ -20,13 +20,13 @@ export class UserSignupComponent implements OnInit {
   password_confirm: string;
 
   validation: { [key: string]: { valid: boolean, checked: boolean, messages: Array<{ type: string, content: string }> } } = {
+    errors: {valid: false, checked: false, messages: []},
     username: {valid: false, checked: false, messages: []},
     password: {valid: false, checked: false, messages: []},
-    // password_confirm: {valid: false, checked: false, messages: []},
     mail: {valid: false, checked: false, messages: []}
   };
 
-  constructor(private auth: AuthService,private router: Router) {
+  constructor(private auth: AuthService, private router: Router) {
 
   }
 
@@ -47,7 +47,7 @@ export class UserSignupComponent implements OnInit {
 
   async onSubmit() {
 
-    let validation:boolean = true;
+    let validation: boolean = true;
     let results = await validate(this.user, {validationError: {target: false}});
     Object.keys(this.validation).forEach(key => {
       if (this.validation[key]) {
@@ -77,11 +77,24 @@ export class UserSignupComponent implements OnInit {
     }
     this.validation.password.checked = true;
 
-    if(validation){
+    if (validation) {
       // redirect to login
-      await this.auth.signup(this.user).toPromise();
+      let signup = await this.auth.signup(this.user);
+      if (signup.success) {
+        await this.router.navigateByUrl('/user/login');
+      } else {
+        if (_.isArray(signup.errors)) {
+          this.validation.errors.messages.push({type: 'error', content: JSON.stringify(signup.errors)})
+        } else {
+          this.validation.errors.messages.push({type: 'error', content: 'UNKNOWN'})
+        }
+        this.validation.errors.valid = false;
+        this.validation.errors.checked = true;
+
+      }
+
       // TODO check results for problems maybe account a
-      await this.router.navigateByUrl('/user/login');
+
     }
 
     // TODO validate password confirmation

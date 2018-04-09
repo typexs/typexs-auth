@@ -16,6 +16,13 @@
 
 
         <div class="form-group">
+          <div [hidden]="!(validation.errors.checked && !validation.errors.valid)" class="alert alert-danger">
+            <ul>
+              <li *ngFor="let message of validation.errors.messages">{{ message.type }} - {{ message.content }}</li>
+            </ul>
+          </div>
+
+
           <label class="control-label" for="user_mail">E-Mail</label>
           <input autofocus="autofocus"
                  class="form-control"
