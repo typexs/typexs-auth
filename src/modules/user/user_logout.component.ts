@@ -22,6 +22,7 @@ export class UserLogoutComponent implements OnInit {
   async ngOnInit() {
     let logout = this.auth.newUserLogout();
     logout = <any>await this.auth.logout(logout);
+
     if (logout.success) {
       await this.router.navigateByUrl('/');
     } else {

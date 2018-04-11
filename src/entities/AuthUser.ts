@@ -27,10 +27,6 @@ export class AuthUser implements IAuthUser {
   @Column()
   disabled: boolean = false;
 
-  @OneToOne(type => AuthMethod)
-  @JoinColumn()
-  preferedMethod: AuthMethod;
-
   @OneToMany(type => AuthMethod, auth => auth.user)
   authMethods: AuthMethod[];
 

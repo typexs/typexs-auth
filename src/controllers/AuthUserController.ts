@@ -21,6 +21,7 @@ export class AuthUserController {
 
   @Get('/user/_config')
   config() {
+    // TODO return more configuration data
     return {
       authKey: this.auth.getHttpAuthKey()
     };

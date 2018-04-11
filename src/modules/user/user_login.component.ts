@@ -4,7 +4,7 @@ import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
 import {validate} from "class-validator";
 import * as _ from "lodash";
 import {Router} from "@angular/router";
-import {AbstractUserLogin} from "../../libs/models/AbstractUserLogin";
+
 
 @Component({
   selector: 'user-login',

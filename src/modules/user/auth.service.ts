@@ -28,6 +28,9 @@ export class AuthService {
 
   private user: IAuthUser;
 
+  private connected: boolean = true;
+
+
   private loading: boolean = false;
 
   constructor(private http: HttpClient) {
@@ -37,6 +40,7 @@ export class AuthService {
   public isInitialized() {
     return this._initialized;
   }
+
 
   configure(): Observable<any> {
     let config = this.http.get('/api/user/_config');
@@ -62,7 +66,7 @@ export class AuthService {
   }
 
 
-  getUser():Promise<AbstractUserData> {
+  getUser(): Promise<AbstractUserData> {
     this.loading = true;
     let req = this.http.get('/api/user');
     return new Promise((resolve, reject) => {
@@ -86,16 +90,41 @@ export class AuthService {
 
   isAuthenticated() /*:Observable<boolean>*/ {
     // TODO check if token is expired
-    return this.getToken() != null;
+    let token = this.getToken();
+    return this.connected && this.getToken() != null && token === this.token;
     //return this.http.get()
   }
 
+
+  /**
+   * startup method to check if an existing token is still active
+   */
+  verify() {
+    let token = this.getToken();
+    if (token) {
+      let req = this.http.get('/api/user/isAuthenticated');
+      this.connected = false;
+      console.log('check auth');
+      req.subscribe(
+        (res: boolean) => {
+          this.connected = res;
+          console.log('check out = ' + res);
+        },
+        (error: Error) => {
+          this.loading = false;
+          this.connected = false;
+          localStorage.removeItem('token.' + this.getTokenKey());
+        }
+      );
+    }
+  }
 
   /*
   signup(signup: AbstractUserSignup):Observable<any>{
     return this.http.post('/api/user/signup', signup);
   }
   */
+
   signup(signup: AbstractUserSignup): Promise<AbstractUserSignup> {
     this.loading = true;
     let signupReq = this.http.post('/api/user/signup', signup);
@@ -104,17 +133,18 @@ export class AuthService {
         (user: AbstractUserSignup) => {
           this.loading = false;
           console.log(user);
+          this.connected = false;
           resolve(user);
         },
         (error: Error) => {
           this.loading = false;
+          this.connected = false;
           signup.addError({property: 'error', value: error.message, error: error});
           signup.resetSecret();
           console.error(error);
           resolve(signup);
         }
       );
-
     });
   }
 
@@ -127,14 +157,18 @@ export class AuthService {
       loginReq.subscribe(
         (user: AbstractUserLogin) => {
           this.loading = false;
+          this.connected = true;
           console.log(user);
           localStorage.setItem('token.' + this.getTokenKey(), this.token);
           resolve(user);
         },
         (error: Error) => {
           this.loading = false;
+          this.connected = false;
           login.addError({property: 'error', value: error.message, error: error});
           login.resetSecret();
+          localStorage.removeItem('token.' + this.getTokenKey());
+
           console.error(error);
           resolve(login);
         }
@@ -151,11 +185,15 @@ export class AuthService {
       req.subscribe(
         (user: AbstractUserLogout) => {
           this.loading = false;
+          this.connected = false;
           console.log(user);
+          localStorage.removeItem('token.' + this.getTokenKey());
           resolve(user);
         },
         (error: Error) => {
           this.loading = false;
+          this.connected = false;
+          localStorage.removeItem('token.' + this.getTokenKey());
           logout.addError({property: 'error', value: error.message, error: error});
           console.error(error);
           resolve(logout);

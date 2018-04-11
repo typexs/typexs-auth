@@ -26,6 +26,7 @@ export class UserProfileComponent implements OnInit {
 
   async ngOnInit() {
     this.data = await this.auth.getUser();
+    console.log(this.auth.getToken())
   }
 
   isAuthenticated() {

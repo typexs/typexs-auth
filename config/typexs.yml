@@ -27,6 +27,10 @@ storage:
     type: sqlite
     # database: ':memory:'
     database: 'tmp/db_${app.name}.db'
+    logger: simple-console
+    logging: all
+
+
 
 
 auth:

@@ -1,4 +1,4 @@
-import {Component, ViewEncapsulation} from '@angular/core';
+import {Component, OnInit, ViewEncapsulation} from '@angular/core';
 import {AuthService} from "../user/auth.service";
 
 @Component({
@@ -7,10 +7,15 @@ import {AuthService} from "../user/auth.service";
   styleUrls: ['./app.component.css'],
   encapsulation: ViewEncapsulation.None
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'app';
 
   constructor(public auth:AuthService){}
+
+  async ngOnInit(){
+    // waiting to auth check
+    await this.auth.verify();
+  }
 }
 
 

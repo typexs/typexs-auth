@@ -596,10 +596,10 @@ export class Auth implements IMiddleware {
     let mgr = this.connection.manager;
     return mgr.transaction(async em => {
       let method = await this.createMethod(adapter, data);
+      method.standard = true;
       method = await em.save(method);
       let user = await this.createUser(adapter, data);
       method.user = await em.save(user);
-      ;
       return await mgr.save(method);
     });
   }

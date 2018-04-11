@@ -38,6 +38,13 @@ export class AuthMethod {
   @Column({nullable: true})
   mail: string;
 
+  /**
+   * default marker
+   * @type {boolean}
+   */
+  @Column()
+  standard: boolean = false;
+
   @Column()
   identifier: string;
 
