@@ -411,6 +411,7 @@ export class Auth implements IMiddleware {
                 em.save(user),
                 em.save(method)]);
 
+              loginInstance.token = session.token;
               loginInstance.user = user;
               loginInstance.success = true;
               res.setHeader(this.getHttpAuthKey(), session.token);

@@ -48,6 +48,7 @@ import {AuthTokenInterceptor} from "./authtoken.interceptor";
 
         async function startup() {
           await auth.configure().toPromise();
+          await auth.initialAuthCheck();
         }
 
       }

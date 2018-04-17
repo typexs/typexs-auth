@@ -20,17 +20,17 @@ export class UserProfileComponent implements OnInit {
   data: DefaultUserData;
 
   constructor(private auth: AuthService, private router: Router) {
-
   }
 
 
   async ngOnInit() {
     this.data = await this.auth.getUser();
-    console.log(this.auth.getToken())
+    console.log(this.auth.getStoredToken())
   }
 
+
   isAuthenticated() {
-    return this.auth.isAuthenticated();
+    return this.data && this.auth.isAuthenticated();
   }
 
 }

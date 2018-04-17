@@ -57,10 +57,26 @@ export class AuthService {
   }
 
 
-  public getToken(): string {
-    return localStorage.getItem('token.' + this.getTokenKey());
+  public getStoredToken(): string {
+    let token = localStorage.getItem('token.' + this.getTokenKey());
+    return _.isUndefined(token) ? null : token;
   }
 
+  saveStoredToken(token:string){
+    localStorage.setItem('token.' + this.getTokenKey(), token);
+  }
+
+  clearStoredToken(){
+    this.connected = false;
+    localStorage.removeItem('token.' + this.getTokenKey());
+  }
+
+
+  /**
+   * Method for interceptor to set the request token
+   *
+   * @param {string} token
+   */
   public setToken(token: string): void {
     this.token = token;
   }
@@ -72,15 +88,15 @@ export class AuthService {
     return new Promise((resolve, reject) => {
       req.subscribe(
         (user: AbstractUserData) => {
-          this.loading = false;
           console.log(user);
+          this.loading = false;
           resolve(user);
         },
         (error: Error) => {
+          console.error(error);
           this.loading = false;
           let user = new DefaultUserData();
           user.addError({property: 'error', value: error.message, error: error});
-          console.error(error);
           resolve(user);
         }
       );
@@ -90,8 +106,8 @@ export class AuthService {
 
   isAuthenticated() /*:Observable<boolean>*/ {
     // TODO check if token is expired
-    let token = this.getToken();
-    return this.connected && this.getToken() != null && token === this.token;
+    let token = this.getStoredToken();
+    return this.connected && this.getStoredToken() != null && token === this.token;
     //return this.http.get()
   }
 
@@ -99,25 +115,30 @@ export class AuthService {
   /**
    * startup method to check if an existing token is still active
    */
-  verify() {
-    let token = this.getToken();
+  initialAuthCheck() {
+    let token = this.getStoredToken();
     if (token) {
       let req = this.http.get('/api/user/isAuthenticated');
       this.connected = false;
-      console.log('check auth');
       req.subscribe(
         (res: boolean) => {
-          this.connected = res;
           console.log('check out = ' + res);
+          this.connected = res;
+          if(!res){
+            this.clearStoredToken();
+          }
+
         },
         (error: Error) => {
+          console.error(error);
           this.loading = false;
-          this.connected = false;
-          localStorage.removeItem('token.' + this.getTokenKey());
+          this.clearStoredToken();
         }
       );
     }
   }
+
+
 
   /*
   signup(signup: AbstractUserSignup):Observable<any>{
@@ -159,7 +180,7 @@ export class AuthService {
           this.loading = false;
           this.connected = true;
           console.log(user);
-          localStorage.setItem('token.' + this.getTokenKey(), this.token);
+          this.saveStoredToken(user.token);
           resolve(user);
         },
         (error: Error) => {
@@ -167,7 +188,7 @@ export class AuthService {
           this.connected = false;
           login.addError({property: 'error', value: error.message, error: error});
           login.resetSecret();
-          localStorage.removeItem('token.' + this.getTokenKey());
+          this.clearStoredToken();
 
           console.error(error);
           resolve(login);
@@ -177,6 +198,7 @@ export class AuthService {
   }
 
 
+
   logout(logout: AbstractUserLogout): Promise<AbstractUserLogout> {
     this.loading = true;
     let req = this.http.get('/api/user/logout');
@@ -184,18 +206,16 @@ export class AuthService {
     return new Promise((resolve, reject) => {
       req.subscribe(
         (user: AbstractUserLogout) => {
-          this.loading = false;
-          this.connected = false;
           console.log(user);
-          localStorage.removeItem('token.' + this.getTokenKey());
+          this.loading = false;
+          this.clearStoredToken();
           resolve(user);
         },
         (error: Error) => {
-          this.loading = false;
-          this.connected = false;
-          localStorage.removeItem('token.' + this.getTokenKey());
-          logout.addError({property: 'error', value: error.message, error: error});
           console.error(error);
+          this.loading = false;
+          this.clearStoredToken();
+          logout.addError({property: 'error', value: error.message, error: error});
           resolve(logout);
         }
       );

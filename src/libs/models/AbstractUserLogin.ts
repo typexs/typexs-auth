@@ -12,6 +12,8 @@ export abstract class AbstractUserLogin extends AbstractInputData{
 
   isAuthenticated: boolean = false;
 
+  token:string;
+
   abstract resetSecret(): void;
   abstract getSecret():string;
   abstract getIdentifier():string;

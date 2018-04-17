@@ -13,8 +13,6 @@ export class AppComponent implements OnInit {
   constructor(public auth:AuthService){}
 
   async ngOnInit(){
-    // waiting to auth check
-    await this.auth.verify();
   }
 }
 

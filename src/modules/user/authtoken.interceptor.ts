@@ -11,8 +11,8 @@ export class AuthTokenInterceptor implements HttpInterceptor {
   }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    let token = this.auth.getToken();
-    if(!_.isEmpty(token)){
+    let token = this.auth.getStoredToken();
+    if(token && _.isString(token) && !_.isEmpty(token)){
       console.log('token exists',token);
       let tokenKey = this.auth.getTokenKey();
       let setHeaders = {};
@@ -21,6 +21,8 @@ export class AuthTokenInterceptor implements HttpInterceptor {
       request = request.clone({
         setHeaders: setHeaders
       });
+    }else{
+      this.auth.setToken(null);
     }
 
     return next.handle(request);
