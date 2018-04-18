@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "nyc mocha --opts test/mocha.all.opts && karma start --single-run --browsers PhantomJS --code-coverage",
-    "posttest": "nyc report --reporter=json && codecov -f coverage/**/*.json",
+    "posttest": "nyc report --reporter=json && codecov -f coverage/backend/*.json && codecov -f coverage/karma/*.json",
     "ng": "ng",
     "start": "concurrently \"ng serve -pc proxy.conf.json --open\" \"typexs server default\"",
     "build": "ng build --prod",
