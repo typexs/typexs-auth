@@ -27,17 +27,17 @@ class AuthConfigSpec {
 
   @test
   async 'signup forbidden'() {
-    bootstrap = Bootstrap
+    bootstrap = Bootstrap.setConfigSources([{type:'system'}])
       .configure(<ITypexsOptions>{
         auth: {
           methods: {
             default: {
               type: 'database',
-              // allowSignup: true
+              allowSignup: false
             }
           }
         }
-      })
+      });
 
     await bootstrap.prepareRuntime();
     await bootstrap.activateStorage();
@@ -51,19 +51,25 @@ class AuthConfigSpec {
 
   @test
   async 'global signup allowed, but not from adapter'() {
-    bootstrap = Bootstrap
+    bootstrap = Bootstrap.setConfigSources([{type:'system'}])
       .configure(<ITypexsOptions>{
+        storage:{
+          default:{
+            synchronize: true,
+            type: 'sqlite',
+            database: ':memory:'
+          }
+        },
         auth: {
           allowSignup: true,
           methods: {
             default: {
               type: 'database',
-              // allowSignup: true
+
             }
           }
         }
-      })
-
+      });
     await bootstrap.prepareRuntime();
     await bootstrap.activateStorage();
 
@@ -85,8 +91,9 @@ class AuthConfigSpec {
 
   @test
   async 'global and adapter signup allowed '() {
-    bootstrap = Bootstrap
+    bootstrap = Bootstrap.setConfigSources([{type:'system'}])
       .configure(<ITypexsOptions>{
+        storage:{},
         auth: {
           // allowSignup: true,
           methods: {

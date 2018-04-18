@@ -39,6 +39,9 @@ class MiddlewareSpec {
     await loader.prepare();
     Container.set("RuntimeLoader", loader);
 
+    // Dummy storage entry for auth
+    Container.set("storage.default", {});
+
     let web = <WebServer>Container.get(WebServer);
     await web.initialize({
       type: 'web',

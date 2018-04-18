@@ -207,7 +207,9 @@ export class Auth implements IMiddleware {
 
 
   getUserData(user:AuthUser, authId:string = 'default'){
-    return this.getInstanceForData(authId,{user:user});
+    let exchangeObject = this.getInstanceForData(authId,{user:user});
+    exchangeObject.success = true;
+    return exchangeObject;
   }
 
 
