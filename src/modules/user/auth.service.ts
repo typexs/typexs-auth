@@ -28,8 +28,7 @@ export class AuthService {
 
   private user: IAuthUser;
 
-  private connected: boolean = true;
-
+  private connected: boolean = false;
 
   private loading: boolean = false;
 

@@ -21,19 +21,13 @@ describe('AuthService', () => {
   });
 
 
-  it('should have a service instance and load configuration', (done) => {
+  it('should have a service instance and load configuration', () => {
     // inject the service
     service = TestBed.get(AuthService);
     expect(service).to.exist;
     expect(service.isInitialized()).to.be.false;
 
 
-    setTimeout(() => {
-      expect(service.isInitialized()).to.be.true;
-      expect(service).to.exist;
-      done()
-
-    },200);
 
   });
 
