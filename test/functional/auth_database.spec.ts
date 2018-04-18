@@ -23,7 +23,15 @@ class AuthConfigSpec {
 
   static async before() {
     bootstrap = Bootstrap
+      .setConfigSources([{type:'system'}])
       .configure(<ITypexsOptions>{
+        storage:{
+          default:{
+            synchronize: true,
+            type: 'sqlite',
+            database: ':memory:'
+          }
+        },
         auth: {
           methods: {
             default: {
@@ -137,7 +145,6 @@ class AuthConfigSpec {
     let signUp = auth.getInstanceForSignup('default');
     signUp.username = 'supermann';
     signUp.mail = `superman${inc++}@test.me`;
-    ;
     signUp.password = 'password2';
     await auth.doSignup(signUp, req, res);
 

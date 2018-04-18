@@ -2,7 +2,7 @@
 import * as bcrypt from "bcrypt";
 import * as _ from "lodash";
 
-import {ConnectionWrapper, Inject, StorageRef} from "typexs-base";
+import {ConnectionWrapper, Inject, StorageRef,NestedException} from "typexs-base";
 import {AuthMethod} from "../../entities/AuthMethod";
 import {UserNotFoundError} from "../../libs/exceptions/UserNotFoundError";
 import {PasswordIsWrongError} from "../../libs/exceptions/PasswordIsWrongError";
@@ -65,6 +65,7 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
 
 
   async authenticate(login: DefaultUserLogin) {
+
     try {
       let authMethod = await this.getAuth(login);
       if (authMethod) {
@@ -73,24 +74,28 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
         return true;
       }
     } catch (err) {
-      if (err instanceof PasswordIsWrongError) {
-        login.errors = [{
-          property: "password", // Object's property that haven't pass validation.
-          value: "password", // Value that haven't pass a validation.
-          constraints: { // Constraints that failed validation with error messages.
-            exists: "username or password is wrong."
-          }
-        }];
-      } else if (err instanceof UserNotFoundError) {
-        login.errors = [{
-          property: "username", // Object's property that haven't pass validation.
-          value: "username", // Value that haven't pass a validation.
-          constraints: { // Constraints that failed validation with error messages.
-            exists: "username not found"
-          }
-        }];
+      if(err instanceof Error){
+        if (err instanceof PasswordIsWrongError) {
+          login.errors = [{
+            property: "password", // Object's property that haven't pass validation.
+            value: "password", // Value that haven't pass a validation.
+            constraints: { // Constraints that failed validation with error messages.
+              exists: "username or password is wrong."
+            }
+          }];
+        } else if (err instanceof UserNotFoundError) {
+          login.errors = [{
+            property: "username", // Object's property that haven't pass validation.
+            value: "username", // Value that haven't pass a validation.
+            constraints: { // Constraints that failed validation with error messages.
+              exists: "username not found"
+            }
+          }];
+        } else {
+          throw err;
+        }
       } else {
-        throw err;
+        throw new NestedException(err,"UNKNOWN");
       }
     }
     return false;
