@@ -591,7 +591,7 @@ export class Auth implements IMiddleware {
 
 
   getSessionByToken(token: string) {
-    return this.connection.manager.findOneById(AuthSession, token, {relations: ["user"]});
+    return this.connection.manager.findOne(AuthSession, token, {relations: ["user"]});
   }
 
 
