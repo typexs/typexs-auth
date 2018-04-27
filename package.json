@@ -146,8 +146,8 @@
       {
         "topic": "auth.adapters",
         "refs": [
-          "adapters/auth",
-          "src/adapters/auth"
+          "adapters/auth/*/*Adapter.*",
+          "src/adapters/auth/*/*Adapter.*"
         ]
       }
     ]
