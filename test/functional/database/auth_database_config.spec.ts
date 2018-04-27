@@ -1,8 +1,9 @@
 import {suite, test} from "mocha-typescript";
 import {Bootstrap, Container, ITypexsOptions, Log} from "typexs-base";
 import {expect} from 'chai';
-import {Auth} from "../../src/middleware/Auth";
-import {DefaultUserSignup} from "../../src/libs/models/DefaultUserSignup";
+import {Auth} from "../../../src/middleware/Auth";
+
+
 
 let bootstrap: Bootstrap = null;
 
@@ -122,4 +123,3 @@ class AuthConfigSpec {
   }
 
 }
-

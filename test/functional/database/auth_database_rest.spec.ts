@@ -6,9 +6,9 @@ import * as request from 'supertest';
 import {K_ROUTE_CONTROLLER, WebServer} from "typexs-server";
 import {Bootstrap, Container, ITypexsOptions} from "typexs-base";
 
-import {Auth} from "../../src/middleware/Auth";
-import {DefaultUserSignup} from "../../src/libs/models/DefaultUserSignup";
-import {DefaultUserLogin} from "../../src/libs/models/DefaultUserLogin";
+import {Auth} from "../../../src/middleware/Auth";
+import {DefaultUserSignup} from "../../../src/libs/models/DefaultUserSignup";
+import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
 
 let inc = 0;
 let bootstrap: Bootstrap = null;
@@ -18,10 +18,10 @@ let web: WebServer = null;
 class AuthConfigSpec {
 
   static async before() {
-    bootstrap = Bootstrap.setConfigSources([{type:'system'}])
+    bootstrap = Bootstrap.setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions>{
-        storage:{
-          default:{
+        storage: {
+          default: {
             synchronize: true,
             type: 'sqlite',
             database: ':memory:'
@@ -123,7 +123,7 @@ class AuthConfigSpec {
 
     res = await request(web.getUri())
       .get('/api/user')
-      .set(auth.getHttpAuthKey(),token)
+      .set(auth.getHttpAuthKey(), token)
       .expect(200);
 
     expect(res.body.success).to.be.true;
@@ -131,14 +131,14 @@ class AuthConfigSpec {
 
     res = await request(web.getUri())
       .get('/api/user/logout')
-      .set(auth.getHttpAuthKey(),token)
+      .set(auth.getHttpAuthKey(), token)
       .expect(200);
 
     expect(res.body.success).to.be.true;
 
     res = await request(web.getUri())
       .get('/api/user')
-      .set(auth.getHttpAuthKey(),token)
+      .set(auth.getHttpAuthKey(), token)
       .expect(401);
 
     // TODO implement all error handling https://github.com/typestack/routing-controllers/blob/master/sample/sample6-global-middlewares/AllErrorsHandler.ts

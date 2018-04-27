@@ -1,11 +1,11 @@
 //import * as passport from "passport";
 import * as _ from "lodash";
-import {AuthMethod} from "../../entities/AuthMethod";
-import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
-import {AbstractAuthAdapter} from "../../libs/adapter/AbstractAuthAdapter";
-import {AbstractInputData} from "../../libs/models/AbstractInputData";
-import {AuthUser} from "../../entities/AuthUser";
-import {ILdapAuthOptions} from "./ldap/ILdapAuthOptions";
+import {AuthMethod} from "../../../entities/AuthMethod";
+import {DefaultUserLogin} from "../../../libs/models/DefaultUserLogin";
+import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
+import {AbstractInputData} from "../../../libs/models/AbstractInputData";
+import {AuthUser} from "../../../entities/AuthUser";
+import {ILdapAuthOptions} from "./ILdapAuthOptions";
 import LdapAuth = require("ldapauth-fork");
 
 import {Log, NestedException} from "typexs-base";

@@ -3,16 +3,16 @@ import * as bcrypt from "bcrypt";
 import * as _ from "lodash";
 
 import {ConnectionWrapper, Inject, StorageRef,NestedException} from "typexs-base";
-import {AuthMethod} from "../../entities/AuthMethod";
-import {UserNotFoundError} from "../../libs/exceptions/UserNotFoundError";
-import {PasswordIsWrongError} from "../../libs/exceptions/PasswordIsWrongError";
-import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
-import {IDatabaseAuthOptions} from "./db/IDatabaseAuthOptions";
-import {AbstractAuthAdapter} from "../../libs/adapter/AbstractAuthAdapter";
+import {AuthMethod} from "../../../entities/AuthMethod";
+import {UserNotFoundError} from "../../../libs/exceptions/UserNotFoundError";
+import {PasswordIsWrongError} from "../../../libs/exceptions/PasswordIsWrongError";
+import {DefaultUserLogin} from "../../../libs/models/DefaultUserLogin";
+import {IDatabaseAuthOptions} from "./IDatabaseAuthOptions";
+import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
 
-import {DefaultUserSignup} from "../../libs/models/DefaultUserSignup";
-import {AbstractInputData} from "../../libs/models/AbstractInputData";
-import {AuthUser} from "../../entities/AuthUser";
+import {DefaultUserSignup} from "../../../libs/models/DefaultUserSignup";
+import {AbstractInputData} from "../../../libs/models/AbstractInputData";
+import {AuthUser} from "../../../entities/AuthUser";
 
 export const K_AUTH_DATABASE = 'database';
 

@@ -1,15 +1,15 @@
 import {suite, test} from "mocha-typescript";
 import {Bootstrap, Container, ITypexsOptions, StorageRef} from "typexs-base";
 import * as _ from "lodash";
-import {Auth} from "../../src/middleware/Auth";
-import {DefaultUserSignup} from "../../src/libs/models/DefaultUserSignup";
-import {AuthUser} from "../../src/entities/AuthUser";
-import {AuthMethod} from "../../src/entities/AuthMethod";
+import {Auth} from "../../../src/middleware/Auth";
+import {DefaultUserSignup} from "../../../src/libs/models/DefaultUserSignup";
+import {AuthUser} from "../../../src/entities/AuthUser";
+import {AuthMethod} from "../../../src/entities/AuthMethod";
 import {expect} from "chai";
-import {DefaultUserLogin} from "../../src/libs/models/DefaultUserLogin";
-import {MockResponse} from "../helper/MockResponse";
-import {MockRequest} from "../helper/MockRequest";
-import {AuthSession} from "../../src/entities/AuthSession";
+import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
+import {MockResponse} from "../../helper/MockResponse";
+import {MockRequest} from "../../helper/MockRequest";
+import {AuthSession} from "../../../src/entities/AuthSession";
 import {Action} from "routing-controllers";
 
 let bootstrap: Bootstrap = null;

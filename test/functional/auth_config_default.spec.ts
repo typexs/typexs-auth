@@ -6,7 +6,6 @@ import {Auth} from "../../src/middleware/Auth";
 import {AuthUser} from "../../src/entities/AuthUser";
 import {IAuthConfig} from "../../src/libs/auth/IAuthConfig";
 
-
 @suite('functional/auth_config')
 class AuthConfigSpec {
 
@@ -58,8 +57,8 @@ class AuthConfigSpec {
     let adapters = auth.getDefinedAdapters();
     let authMethods = auth.getUsedAuthMethods();
 
-    expect(adapters.map(x => x.name)).to.deep.eq(['database']);
-    expect(adapters.map(x => x.className)).to.deep.eq(['DatabaseAdapter']);
+    expect(adapters.map(x => x.name)).to.contains('database');
+    expect(adapters.map(x => x.className)).to.contains('DatabaseAdapter');
     expect(authMethods.map(x => x.authId)).to.deep.eq(['default']);
 
   }
