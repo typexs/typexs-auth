@@ -149,14 +149,6 @@ class AuthConfigSpec {
     await auth.doSignup(signUp, req, res);
 
 
-    /*
-    let storageRef: StorageRef = Container.get('storage.default');
-    let c = await storageRef.connect();
-    let users = await c.manager.getRepository(AuthUser).find();
-    let methods = await c.manager.getRepository(AuthMethod).find();
-    */
-
-
     // user does not exists
     login = auth.getInstanceForLogin('default');
     login.username = 'superma';

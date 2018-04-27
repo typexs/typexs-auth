@@ -38,3 +38,10 @@ Angular parts:
 * DefaultUserSignup Form
 * UserService which communicates with the AuthUserController and which can also
 be used by other module to retrieve user information
+
+*@ISSUE {counter:task} 20180427* +
+
+Create Admin UI for managing users:
+
+* Overview of users
+* Create, Edit, Delete Accounts

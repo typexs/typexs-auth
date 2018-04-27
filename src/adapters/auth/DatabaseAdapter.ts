@@ -76,6 +76,7 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
     } catch (err) {
       if(err instanceof Error){
         if (err instanceof PasswordIsWrongError) {
+          // TODO handle error messages in error classes and not here
           login.errors = [{
             property: "password", // Object's property that haven't pass validation.
             value: "password", // Value that haven't pass a validation.
@@ -84,6 +85,7 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
             }
           }];
         } else if (err instanceof UserNotFoundError) {
+          // TODO handle error messages in error classes and not here
           login.errors = [{
             property: "username", // Object's property that haven't pass validation.
             value: "username", // Value that haven't pass a validation.
