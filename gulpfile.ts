@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as glob from 'glob';
 import * as gulp from 'gulp';
 import * as watch from 'gulp-watch';
-
+import {main as ngc} from '@angular/compiler-cli/src/main';
 
 const bump = require('gulp-bump');
 const del = require("del");
@@ -83,7 +83,11 @@ export class Gulpfile {
       "!./src/**/files/*.ts",
       "!./src/**/files/**/*.ts",
       "!./src/app/**",
-      "!./src/modules/**",
+      "!./src/modules/*/*.ts",
+      "!./src/modules/*/!(api|entities)/*.ts",
+      "!./src/modules/*/!(api|entities)/**/*.ts",
+      "./src/modules/*/+(api|entities)/*.ts",
+      "./src/modules/*/+(api|entities)/**/*.ts",
       "./node_modules/@types/**/*.ts"])
       .pipe(sourcemaps.init())
       .pipe(tsProject());
@@ -94,6 +98,24 @@ export class Gulpfile {
         .pipe(sourcemaps.write(".", {sourceRoot: "", includeContent: true}))
         .pipe(gulp.dest("./build/package"))
     ];
+  }
+
+  @Task()
+  async packageNgCompile() {
+    return await ngc(['-p','tsconfig.app.json'])
+  }
+
+  @Task()
+  packageNgCopy() {
+    return gulp.src([
+      "./src/modules/**/*.+(html|css|less|sass|scss|ts)",
+      "!./src/modules/*/api/**",
+      "!./src/modules/*/entities/**",
+      // "./build/app/src/modules/**/*",
+      // "!./build/app/src/modules/app/**",
+      "!./src/modules/app/**" ])
+    //  .pipe(debug())
+      .pipe(gulp.dest("./build/package/modules"));
   }
 
   /**
@@ -125,14 +147,6 @@ export class Gulpfile {
     return gulp.src(["./src/**/*.json","!./src/app/**","!./src/modules/app/**"]).pipe(gulp.dest("./build/package"));
   }
 
-  /**
-   * Copies README.md into the package.
-   */
-  @Task()
-  packageCopyModulContents() {
-    return gulp.src(["./src/modules/**/*.+(html|css|less|sass|scss|ts)","!./src/modules/app/**","!./src/modules/**/*.spec.ts" ])
-      .pipe(gulp.dest("./build/package/modules"));
-  }
 
   /**
    * Copies README.md into the package.
@@ -171,10 +185,10 @@ export class Gulpfile {
       "clean",
       "packageCompile",
       [
+        "packageNgCopy",
         "packageCopyBin",
         "packageCopyJsons",
         "packageCopyFiles",
-        "packageCopyModulContents",
         "packageReplaceReferences",
         "packagePreparePackageFile",
         "packageCopyReadme",
@@ -189,13 +203,12 @@ export class Gulpfile {
   @SequenceTask()
   packageNoClean() {
     return [
-
       "packageCompile",
       [
+        "packageNgCopy",
         "packageCopyBin",
         "packageCopyJsons",
         "packageCopyFiles",
-        "packageCopyModulContents",
         "packageReplaceReferences",
         "packagePreparePackageFile",
         "packageCopyReadme",

@@ -5,11 +5,12 @@ import {RouterModule} from '@angular/router';
 import {ModuleWithProviders} from '@angular/core';
 import {Type} from '@angular/core';
 import {UserModule} from '../user/user.module';
-import {CommonModule} from "@angular/common";
+import {NavigatorModule} from "typexs-ng/modules/navigator/navigator.module";
+
 
 export const APP_MODULES: Array<Type<any> | ModuleWithProviders | any[]> = [
   BrowserModule,
   UserModule,
-
+  NavigatorModule,
   RouterModule.forRoot(APP_ROUTES)
 ];

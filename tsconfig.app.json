@@ -3,11 +3,17 @@
   "compilerOptions": {
     "outDir": "build/out-tsc/app",
     "target": "es5",
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
-  "include":[
+  "angularCompilerOptions": {
+    "strictMetadataEmit": true
+  },
+  "include": [
     "src/app/**/*.ts",
-    "src/modules/**/*.ts"
+    "src/modules/**/*.ts",
+    "node_modules/*/modules/**/*.ts"
   ],
   "exclude": [
     "src/app/test.ts",

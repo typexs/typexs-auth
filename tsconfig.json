@@ -8,7 +8,7 @@
     ],
     "outDir": "./build/compiled",
     "target": "es5",
-    "module": "CommonJS",
+    "module": "commonjs",
     "moduleResolution": "node",
     "rootDir": ".",
     "sourceMap": true,
