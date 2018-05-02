@@ -1,6 +1,6 @@
 {
   "name": "typexs-auth",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Auth module for typexs",
   "main": "index.js",
   "directories": {
@@ -33,6 +33,8 @@
   "homepage": "https://github.com/typexs/typexs-auth#readme",
   "devDependencies": {
     "@angular/cli": ">=1.7.4",
+    "@angular/compiler": "^5.2.10",
+    "@angular/compiler-cli": "^5.2.10",
     "@angular/language-service": "^5.2.10",
     "@types/bcrypt": "^1.0.0",
     "@types/body-parser": "^1.17.0",
@@ -99,7 +101,6 @@
   "dependencies": {
     "@angular/animations": "^5.2.10",
     "@angular/common": "^5.2.10",
-    "@angular/compiler": "^5.2.10",
     "@angular/core": "^5.2.10",
     "@angular/forms": "^5.2.10",
     "@angular/http": "^5.2.10",
