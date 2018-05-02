@@ -83,7 +83,7 @@ export class Gulpfile {
       "!./src/**/files/*.ts",
       "!./src/**/files/**/*.ts",
       "!./src/app/**",
-      "!./src/modules/app/**",
+      "!./src/modules/**",
       "./node_modules/@types/**/*.ts"])
       .pipe(sourcemaps.init())
       .pipe(tsProject());
@@ -130,7 +130,7 @@ export class Gulpfile {
    */
   @Task()
   packageCopyModulContents() {
-    return gulp.src(["./src/modules/**/*.+(html|css|less|sass|scss)","!./src/modules/app/**" ])
+    return gulp.src(["./src/modules/**/*.+(html|css|less|sass|scss|ts)","!./src/modules/app/**","!./src/modules/**/*.spec.ts" ])
       .pipe(gulp.dest("./build/package/modules"));
   }
 
