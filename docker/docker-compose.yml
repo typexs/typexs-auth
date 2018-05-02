@@ -1,0 +1,25 @@
+version: '2'
+services:
+#  ldap:
+#    image: "osixia/openldap"
+#    ports:
+#    - 389:389
+#    - 689:689
+#    volumes:
+#    - './ldap:/ext-mount'
+#
+# https://hub.docker.com/r/unicon/shibboleth-idp/
+  shibboleth-idp:
+    image: "unicon/shibboleth-idp"
+    ports:
+    - 8443:8443
+    - 443:4443
+    volumes:
+    - './shibboleth-idp:/ext-mount'
+
+# https://hub.docker.com/r/unicon/shibboleth-sp/
+  shibboleth-sp:
+    image: "unicon/shibboleth-sp"
+    ports:
+    - 80:80
+    - 443:443
