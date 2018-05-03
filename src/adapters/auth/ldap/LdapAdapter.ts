@@ -9,6 +9,7 @@ import {ILdapAuthOptions} from "./ILdapAuthOptions";
 import LdapAuth = require("ldapauth-fork");
 
 import {Log, NestedException} from "typexs-base";
+import {AbstractUserLogin} from "../../../libs/models/AbstractUserLogin";
 
 export const K_AUTH_LDAP = 'ldap';
 
@@ -132,6 +133,30 @@ export class LdapAdapter extends AbstractAuthAdapter {
       return false;
     }
   */
+
+
+  createOnLogin(login: DefaultUserLogin): boolean {
+    let ldapData = login.data;
+    let mail = null;
+    if (_.has(ldapData, this.options.mailAttr)) {
+      // set mail field @see Auth.ts:createUser
+      mail = _.get(ldapData, this.options.mailAttr)
+    }
+
+    if (_.isNull(login.data) || _.isNull(mail)) {
+      login.addError({
+        property: 'mail is not present',
+        value: 'mail',
+        constraints: {no_mail_address: 'No mail address'}
+      });
+      return false;
+    }
+
+
+    login.data.mail = mail;
+
+    return true;
+  }
 
 
   async extend(obj: AuthUser | AuthMethod, data: AbstractInputData): Promise<void> {

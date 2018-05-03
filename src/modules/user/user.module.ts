@@ -11,6 +11,7 @@ import {CommonModule} from "@angular/common";
 import {AuthTokenInterceptor} from "./authtoken.interceptor";
 
 
+
 @NgModule({
   declarations: [
     UserProfileComponent,

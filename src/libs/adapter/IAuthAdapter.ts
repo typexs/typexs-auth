@@ -5,6 +5,7 @@ import {AuthMethod} from "../../entities/AuthMethod";
 import {AbstractUserSignup} from "../models/AbstractUserSignup";
 import {AbstractInputData} from "../models/AbstractInputData";
 import {AuthUser} from "../../entities/AuthUser";
+import {AbstractUserLogin} from "../models/AbstractUserLogin";
 
 export interface IAuthAdapter {
 
@@ -31,6 +32,8 @@ export interface IAuthAdapter {
 
   signup?(signup:AbstractUserSignup): boolean;
 
+
+  createOnLogin?(login:AbstractUserLogin):boolean;
 
 
   extend(obj:AuthUser | AuthMethod, data: AbstractInputData):void;

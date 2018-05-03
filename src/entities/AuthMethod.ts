@@ -72,9 +72,12 @@ export class AuthMethod {
 
   @BeforeInsert()
   bin() {
-    if (!_.isString(this.data)) {
+    console.log('bin',this.id,this.data)
+    if (this.data && !_.isString(this.data)) {
       this.data = JSON.stringify(this.data);
+
     }
+    console.log('bin1',this.id,this.data)
   }
 
   @BeforeUpdate()
@@ -85,7 +88,8 @@ export class AuthMethod {
 
   @AfterLoad()
   load() {
-    if (_.isString(this.data)) {
+    console.log('load',this.id,this.data)
+    if (this.data && _.isString(this.data)) {
       this.data = JSON.parse(this.data);
     }
   }

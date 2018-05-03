@@ -206,8 +206,8 @@ export class Auth implements IMiddleware {
   }
 
 
-  getUserData(user:AuthUser, authId:string = 'default'){
-    let exchangeObject = this.getInstanceForData(authId,{user:user});
+  getUserData(user: AuthUser, authId: string = 'default') {
+    let exchangeObject = this.getInstanceForData(authId, {user: user});
     exchangeObject.success = true;
     return exchangeObject;
   }
@@ -352,8 +352,12 @@ export class Auth implements IMiddleware {
               if (_.isEmpty(user)) {
                 // user with name does not exists
                 try {
-                  method = await this.createUserAndMethod(adapter, loginInstance);
-                  user = method.user;
+                  if (adapter.createOnLogin(loginInstance)) {
+                    method = await this.createUserAndMethod(adapter, loginInstance);
+                    user = method.user;
+                  } else {
+                    loginInstance.success = false;
+                  }
                 } catch (err) {
                   Log.error(err);
                   loginInstance.addError({
@@ -400,7 +404,7 @@ export class Auth implements IMiddleware {
               // delete old user sessions which where last updated 24*60*60s
               let q = em.createQueryBuilder(AuthSession, "s").delete();
               q.where("userId = :userId and ip = :ip", {userId: user.id, ip: remoteAddress});
-              q.orWhere("userId = :userId and updated_at < :updated_at", {userId: user.id, updated_at: current });
+              q.orWhere("userId = :userId and updated_at < :updated_at", {userId: user.id, updated_at: current});
               await q.execute();
 
               let session = new AuthSession();
@@ -490,7 +494,7 @@ export class Auth implements IMiddleware {
       if (!_.isEmpty(session) && session.user.id === user.id) {
         let repo = this.connection.manager.getRepository(AuthSession);
         let q = repo.createQueryBuilder("s").delete();
-        q.where("token = :token",{token:token});
+        q.where("token = :token", {token: token});
         await q.execute();
         logout.success = true;
         res.removeHeader(this.getHttpAuthKey());
@@ -598,12 +602,13 @@ export class Auth implements IMiddleware {
   createUserAndMethod(adapter: IAuthAdapter, data: AbstractUserSignup | AbstractUserLogin): Promise<AuthMethod> {
     let mgr = this.connection.manager;
     return mgr.transaction(async em => {
+      let user = await this.createUser(adapter, data);
+      await em.save(user);
+
       let method = await this.createMethod(adapter, data);
       method.standard = true;
-      method = await em.save(method);
-      let user = await this.createUser(adapter, data);
-      method.user = await em.save(user);
-      return await mgr.save(method);
+      method.user = user;
+      return em.save(method);
     });
   }
 
@@ -616,7 +621,25 @@ export class Auth implements IMiddleware {
 
     if (signup instanceof AbstractUserSignup) {
       method.mail = signup.getMail();
+    } else if (signup instanceof AbstractUserLogin) {
+      // mail could be passed by freestyle data object
+      if (_.has(signup, 'data.mail')) {
+        method.mail = _.get(signup, 'data.mail');
+      } else {
+        // TODO create MailError
+        throw new Error('no mail was found for the user account')
+      }
     }
+    if (!method.mail) {
+      // TODO create MailError
+      throw new Error('no mail was found in data')
+    }
+
+    if(signup.data){
+      method.data = signup.data;
+    }
+
+
 
     await adapter.extend(method, signup);
     return method;
@@ -628,7 +651,22 @@ export class Auth implements IMiddleware {
     user.username = signup.getIdentifier();
     if (signup instanceof AbstractUserSignup) {
       user.mail = signup.getMail();
+    } else if (signup instanceof AbstractUserLogin) {
+      // mail could be passed by freestyle data object
+      if (_.has(signup, 'data.mail')) {
+        user.mail = _.get(signup, 'data.mail');
+      } else {
+        // TODO create MailError
+        throw new Error('no mail was found for the user account')
+      }
     }
+
+    if (!user.mail) {
+      // TODO create MailError
+      throw new Error('no mail was found in data')
+    }
+
+
     await adapter.extend(user, signup);
     return user;
   }

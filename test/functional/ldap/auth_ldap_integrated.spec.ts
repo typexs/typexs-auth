@@ -1,5 +1,5 @@
 import {suite, test} from "mocha-typescript";
-import {Bootstrap, Container} from "typexs-base";
+import {Bootstrap, Container, StorageRef} from "typexs-base";
 import * as _ from "lodash";
 import {Auth} from "../../../src/middleware/Auth";
 import {expect} from "chai";
@@ -7,6 +7,9 @@ import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
 import {MockResponse} from "../../helper/MockResponse";
 import {MockRequest} from "../../helper/MockRequest";
 import {ILdapAuthOptions} from "../../../src/adapters/auth/ldap/ILdapAuthOptions";
+import {AuthUser} from "../../../src/entities/AuthUser";
+import {AuthMethod} from "../../../src/entities/AuthMethod";
+import {AuthSession} from "../../../src/entities/AuthSession";
 
 let bootstrap: Bootstrap = null;
 
@@ -27,6 +30,10 @@ const settingsTemplate = {
     methods: {
       default: {
         type: 'ldap',
+        url: 'ldap://ldap.forumsys.com',
+        bindDN: 'cn=read-only-admin,dc=example,dc=com',
+        bindCredentials: 'password',
+        searchBase: 'dc=example,dc=com'
       }
     }
   }
@@ -46,22 +53,9 @@ class AuthLdapSpec {
   }
 
 
-
-
-
-
-
-
-  @test.skip()
+  @test
   async 'do login by user search through admin bind'() {
-    /*
     let settings = _.clone(settingsTemplate);
-    settings.auth.methods.default = <ILdapAuthOptions>{
-      type:'ldap',
-      url: 'ldap://ldap.forumsys.com',
-      bindDN: 'cn=read-only-admin,dc=example,dc=com',
-      bindCredentials: 'password'
-    };
 
     bootstrap = Bootstrap
       .setConfigSources([{type:'system'}])
@@ -72,6 +66,9 @@ class AuthLdapSpec {
     await bootstrap.prepareRuntime();
     await bootstrap.activateStorage();
 
+    let ref:StorageRef = Container.get("storage.default");
+    let c = await ref.connect();
+
     auth = Container.get(Auth);
     await auth.prepare();
 
@@ -81,18 +78,42 @@ class AuthLdapSpec {
     let req = new MockRequest();
 
 
-    // user does not exists
-    login = auth.getInstanceForLogin('default');
-    login.username = 'riemann';
-    login.password = 'password';
 
+    // user doesn't exists and shouldn't be created if auth failed
+    login = auth.getInstanceForLogin('default');
+    login.username = 'riemann_not_da';
+    login.password = 'password';
 
     doingLogin = await auth.doLogin(login, req, res);
     expect(doingLogin.success).to.be.false;
     expect(doingLogin.isAuthenticated).to.be.false;
     expect(doingLogin.errors).to.have.length(1);
     expect(_.get(doingLogin.errors, '0.constraints.exists')).to.exist;
-*/
+
+
+    let userList = await c.manager.find(AuthUser);
+    let methodList = await c.manager.find(AuthMethod);
+    let sessionList = await c.manager.find(AuthSession);
+    console.log(userList,methodList,sessionList);
+    expect(userList).to.have.length(0);
+
+
+    // user exists and should be created if auth passed
+    login = auth.getInstanceForLogin('default');
+    login.username = 'riemann';
+    login.password = 'password';
+
+    doingLogin = await auth.doLogin(login, req, res);
+    expect(doingLogin.success).to.be.true;
+    expect(doingLogin.isAuthenticated).to.be.true;
+    expect(doingLogin.errors).to.be.null;
+
+
+    userList = await c.manager.find(AuthUser);
+    methodList = await c.manager.find(AuthMethod);
+    sessionList = await c.manager.find(AuthSession,{relations:['user']});
+    console.log(userList,methodList,sessionList);
+    expect(userList).to.have.length(1);
 
   }
 

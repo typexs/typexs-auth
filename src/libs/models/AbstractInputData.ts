@@ -27,6 +27,7 @@ export abstract class AbstractInputData implements IProcessData {
       this.errors = []
     }
     this.errors.push(error);
+    this.success = false;
   }
 
   parse(obj:any){
