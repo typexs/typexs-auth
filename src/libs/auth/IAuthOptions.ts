@@ -1,6 +1,8 @@
 export interface IAuthOptions {
 
-  type: string
+  type: string;
+
+  name?: string;
 
   authId?: string;
 

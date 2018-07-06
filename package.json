@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/typexs/typexs-auth#readme",
   "devDependencies": {
-    "@angular/cli": ">=1.7.4",
+    "@angular/cli": "^1.7.4",
     "@angular/compiler": "^5.2.10",
     "@angular/compiler-cli": "^5.2.10",
     "@angular/language-service": "^5.2.10",
@@ -119,6 +119,7 @@
     "reflect-metadata": "^0.1.12",
     "rxjs": "^5.5.10",
     "typexs-base": "latest",
+    "typexs-schema": "latest",
     "typexs-ng": "latest",
     "typexs-server": "latest",
     "zone.js": "^0.8.26"

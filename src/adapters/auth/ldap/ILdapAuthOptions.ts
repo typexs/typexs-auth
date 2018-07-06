@@ -1,6 +1,7 @@
 import {IAuthOptions} from "../../../libs/auth/IAuthOptions";
+import {Options} from "./LdapOptions";
 
-import {Options} from "ldapauth-fork";
+
 
 export interface ILdapAuthOptions extends IAuthOptions, Options {
 

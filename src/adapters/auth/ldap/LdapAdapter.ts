@@ -6,10 +6,8 @@ import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
 import {AbstractInputData} from "../../../libs/models/AbstractInputData";
 import {AuthUser} from "../../../entities/AuthUser";
 import {ILdapAuthOptions} from "./ILdapAuthOptions";
-import LdapAuth = require("ldapauth-fork");
 
 import {Log, NestedException} from "typexs-base";
-import {AbstractUserLogin} from "../../../libs/models/AbstractUserLogin";
 
 export const K_AUTH_LDAP = 'ldap';
 
@@ -56,13 +54,18 @@ const DEFAULTS: ILdapAuthOptions = {
 
 export class LdapAdapter extends AbstractAuthAdapter {
 
+  static clazz: Function
 
   type: string = K_AUTH_LDAP;
 
   options: ILdapAuthOptions;
 
   hasRequirements() {
-    // TODO check if database is enabled
+    try{
+      LdapAdapter.clazz = require('./LdapAuthPromise').LdapAuthPromise;
+    }catch(ex){
+      return false;
+    }
     return true;
   }
 
@@ -74,7 +77,7 @@ export class LdapAdapter extends AbstractAuthAdapter {
 
 
   async authenticate(login: DefaultUserLogin): Promise<boolean> {
-    let ldap = new LdapAuthPromise(this.options);
+    let ldap = Reflect.construct(LdapAdapter.clazz,[this.options]);
     try {
       login.isAuthenticated = await ldap.authenticate(login.username, login.password);
       if (login.isAuthenticated) {
@@ -161,50 +164,6 @@ export class LdapAdapter extends AbstractAuthAdapter {
 
   async extend(obj: AuthUser | AuthMethod, data: AbstractInputData): Promise<void> {
 
-  }
-
-}
-
-
-class LdapAuthPromise {
-  ldap: LdapAuth;
-
-  user: any = {};
-
-  success: boolean = false;
-
-  error: Error | string = null;
-
-  constructor(options: ILdapAuthOptions) {
-    this.ldap = new LdapAuth(options);
-  }
-
-
-  async authenticate(username: string, password: string): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      this.ldap.authenticate(username, password, (error: Error | string, result?: any) => {
-        if (error) {
-          this.error = error;
-          reject(false)
-        } else {
-          this.user = result;
-          this.success = true;
-          resolve(true)
-        }
-      });
-    });
-  }
-
-  async close() {
-    return new Promise((resolve, reject) => {
-      this.ldap.close((err: Error) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      })
-    });
   }
 
 }

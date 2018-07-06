@@ -1,0 +1,21 @@
+### OAuth
+
+
+* Running Server for OAuth redirection
+* User can select on the login page or the block the login-method he prefer
+** There can be adapter which autheticate server-sided like database or ldap and
+there can be adapter which authenticates client-side
+
+
+Workflow for OAuth:
+
+User gets login form
+-> selects oauth base auth
+-> redirects to oauth server
+-> inputs login data
+-> on positive the server redirects back to give redirect_url
+
+TODO:
+
+
+The form must be extended by selection of login-method.
