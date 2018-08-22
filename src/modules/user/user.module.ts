@@ -1,4 +1,4 @@
-import {APP_INITIALIZER, NgModule} from '@angular/core';
+import {NgModule} from '@angular/core';
 import {RouterModule} from '@angular/router';
 import {UserProfileComponent} from './user_profile.component';
 import {HTTP_INTERCEPTORS, HttpClientModule} from '@angular/common/http';
@@ -9,7 +9,7 @@ import {UserLogoutComponent} from "./user_logout.component";
 import {FormsModule} from "@angular/forms";
 import {CommonModule} from "@angular/common";
 import {AuthTokenInterceptor} from "./authtoken.interceptor";
-
+import {xFormsModule} from "@typexs/ng-base";
 
 
 @NgModule({
@@ -29,7 +29,8 @@ import {AuthTokenInterceptor} from "./authtoken.interceptor";
     ),
     CommonModule,
     HttpClientModule,
-    FormsModule
+    FormsModule,
+    xFormsModule
   ],
   exports: [RouterModule],
   providers: [
@@ -39,21 +40,26 @@ import {AuthTokenInterceptor} from "./authtoken.interceptor";
       useClass: AuthTokenInterceptor,
       multi: true
     },
-    {
-      provide: APP_INITIALIZER,
-      multi: true,
-      deps: [AuthService],
-      useFactory: (auth:AuthService) => {
+  /*
+      {
+        provide: APP_INITIALIZER,
+        multi: true,
+        deps: [AuthService],
 
-        return( startup );
 
-        async function startup() {
-          await auth.configure().toPromise();
-          await auth.initialAuthCheck();
-        }
+        useFactory: function (auth:AuthService) {
+
+
+          async function startup() {
+            await auth.configure().toPromise();
+            await auth.initialAuthCheck();
+          }
+
+          return startup;
 
       }
     }
+          */
   ]
 })
 export class UserModule {

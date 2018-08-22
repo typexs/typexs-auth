@@ -1,4 +1,4 @@
-import {BadRequestError, HttpError} from "routing-controllers";
+import {BadRequestError} from "routing-controllers";
 
 
 export class EmptyHttpRequestError extends BadRequestError {

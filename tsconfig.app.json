@@ -8,7 +8,9 @@
     ]
   },
   "angularCompilerOptions": {
-    "strictMetadataEmit": true
+    "genDir": "build/app-aot",
+    "skipMetadataEmit": false,
+    "skipTemplateCodegen": false
   },
   "include": [
     "src/app/**/*.ts",

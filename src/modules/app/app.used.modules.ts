@@ -4,8 +4,8 @@ import {BrowserModule} from '@angular/platform-browser';
 import {RouterModule} from '@angular/router';
 import {ModuleWithProviders} from '@angular/core';
 import {Type} from '@angular/core';
-import {UserModule} from '../user/user.module';
-import {NavigatorModule} from "typexs-ng/modules/navigator/navigator.module";
+import {UserModule} from "../user/user.module";
+import {NavigatorModule} from "@typexs/ng-base";
 
 
 export const APP_MODULES: Array<Type<any> | ModuleWithProviders | any[]> = [

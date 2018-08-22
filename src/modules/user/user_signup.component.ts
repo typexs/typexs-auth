@@ -1,8 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {AuthService} from "./auth.service";
 import {DefaultUserSignup} from "../../libs/models/DefaultUserSignup";
-import {validate} from "class-validator";
-import * as _ from "lodash";
 import {Router} from "@angular/router";
 
 
@@ -12,11 +10,10 @@ import {Router} from "@angular/router";
 })
 export class UserSignupComponent implements OnInit {
 
-  auth_token: string;
+  //auth_token: string;
 
-  user: DefaultUserSignup;
-
-
+  signup: DefaultUserSignup;
+/*
   password_confirm: string;
 
   validation: { [key: string]: { valid: boolean, checked: boolean, messages: Array<{ type: string, content: string }> } } = {
@@ -25,18 +22,15 @@ export class UserSignupComponent implements OnInit {
     password: {valid: false, checked: false, messages: []},
     mail: {valid: false, checked: false, messages: []}
   };
-
+*/
   constructor(private auth: AuthService, private router: Router) {
-
   }
 
 
   ngOnInit() {
     // TODO check if signup supported
     // TODO must we wait here
-    this.user = this.auth.newUserSignup();
-
-
+    this.signup = this.auth.newUserSignup();
   }
 
 
@@ -45,6 +39,13 @@ export class UserSignupComponent implements OnInit {
   }
 
 
+  async onSubmit($event:any){
+    console.log($event);
+  }
+
+
+
+/*
   async onSubmit() {
 
     let validation: boolean = true;
@@ -100,5 +101,5 @@ export class UserSignupComponent implements OnInit {
     // TODO validate password confirmation
 
   }
-
+*/
 }

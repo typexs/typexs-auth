@@ -1,8 +1,6 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {AuthService} from "./auth.service";
 import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
-import {validate} from "class-validator";
-import * as _ from "lodash";
 import {Router} from "@angular/router";
 
 
@@ -16,12 +14,6 @@ export class UserLoginComponent implements OnInit {
 
   user: DefaultUserLogin;
 
-  validation: { [key: string]: { valid: boolean, checked: boolean, messages: Array<{ type: string, content: string }> } } = {
-    errors: {valid: false, checked: false, messages: []},
-    username: {valid: false, checked: false, messages: []},
-    password: {valid: false, checked: false, messages: []}
-  };
-
 
   constructor(private auth: AuthService, private router: Router) {
   }
@@ -33,7 +25,12 @@ export class UserLoginComponent implements OnInit {
   }
 
 
-  async onSubmit() {
+  async onSubmit($event:any){
+    console.log($event);
+  }
+
+/*
+  async onSubmit($event) {
     let validation: boolean = true;
     let results = await validate(this.user, {validationError: {target: false}});
     Object.keys(this.validation).forEach(key => {
@@ -71,11 +68,7 @@ export class UserLoginComponent implements OnInit {
         this.validation.errors.valid = false;
         this.validation.errors.checked = true;
       }
-
-
     }
-
-
   }
-
+*/
 }

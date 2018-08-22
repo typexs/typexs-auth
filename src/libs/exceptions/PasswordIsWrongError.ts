@@ -1,4 +1,3 @@
-import {UserNotFoundError} from "./UserNotFoundError";
 
 
 export class PasswordIsWrongError extends Error {

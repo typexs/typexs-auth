@@ -5,59 +5,7 @@
   </div>
 
   <div class="card-body">
-    <form role="form" (ngSubmit)="onSubmit()" id="user_login">
-
-      <input name="utf8" type="hidden" value="✓">
-      <input type="hidden" name="authenticity_token" value="{{ auth_token }}">
-
-      <div class="form-group">
-        <div [hidden]="!(validation.errors.checked && !validation.errors.valid)" class="alert alert-danger">
-          <ul>
-            <li *ngFor="let message of validation.errors.messages">{{ message.type }} - {{ message.content }}</li>
-          </ul>
-        </div>
-
-        <label class="control-label" for="user_name">Username</label>
-        <input autofocus="autofocus"
-               class="form-control"
-               type="text"
-               name="user[name]"
-               id="user_name" required
-               [(ngModel)]="user.username">
-        <!--
-                  <div [hidden]="name.valid || name.pristine"
-             class="alert alert-danger">
-          Name is required
-        </div>
-        -->
-        <div [hidden]="!(validation.username.checked && !validation.username.valid)" class="alert alert-danger">
-          <ul>
-            <li *ngFor="let message of validation.username.messages">{{ message.type }} - {{ message.content }}</li>
-          </ul>
-        </div>
-
-        <label class="control-label" for="user_password">Password</label>
-        <input autocomplete="off"
-               class="form-control"
-               type="password"
-               name="user[password]"
-               id="user_password" required
-               [(ngModel)]="user.password">
-
-        <div [hidden]="!(validation.password.checked && !validation.password.valid)" class="alert alert-danger">
-          <ul>
-            <li *ngFor="let message of validation.password.messages">{{ message.type }} - {{ message.content }}</li>
-          </ul>
-        </div>
-
-      </div>
-
-
-      <div class="actions">
-        <input type="submit" name="commit" value="Log in" class="btn btn-default">
-      </div>
-    </form>
-
+    <xform formName="user-login-form" [instance]="user" (ngSubmit)="onSubmit($event)"></xform>
   </div>
 
   <div class="card-footer">
