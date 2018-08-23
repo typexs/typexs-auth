@@ -21,12 +21,11 @@ import {xFormsModule} from "@typexs/ng-base";
   ],
   imports: [
     RouterModule.forChild([
-        {path: 'user', component: UserProfileComponent, data: {label: 'Profile'}},
-        {path: 'user/signup', component: UserSignupComponent, data: {label: 'Register'}},
-        {path: 'user/login', component: UserLoginComponent, data: {label: 'Login'}},
-        {path: 'user/logout', component: UserLogoutComponent, data: {label: 'Logout'}}
-      ]
-    ),
+      {path: 'user', component: UserProfileComponent, data: {label: 'Profile'}},
+      {path: 'user/signup', component: UserSignupComponent, data: {label: 'Register'}},
+      {path: 'user/login', component: UserLoginComponent, data: {label: 'Login'}},
+      {path: 'user/logout', component: UserLogoutComponent, data: {label: 'Logout'}}
+    ]),
     CommonModule,
     HttpClientModule,
     FormsModule,
@@ -40,26 +39,26 @@ import {xFormsModule} from "@typexs/ng-base";
       useClass: AuthTokenInterceptor,
       multi: true
     },
-  /*
-      {
-        provide: APP_INITIALIZER,
-        multi: true,
-        deps: [AuthService],
+    /*
+        {
+          provide: APP_INITIALIZER,
+          multi: true,
+          deps: [AuthService],
 
 
-        useFactory: function (auth:AuthService) {
+          useFactory: function (auth:AuthService) {
 
 
-          async function startup() {
-            await auth.configure().toPromise();
-            await auth.initialAuthCheck();
-          }
+            async function startup() {
+              await auth.configure().toPromise();
+              await auth.initialAuthCheck();
+            }
 
-          return startup;
+            return startup;
 
+        }
       }
-    }
-          */
+            */
   ]
 })
 export class UserModule {

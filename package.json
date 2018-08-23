@@ -88,7 +88,7 @@
     "lodash": "^4.17.10",
     "mocha": "^5.1.1",
     "mocha-typescript": "^1.1.12",
-    "ng-packagr": "^4.1.0",
+    "ng-packagr": "^3.0.6",
     "nyc": "^11.7.1",
     "protractor": "~5.3.1",
     "sinon": "^4.5.0",
@@ -102,11 +102,11 @@
     "typescript-require": "^0.2.10"
   },
   "dependencies": {
-    "@typexs/ng-base": "latest",
+    "@typexs/ng-base": "^0.3.8",
     "bcrypt": "^2.0.1",
     "jsonwebtoken": "^8.2.1",
     "typexs-base": "latest",
-    "typexs-ng": "^0.3.6",
+    "typexs-ng": "latest",
     "typexs-schema": "latest",
     "typexs-server": "latest"
   },

@@ -34,9 +34,10 @@ export class DefaultUserSignup extends AbstractUserSignup {
   @IsEmail()
   mail: string;
 
-
+/*
   @Property({type: 'string', form: 'hidden'})
   authToken: string;
+*/
 
   resetSecret() {
     this.password = null;

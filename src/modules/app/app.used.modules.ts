@@ -6,11 +6,15 @@ import {ModuleWithProviders} from '@angular/core';
 import {Type} from '@angular/core';
 import {UserModule} from "../user/user.module";
 import {NavigatorModule} from "@typexs/ng-base";
+import {xFormsModule} from "@typexs/ng-base";
+import {xViewsModule} from "@typexs/ng-base";
 
 
 export const APP_MODULES: Array<Type<any> | ModuleWithProviders | any[]> = [
   BrowserModule,
   UserModule,
   NavigatorModule,
+  xFormsModule,
+  xViewsModule,
   RouterModule.forRoot(APP_ROUTES)
 ];
