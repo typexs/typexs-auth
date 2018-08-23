@@ -1,6 +1,3 @@
-import {AuthMethod} from "../../entities/AuthMethod";
-
-
 export interface IAuthUser {
   id: number;
 

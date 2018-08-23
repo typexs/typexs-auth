@@ -73,8 +73,6 @@ export class AuthService {
 
   /**
    * Method for interceptor to set the request token
-   *
-   * @param {string} token
    */
   public setToken(token: string): void {
     this.token = token;
@@ -229,7 +227,6 @@ export class AuthService {
    *
    * TODO Impl. support mulitple adapter
    *
-   * @returns {DefaultUserLogin}
    */
   newUserLogin(): DefaultUserLogin {
     return new DefaultUserLogin();
@@ -240,7 +237,6 @@ export class AuthService {
    *
    * TODO Impl. support mulitple adapter
    *
-   * @returns {DefaultUserLogin}
    */
   newUserSignup(): DefaultUserSignup {
     return new DefaultUserSignup();

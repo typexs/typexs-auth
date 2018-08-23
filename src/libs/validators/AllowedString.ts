@@ -10,7 +10,7 @@ export class AllowedCharsConstraint implements ValidatorConstraintInterface {
 }
 */
 
-export function AllowedString(regex:RegExp, validationOptions?: ValidationOptions) {
+export function AllowedString(regex:string, validationOptions?: ValidationOptions) {
   return function (object: Object, propertyName: string) {
     registerDecorator({
       name:"allowedString",
@@ -20,7 +20,7 @@ export function AllowedString(regex:RegExp, validationOptions?: ValidationOption
       constraints: [],
       validator: {
         validate(value: any, args: ValidationArguments) {
-          return regex.test(value);
+          return new RegExp(regex).test(value);
         }
       }
     });

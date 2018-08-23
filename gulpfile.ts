@@ -17,9 +17,8 @@ const shell = require('gulp-shell');
 const replace = require('gulp-replace');
 const sourcemaps = require('gulp-sourcemaps');
 const ts = require('gulp-typescript');
-const debug = require('gulp-debug');
 const sequence = require('run-sequence');
-const webpack = require('webpack-stream');
+
 
 
 // ngc -p tsconfig.app.json
