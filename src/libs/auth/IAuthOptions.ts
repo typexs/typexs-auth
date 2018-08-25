@@ -1,10 +1,11 @@
-export interface IAuthOptions {
+import {IAuthMethodInfo} from "./IAuthMethodInfo";
 
-  type: string;
+export interface IAuthOptions extends IAuthMethodInfo {
 
-  name?: string;
 
   authId?: string;
+
+  serverside?:boolean;
 
   clazz?: Function
 
@@ -16,6 +17,11 @@ export interface IAuthOptions {
   /**
    * Allow signup for this adapter if it is supported
    */
-  allowSignup?:boolean
+  allowSignup?: boolean
+
+  /**
+   * Name keys which must be passed to the frontend
+   */
+  passKeys?: string[];
 
 }

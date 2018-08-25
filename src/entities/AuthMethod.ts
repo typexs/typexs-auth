@@ -15,11 +15,12 @@ import {
 
 import * as _ from "lodash";
 import {AuthUser} from "./AuthUser";
+import {IAuthMethod} from "../libs/models/IAuthMethod";
 
 
 @Entity()
 @Index(["authId", "identifier"], {unique: true})
-export class AuthMethod {
+export class AuthMethod implements IAuthMethod {
 
   @PrimaryGeneratedColumn()
   id: number;
@@ -72,12 +73,9 @@ export class AuthMethod {
 
   @BeforeInsert()
   bin() {
-    console.log('bin',this.id,this.data)
     if (this.data && !_.isString(this.data)) {
       this.data = JSON.stringify(this.data);
-
     }
-    console.log('bin1',this.id,this.data)
   }
 
   @BeforeUpdate()
@@ -88,7 +86,6 @@ export class AuthMethod {
 
   @AfterLoad()
   load() {
-    console.log('load',this.id,this.data)
     if (this.data && _.isString(this.data)) {
       this.data = JSON.parse(this.data);
     }

@@ -24,6 +24,9 @@ export class AuthUser implements IAuthUser {
   @Column({unique: true})
   mail: string;
 
+  @Column({nullable: true})
+  displayName: string;
+
   @Column()
   disabled: boolean = false;
 

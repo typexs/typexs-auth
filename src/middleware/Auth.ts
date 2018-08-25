@@ -12,7 +12,6 @@ import {
 import {Action, IApplication, IMiddleware, IRoutingController, K_ROUTE_CONTROLLER} from 'typexs-server';
 import {AuthLifeCycle, K_LIB_AUTH_ADAPTERS} from "../types";
 import * as _ from 'lodash';
-import {EntityManager} from "typeorm";
 import {AuthUser} from "../entities/AuthUser";
 import {AuthSession} from "../entities/AuthSession";
 import {AuthMethod} from "../entities/AuthMethod";
@@ -27,10 +26,11 @@ import {AbstractUserSignup} from "../libs/models/AbstractUserSignup";
 import {AbstractUserLogin} from "../libs/models/AbstractUserLogin";
 import * as bcrypt from "bcrypt";
 import {IProcessData} from "../libs/models/IProcessData";
-import {AbstractUserLogout} from "../libs/models/AbstractUserLogout";
+import {IAuthMethodInfo} from "../libs/auth/IAuthMethodInfo";
+import {AuthConfigurationFactory} from "../libs/adapter/AuthConfigurationFactory";
 
 
-const DEFAULT_CONFIG_OPTIONS = {
+const DEFAULT_CONFIG_OPTIONS: IAuthConfig = {
   httpAuthKey: 'txs-auth',
   allowSignup: true,
   saltRounds: 5,
@@ -52,6 +52,9 @@ export class Auth implements IMiddleware {
 
   @Inject('storage.default')
   private storage: StorageRef;
+
+  @Inject()
+  private authConfigFactory: AuthConfigurationFactory;
 
   private connection: ConnectionWrapper;
 
@@ -82,25 +85,37 @@ export class Auth implements IMiddleware {
     this.authConfig = <IAuthConfig>x;
     _.defaults(this.authConfig, DEFAULT_CONFIG_OPTIONS);
 
+    await this.authConfigFactory.initialize();
+
     let classes = this.loader.getClasses(K_LIB_AUTH_ADAPTERS);
 
     for (let cls of classes) {
-      let obj = <IAuthAdapter>Reflect.construct(cls, []);
+      let authAdapter = <IAuthAdapter>Reflect.construct(cls, []);
 
-      if (obj.type) {
+      if (!authAdapter.hasRequirements()) {
+        Log.error('Can\'t load adapter ' + authAdapter.type + '! Skipping ... ');
+        continue;
+      }
+
+      if (authAdapter.type) {
         let def: IAdapterDef = {
           className: cls.name,
           filepath: ClassesLoader.getSource(cls),
           moduleName: ClassesLoader.getModulName(cls),
-          name: obj.type
+          name: authAdapter.type
         };
 
         if (!_.isEmpty(this.authConfig) && !_.isEmpty(this.authConfig.methods)) {
           for (let authId in this.authConfig.methods) {
             let methodOptions = this.authConfig.methods[authId];
             methodOptions.authId = authId;
-            if (methodOptions.type === obj.type) {
+            if (methodOptions.type === authAdapter.type) {
               methodOptions.clazz = cls;
+
+              if (authAdapter.updateOptions) {
+                authAdapter.updateOptions(methodOptions);
+              }
+
               let adapterInstance = <IAuthAdapter>Container.get(cls);
               adapterInstance.authId = authId;
               this.adapters.push(adapterInstance);
@@ -114,7 +129,12 @@ export class Auth implements IMiddleware {
     this.enabled = !_.isEmpty(this.authConfig) && _.keys(this.authConfig.methods).length > 0
     if (this.isEnabled()) {
       this.connection = await this.storage.connect();
+
     }
+  }
+
+  getConfig() {
+    return this.config();
   }
 
 
@@ -126,6 +146,7 @@ export class Auth implements IMiddleware {
   getHttpAuthKey() {
     return this.authConfig.httpAuthKey.toLocaleLowerCase();
   }
+
 
   getRemoteAddress(req: any): string {
     if (_.has(req, 'connection.remoteAddress')) {
@@ -164,6 +185,27 @@ export class Auth implements IMiddleware {
       (<IRoutingController>options).authorizationChecker = this.authorizationChecker.bind(this);
       (<IRoutingController>options).currentUserChecker = this.currentUserChecker.bind(this);
     }
+  }
+
+  getSupportedMethodsInfos() {
+    let methods: IAuthMethodInfo[] = []
+
+    for (let method of this.getUsedAuthMethods()) {
+      let methodInfo: IAuthMethodInfo = {
+        label: method.label ? method.label : _.capitalize(method.authId),
+        authId: method.authId,
+        type: method.type
+      }
+
+      if (_.has(method, 'passKeys')) {
+        method.passKeys.forEach(k => {
+          methodInfo[k] = method[k];
+        })
+      }
+
+      methods.push(methodInfo);
+    }
+    return methods;
   }
 
 
@@ -338,103 +380,8 @@ export class Auth implements IMiddleware {
         }
 
         if (loginInstance && loginInstance.isAuthenticated) {
-          let mgr = this.connection.manager;
-          let adapter = this.getAdapterByIdentifier(loginInstance.authId);
-
-          let method = await this.getMethodByUsername(loginInstance.authId, loginInstance.getIdentifier());
-          let user: AuthUser = null;
-          if (_.isEmpty(method)) {
-            // empty method => no account exists
-            if (adapter.canCreateOnLogin()) {
-              // create method and user
-              user = await this.getUserByUsername(loginInstance.getIdentifier());
-
-              if (_.isEmpty(user)) {
-                // user with name does not exists
-                try {
-                  if (adapter.createOnLogin(loginInstance)) {
-                    method = await this.createUserAndMethod(adapter, loginInstance);
-                    user = method.user;
-                  } else {
-                    loginInstance.success = false;
-                  }
-                } catch (err) {
-                  Log.error(err);
-                  loginInstance.addError({
-                    property: 'user',
-                    value: err.message,
-                    constraints: {
-                      user_create_error: "$property error thrown $value."
-                    }
-                  })
-                }
-              } else {
-                // username already used
-                loginInstance.addError({
-                  property: 'username',
-                  value: login.getIdentifier(),
-                  constraints: {
-                    user_already_exists: "$property already reserved."
-                  }
-                })
-              }
-
-            } else {
-              // no user found and auto create not allowed
-              loginInstance.addError({
-                property: 'user',
-                value: login.getIdentifier(),
-                constraints: {
-                  user_not_exists: "$property can not be created for this authentication."
-                }
-              })
-
-            }
-          } else {
-            user = method.user;
-          }
-
-          try {
-
-            let remoteAddress = this.getRemoteAddress(req);
-            let current = new Date((new Date()).getTime() - 24 * 60 * 60 * 1000);
-
-            await mgr.transaction(async em => {
-
-              // delete old user sessions which where last updated 24*60*60s
-              let q = em.createQueryBuilder(AuthSession, "s").delete();
-              q.where("userId = :userId and ip = :ip", {userId: user.id, ip: remoteAddress});
-              q.orWhere("userId = :userId and updated_at < :updated_at", {userId: user.id, updated_at: current});
-              await q.execute();
-
-              let session = new AuthSession();
-              session.ip = remoteAddress;
-              session.user = user;
-              session.authId = adapter.authId;
-              session.token = await this.createToken(session);
-              await Promise.all([
-                em.save(session),
-                em.save(user),
-                em.save(method)]);
-
-              loginInstance.token = session.token;
-              loginInstance.user = user;
-              loginInstance.success = true;
-              res.setHeader(this.getHttpAuthKey(), session.token);
-            });
-
-          } catch (err) {
-            Log.error(err);
-            loginInstance.addError({
-              property: 'user',
-              value: err.message,
-              constraints: {
-                session_error: "$property can not be created for this authentication."
-              }
-            })
-          }
+          loginInstance = await this.doAuthenticatedLogin(loginInstance, req, res);
         }
-
 
         return loginInstance;
       } else {
@@ -447,8 +394,120 @@ export class Auth implements IMiddleware {
         })
         return login;
       }
-
     }
+  }
+
+  async doAuthenticatedLogin(loginInstance: AbstractUserLogin, req: any, res: any): Promise<AbstractUserLogin> {
+    let adapter = this.getAdapterByIdentifier(loginInstance.authId);
+
+    let method = await this.getMethodByUsername(
+      loginInstance.authId,
+      loginInstance.getIdentifier()
+    );
+
+    let user: AuthUser = null;
+
+    if (_.isEmpty(method)) {
+      // empty method => no account exists
+      if (adapter.canCreateOnLogin()) {
+        // create method and user
+        user = await this.getUserByUsername(loginInstance.getIdentifier());
+
+        if (_.isEmpty(user)) {
+          // user with name does not exists
+          try {
+            if (adapter.createOnLogin(loginInstance)) {
+              method = await this.createUserAndMethod(adapter, loginInstance);
+              user = method.user;
+            } else {
+              loginInstance.success = false;
+            }
+          } catch (err) {
+            Log.error(err);
+            loginInstance.addError({
+              property: 'user',
+              value: err.message,
+              constraints: {
+                user_create_error: "$property error thrown $value."
+              }
+            })
+          }
+        } else {
+          // username already used
+          loginInstance.addError({
+            property: 'username',
+            value: loginInstance.getIdentifier(),
+            constraints: {
+              user_already_exists: "$property already reserved."
+            }
+          })
+        }
+      } else {
+        // no user found and auto create not allowed
+        loginInstance.addError({
+          property: 'user',
+          value: loginInstance.getIdentifier(),
+          constraints: {
+            user_not_exists: "$property can not be created for this authentication."
+          }
+        })
+      }
+    } else {
+      await adapter.extend(method, loginInstance);
+      user = method.user;
+    }
+
+    try {
+
+      let remoteAddress = this.getRemoteAddress(req);
+      let current = new Date((new Date()).getTime() - 24 * 60 * 60 * 1000);
+      let mgr = this.connection.manager;
+
+      await mgr.transaction(async em => {
+
+        // delete old user sessions which where last updated 24*60*60s
+        let q = em.createQueryBuilder(AuthSession, "s").delete();
+        q.where("userId = :userId and ip = :ip", {
+          userId: user.id,
+          ip: remoteAddress
+        });
+        q.orWhere("userId = :userId and updated_at < :updated_at", {
+          userId: user.id,
+          updated_at: current
+        });
+        await q.execute();
+
+        let session = new AuthSession();
+        session.ip = remoteAddress;
+        session.user = user;
+        session.authId = adapter.authId;
+        session.token = await this.createToken(session);
+
+        await Promise.all([
+          em.save(session),
+          em.save(user),
+          em.save(method)
+        ]);
+
+        loginInstance.token = session.token;
+        loginInstance.user = user;
+        loginInstance.method = method;
+        loginInstance.success = true;
+        res.setHeader(this.getHttpAuthKey(), session.token);
+      });
+
+    } catch (err) {
+      Log.error(err);
+      loginInstance.addError({
+        property: 'user',
+        value: err.message,
+        constraints: {
+          session_error: "$property can not be created for this authentication."
+        }
+      })
+    }
+
+    return loginInstance;
   }
 
 
@@ -619,29 +678,27 @@ export class Auth implements IMiddleware {
     method.authId = adapter.authId;
     method.type = adapter.type;
 
-    if (signup instanceof AbstractUserSignup) {
-      method.mail = signup.getMail();
-    } else if (signup instanceof AbstractUserLogin) {
-      // mail could be passed by freestyle data object
-      if (_.has(signup, 'data.mail')) {
-        method.mail = _.get(signup, 'data.mail');
-      } else {
-        // TODO create MailError
-        throw new Error('no mail was found for the user account')
+    if (_.has(signup,'data')) {
+      method.data = signup.data;
+    }
+
+    await adapter.extend(method, signup);
+
+    if (!method.mail) {
+      if (signup instanceof AbstractUserSignup) {
+        method.mail = signup.getMail();
+      } else if (signup instanceof AbstractUserLogin) {
+        // mail could be passed by freestyle data object
+        if (_.has(signup, 'data.mail')) {
+          method.mail = _.get(signup, 'data.mail');
+        }
       }
     }
+
     if (!method.mail) {
       // TODO create MailError
       throw new Error('no mail was found in data')
     }
-
-    if(signup.data){
-      method.data = signup.data;
-    }
-
-
-
-    await adapter.extend(method, signup);
     return method;
   }
 
@@ -649,54 +706,40 @@ export class Auth implements IMiddleware {
   private async createUser(adapter: IAuthAdapter, signup: AbstractUserSignup | AbstractUserLogin) {
     let user = new AuthUser();
     user.username = signup.getIdentifier();
-    if (signup instanceof AbstractUserSignup) {
-      user.mail = signup.getMail();
-    } else if (signup instanceof AbstractUserLogin) {
-      // mail could be passed by freestyle data object
-      if (_.has(signup, 'data.mail')) {
-        user.mail = _.get(signup, 'data.mail');
-      } else {
-        // TODO create MailError
-        throw new Error('no mail was found for the user account')
+    await adapter.extend(user, signup);
+
+    if (!user.mail) {
+      if (signup instanceof AbstractUserSignup) {
+        user.mail = signup.getMail();
+      } else if (signup instanceof AbstractUserLogin) {
+        // mail could be passed by freestyle data object
+        if (_.has(signup, 'data.mail')) {
+          user.mail = _.get(signup, 'data.mail');
+        }
       }
     }
 
     if (!user.mail) {
       // TODO create MailError
-      throw new Error('no mail was found in data')
+      throw new Error('no mail was found for the user account')
     }
-
-
-    await adapter.extend(user, signup);
     return user;
   }
 
 
   use(app: IApplication): void {
     if (this.isEnabled()) {
-      /*
-      for (let adapter of this.adapters) {
-        if (adapter.beforeUse) {
-          adapter.beforeUse(app);
-        }
-      }
-      */
-
       if (this.frameworkId === 'express') {
         const session = require('express-session');
         // TODO config session stuff
-        app.use(session(this.authConfig.session))
-      }
-      /*
-            app.use(passport.initialize());
+        app.use(session(this.authConfig.session));
 
-            for (let adapter of this.adapters) {
-              if (adapter.afterUse) {
-                adapter.afterUse(app);
-              }
-            }
-            app.use(passport.session());
-      */
+        for (let adapter of this.adapters) {
+          if (adapter.use) {
+            adapter.use(app, 'after');
+          }
+        }
+      }
     }
   }
 

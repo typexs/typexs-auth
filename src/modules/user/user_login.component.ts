@@ -15,13 +15,13 @@ export class UserLoginComponent implements OnInit {
   user: DefaultUserLogin;
 
 
-  constructor(private auth: AuthService, private router: Router) {
+  constructor(private authService: AuthService, private router: Router) {
   }
 
 
   ngOnInit() {
     // TODO must we wait here
-    this.user = this.auth.newUserLogin();
+    this.user = this.authService.newUserLogin();
   }
 
 

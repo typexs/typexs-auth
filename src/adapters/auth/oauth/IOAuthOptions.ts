@@ -13,4 +13,19 @@ export interface IOAuthOptions extends IAuthOptions {
 
   scopes: any;
 
+
+  requestTokenURL?: string;
+
+  accessTokenURL?: string;
+
+
+  userAuthorizationURL?: string;
+
+  consumerKey?: string;
+
+  consumerSecret?: string;
+
+  callbackURL?: string;
+
+
 }

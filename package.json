@@ -46,6 +46,7 @@
     "@types/lodash": "^4.14.108",
     "@types/mocha": "^5.2.0",
     "@types/node": "~10.0.2",
+    "@types/passport": "^0.4.6",
     "@types/supertest": "^2.0.4",
     "@types/winston": "^2.3.9",
     "body-parser": "^1.18.2",
@@ -90,6 +91,9 @@
     "mocha-typescript": "^1.1.12",
     "ng-packagr": "^3.0.6",
     "nyc": "^11.7.1",
+    "passport": "^0.4.0",
+    "passport-oauth": "^1.0.0",
+    "passport-oauth2": "^1.4.0",
     "protractor": "~5.3.1",
     "sinon": "^4.5.0",
     "sinon-chai": "^3.0.0",
@@ -108,7 +112,7 @@
     "typexs-base": "latest",
     "typexs-ng": "latest",
     "typexs-schema": "latest",
-    "typexs-server": "latest"
+    "typexs-server": "^0.1.15"
   },
   "private": true,
   "nyc": {
@@ -137,6 +141,13 @@
         "refs": [
           "adapters/auth/*/*Adapter.*",
           "src/adapters/auth/*/*Adapter.*"
+        ]
+      },
+      {
+        "topic": "auth.configurations",
+        "refs": [
+          "adapters/auth/*/*Configuration.*",
+          "src/adapters/auth/*/*Configuration.*"
         ]
       }
     ]

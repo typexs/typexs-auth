@@ -38,3 +38,15 @@ auth:
   methods:
     default:
       type: 'database'
+    onedrive:
+      type: 'oauth2'
+      label: OneDrive - Login
+      serverside: true
+      configuration: microsoft
+      clientID: ${onedrive.demoapp.id}
+      clientSecret: ${onedrive.demoapp.secret}
+      callbackURL: http://localhost:4500/api/auth/onedrive/callback
+      scope:
+      - User.Read
+      # - onedrive.read
+

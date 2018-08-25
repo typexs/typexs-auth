@@ -59,10 +59,12 @@ class Auth_ldap_configSpec {
 
     let adapters = auth.getDefinedAdapters();
     let authMethods = auth.getUsedAuthMethods();
+    let authMethodsInfo = auth.getSupportedMethodsInfos();
 
     expect(adapters.map(x => x.name)).to.contain('ldap');
     expect(adapters.map(x => x.className)).to.contain('LdapAdapter');
     expect(authMethods.map(x => x.authId)).to.deep.eq(['default']);
+    expect(authMethodsInfo.map(x => x.label)).to.deep.eq(['Default']);
 
   }
 }

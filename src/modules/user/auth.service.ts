@@ -42,7 +42,7 @@ export class AuthService {
 
 
   configure(): Observable<any> {
-    let config = this.http.get('/api/user/_config');
+    let config = this.http.get('/api/user/$config');
     config.subscribe(obj => {
       _.assign(this._config, obj);
       this._initialized = true;
