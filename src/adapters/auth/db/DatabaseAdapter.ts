@@ -2,7 +2,7 @@
 import * as bcrypt from "bcrypt";
 import * as _ from "lodash";
 
-import {ConnectionWrapper, Inject, StorageRef,NestedException} from "typexs-base";
+import {ConnectionWrapper, Inject, StorageRef,NestedException} from "@typexs/base";
 import {AuthMethod} from "../../../entities/AuthMethod";
 import {UserNotFoundError} from "../../../libs/exceptions/UserNotFoundError";
 import {PasswordIsWrongError} from "../../../libs/exceptions/PasswordIsWrongError";

@@ -3,8 +3,8 @@ import {expect} from 'chai';
 import * as _ from 'lodash';
 import * as request from 'supertest';
 
-import {ServerRegistry,WebServer,K_ROUTE_CONTROLLER,C_DEFAULT} from "typexs-server";
-import {Bootstrap, Config, IFileConfigOptions, PlatformUtils, ClassesLoader, Container,RuntimeLoader} from "typexs-base";
+import {ServerRegistry,WebServer,K_ROUTE_CONTROLLER,C_DEFAULT} from "@typexs/server";
+import {Bootstrap, Config, IFileConfigOptions, PlatformUtils, ClassesLoader, Container,RuntimeLoader} from "@typexs/base";
 
 
 @suite('functional/middleware')

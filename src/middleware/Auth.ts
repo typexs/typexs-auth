@@ -8,8 +8,8 @@ import {
   Log,
   RuntimeLoader,
   StorageRef
-} from 'typexs-base';
-import {Action, IApplication, IMiddleware, IRoutingController, K_ROUTE_CONTROLLER} from 'typexs-server';
+} from '@typexs/base';
+import {Action, IApplication, IMiddleware, IRoutingController, K_ROUTE_CONTROLLER} from '@typexs/server';
 import {AuthLifeCycle, K_LIB_AUTH_ADAPTERS} from "../types";
 import * as _ from 'lodash';
 import {AuthUser} from "../entities/AuthUser";

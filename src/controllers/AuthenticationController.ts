@@ -1,7 +1,7 @@
 import {Param, Authorized, Body, CurrentUser, Get, JsonController, Post, Req, Res} from "routing-controllers";
 
-import {Config, Inject, Log, StorageRef} from "typexs-base";
-import {ContextGroup, IRequest, IResponse} from "typexs-server";
+import {Config, Inject, Log, StorageRef} from "@typexs/base";
+import {ContextGroup, IRequest, IResponse} from "@typexs/server";
 import {Auth} from "../middleware/Auth";
 import {AuthUser} from "../entities/AuthUser";
 import {IProcessData} from "../libs/models/IProcessData";

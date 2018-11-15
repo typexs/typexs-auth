@@ -7,7 +7,7 @@ import {AbstractInputData} from "../../../libs/models/AbstractInputData";
 import {AuthUser} from "../../../entities/AuthUser";
 import {ILdapAuthOptions} from "./ILdapAuthOptions";
 
-import {Log, NestedException} from "typexs-base";
+import {Log, NestedException} from "@typexs/base";
 
 export const K_AUTH_LDAP = 'ldap';
 

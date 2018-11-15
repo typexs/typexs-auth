@@ -6,9 +6,9 @@ import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
 import {AbstractInputData} from "../../../libs/models/AbstractInputData";
 import {AuthUser} from "../../../entities/AuthUser";
 
-import {Log, Inject} from "typexs-base";
+import {Log, Inject} from "@typexs/base";
 import {IOAuth2Options} from "./IOAuth2Options";
-import {IApplication, IRequest, IResponse} from "typexs-server";
+import {IApplication, IRequest, IResponse} from "@typexs/server";
 import {T_AUTH_ADAPTER_STAGE} from "../../../libs/adapter/IAuthAdapter";
 import {AuthConfigurationFactory} from "../../../libs/adapter/AuthConfigurationFactory";
 import {IAuthConfiguration} from "../../../libs/adapter/IAuthConfiguration";

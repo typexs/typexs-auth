@@ -2,7 +2,7 @@ import {IAuthConfiguration} from "../../../libs/adapter/IAuthConfiguration";
 import {IOAuth2Options} from "./IOAuth2Options";
 import * as _ from "lodash";
 import {OAuth2Adapter} from "./OAuth2Adapter";
-import {Log} from "typexs-base";
+import {Log} from "@typexs/base";
 import {IAuthMethod} from "../../../libs/models/IAuthMethod";
 
 

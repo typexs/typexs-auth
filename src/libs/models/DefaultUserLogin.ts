@@ -1,8 +1,8 @@
 import {AbstractUserLogin} from "./AbstractUserLogin";
 import {AllowedString} from "../validators/AllowedString";
 import {MinLength} from "class-validator";
-import {Entity} from "typexs-schema/libs/decorators/Entity";
-import {Property} from "typexs-schema/libs/decorators/Property";
+import {Entity} from "@typexs/schema/libs/decorators/Entity";
+import {Property} from "@typexs/schema/libs/decorators/Property";
 
 
 @Entity(<any>{storeable: false})

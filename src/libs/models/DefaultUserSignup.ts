@@ -1,9 +1,9 @@
 import {IsEmail, MaxLength, MinLength} from "class-validator";
 import {AbstractUserSignup} from "./AbstractUserSignup";
 import {AllowedString} from "../validators/AllowedString";
-import {EqualWith} from "typexs-ng/libs/validators/EqualWith";
-import {Entity} from "typexs-schema/libs/decorators/Entity";
-import {Property} from "typexs-schema/libs/decorators/Property";
+import {EqualWith} from "@typexs/ng/libs/validators/EqualWith";
+import {Entity} from "@typexs/schema/libs/decorators/Entity";
+import {Property} from "@typexs/schema/libs/decorators/Property";
 
 
 @Entity(<any>{storeable: false})

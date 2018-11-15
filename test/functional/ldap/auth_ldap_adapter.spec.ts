@@ -1,5 +1,5 @@
 import {suite, test} from "mocha-typescript";
-import {Bootstrap, Config, Container, Log} from "typexs-base";
+import {Bootstrap, Config, Container, Log} from "@typexs/base";
 import * as _ from "lodash";
 import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
 import {ILdapAuthOptions} from "../../../src/adapters/auth/ldap/ILdapAuthOptions";

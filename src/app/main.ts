@@ -2,7 +2,7 @@ import {enableProdMode} from '@angular/core';
 import {platformBrowserDynamic} from '@angular/platform-browser-dynamic';
 
 // Theme initialization
-import {ThemeRegistry} from 'typexs-ng/libs/angular/ThemeRegistry';
+import {ThemeRegistry} from '@typexs/ng/libs/angular/ThemeRegistry';
 
 import {THEMES} from './themes';
 import {STYLES} from './stylesheets';

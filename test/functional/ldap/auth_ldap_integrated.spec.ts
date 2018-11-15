@@ -1,5 +1,5 @@
 import {suite, test} from "mocha-typescript";
-import {Bootstrap, Container, StorageRef} from "typexs-base";
+import {Bootstrap, Container, StorageRef} from "@typexs/base";
 import * as _ from "lodash";
 import {Auth} from "../../../src/middleware/Auth";
 import {expect} from "chai";

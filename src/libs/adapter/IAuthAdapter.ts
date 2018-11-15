@@ -6,7 +6,7 @@ import {AbstractUserSignup} from "../models/AbstractUserSignup";
 import {AbstractInputData} from "../models/AbstractInputData";
 import {AuthUser} from "../../entities/AuthUser";
 import {AbstractUserLogin} from "../models/AbstractUserLogin";
-import {IApplication, IRequest, IResponse} from "typexs-server";
+import {IApplication, IRequest, IResponse} from "@typexs/server";
 
 
 export type T_AUTH_ADAPTER_STAGE = 'before' | 'after'

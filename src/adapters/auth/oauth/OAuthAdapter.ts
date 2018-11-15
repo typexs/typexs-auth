@@ -6,9 +6,9 @@ import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
 import {AbstractInputData} from "../../../libs/models/AbstractInputData";
 import {AuthUser} from "../../../entities/AuthUser";
 
-import {Log, NestedException} from "typexs-base";
+import {Log, NestedException} from "@typexs/base";
 import {IOAuthOptions} from "./IOAuthOptions";
-import {IApplication} from "typexs-server";
+import {IApplication} from "@typexs/server";
 import {T_AUTH_ADAPTER_STAGE} from "../../../libs/adapter/IAuthAdapter";
 
 export const K_AUTH_OAUTH = 'oauth';

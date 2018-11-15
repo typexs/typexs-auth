@@ -1,5 +1,5 @@
 import {suite, test} from "mocha-typescript";
-import {Bootstrap, Container, ITypexsOptions, StorageRef} from "typexs-base";
+import {Bootstrap, Container, ITypexsOptions, StorageRef} from "@typexs/base";
 import * as _ from "lodash";
 import {Auth} from "../../../src/middleware/Auth";
 import {DefaultUserSignup} from "../../../src/libs/models/DefaultUserSignup";
