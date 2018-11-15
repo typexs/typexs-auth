@@ -7,10 +7,6 @@ import * as gulp from 'gulp';
 import * as watch from 'gulp-watch';
 
 
-// const debug = require('gulp-debug');
-//import * as ts from "gulp-typescript";
-
-
 const bump = require('gulp-bump');
 const del = require('del');
 const shell = require('gulp-shell');

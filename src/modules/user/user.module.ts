@@ -6,10 +6,10 @@ import {AuthService} from "./auth.service";
 import {UserSignupComponent} from "./user_signup.component";
 import {UserLoginComponent} from "./user_login.component";
 import {UserLogoutComponent} from "./user_logout.component";
-import {FormsModule} from "@angular/forms";
+import {FormsModule as NgFormsModule} from "@angular/forms";
 import {CommonModule} from "@angular/common";
 import {AuthTokenInterceptor} from "./authtoken.interceptor";
-import {xFormsModule} from "@typexs/ng-base";
+import {FormsModule} from "@typexs/ng-base";
 
 
 @NgModule({
@@ -28,8 +28,8 @@ import {xFormsModule} from "@typexs/ng-base";
     ]),
     CommonModule,
     HttpClientModule,
-    FormsModule,
-    xFormsModule
+    NgFormsModule,
+    FormsModule
   ],
   exports: [RouterModule],
   providers: [

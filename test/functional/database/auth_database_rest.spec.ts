@@ -4,11 +4,12 @@ import {expect} from 'chai';
 import * as request from 'supertest';
 
 import {K_ROUTE_CONTROLLER, WebServer} from "@typexs/server";
-import {Bootstrap, Container, ITypexsOptions} from "@typexs/base";
+import {Bootstrap, Container} from "@typexs/base";
 
 import {Auth} from "../../../src/middleware/Auth";
 import {DefaultUserSignup} from "../../../src/libs/models/DefaultUserSignup";
 import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
+import {ITypexsOptions} from "@typexs/base/libs/ITypexsOptions";
 
 let inc = 0;
 let bootstrap: Bootstrap = null;

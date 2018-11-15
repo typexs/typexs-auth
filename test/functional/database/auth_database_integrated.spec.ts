@@ -1,5 +1,5 @@
 import {suite, test} from "mocha-typescript";
-import {Bootstrap, Container, ITypexsOptions, StorageRef} from "@typexs/base";
+import {Bootstrap, Container,  StorageRef} from "@typexs/base";
 import * as _ from "lodash";
 import {Auth} from "../../../src/middleware/Auth";
 import {DefaultUserSignup} from "../../../src/libs/models/DefaultUserSignup";
@@ -11,6 +11,7 @@ import {MockResponse} from "../../helper/MockResponse";
 import {MockRequest} from "../../helper/MockRequest";
 import {AuthSession} from "../../../src/entities/AuthSession";
 import {Action} from "routing-controllers";
+import {ITypexsOptions} from "@typexs/base/libs/ITypexsOptions";
 
 let bootstrap: Bootstrap = null;
 
