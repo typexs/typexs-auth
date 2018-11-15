@@ -12,32 +12,13 @@ module.exports = function (config) {
       require('karma-sinon'),
       require('karma-sinon-chai'),
       require('karma-chrome-launcher'),
-      require('karma-firefox-launcher'),
       require('karma-phantomjs-launcher'),
       require('karma-mocha-reporter'),
-//      require('karma-coverage'),
-      require('karma-coverage-istanbul-reporter'),
-//      require('karma-istanbul-threshold'),
       require('@angular/cli/plugins/karma')
     ],
     client: {
       clearContext: false // leave Jasmine Spec Runner output visible in browser
     },
-
-    coverageIstanbulReporter: {
-      dir:path.join(__dirname, 'coverage','karma'),
-      reports: ['json'],
-      fixWebpackSourcePaths: true,
-      skipFilesWithNoCoverage: true
-    },
-    // optionally, configure the reporter
-/*
-    coverageReporter: {
-      dir:'coverage',
-      //reporters: [{type: 'json'}]
-      type:'json-summary'
-    },
-*/
     angularCli: {
       config: './angular-cli.json',
       environment: 'dev'
@@ -49,13 +30,13 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ['PhantomJS'],
+    browsers: ['ChromeHeadless'],
     singleRun: false,
     preprocessors: {
       './src/app/test.ts': ['@angular/cli']
 
     },
-    reporters: ['mocha', 'progress', 'coverage-istanbul'],
+    reporters: ['mocha'],
     mime: {
       'text/x-typescript': ['ts', 'tsx']
     },

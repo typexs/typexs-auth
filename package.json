@@ -7,15 +7,15 @@
     "doc": "docs/de"
   },
   "scripts": {
-    "test": "nyc mocha --opts test/mocha.all.opts && karma start --single-run --browsers PhantomJS --code-coverage",
+    "test": "nyc mocha --opts test/mocha.all.opts && karma start --single-run --browsers ChromeHeadless --code-coverage",
     "posttest": "nyc report --reporter=json && codecov -f coverage/backend/*.json && codecov -f coverage/karma/*.json",
     "ng": "ng",
-    "start": "concurrently \"ng serve -pc proxy.conf.json --open\" \"typexs server default\"",
+    "start": "concurrently \"ng serve -pc proxy.conf.json --open\" \"typexs server\"",
     "build": "ng build --prod",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "mocha": "mocha --opts test/mocha.all.opts",
-    "karma": "karma start --single-run --browsers PhantomJS",
+    "karma": "karma start --single-run --browsers ChromeHeadless",
     "build:lib": "ng-packagr -p bundles/package.json"
   },
   "repository": {
