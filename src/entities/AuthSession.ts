@@ -7,14 +7,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  OneToOne,
-  JoinColumn,
   PrimaryColumn,
   UpdateDateColumn
 } from "typeorm";
-import {AuthUser} from "./AuthUser";
+
 import * as _ from "lodash";
-import {AuthMethod} from "./AuthMethod";
 
 
 @Entity()
@@ -23,18 +20,14 @@ export class AuthSession {
   @PrimaryColumn({type: 'varchar', length: 64})
   token: string;
 
-  @Column({type: 'varchar', length: 15})
+  @Column({type: 'varchar', length: 64})
   ip: string;
 
-  @OneToOne(type => AuthUser,{nullable:true})
-  @JoinColumn()
-  user: AuthUser = null;
+  @Column({type:'int'})
+  userId: number = null;
 
-
-  @Column({nullable: false})
+  @Column()
   authId: string;
-
-
 
   @Column({type: 'text', nullable: true})
   data: any = null;
@@ -44,8 +37,6 @@ export class AuthSession {
 
   @UpdateDateColumn()
   updated_at: Date;
-
-
 
 
   @BeforeInsert()

@@ -3,10 +3,11 @@ import {Param, Authorized, Body, CurrentUser, Get, JsonController, Post, Req, Re
 import {Config, Inject, Log, StorageRef} from "@typexs/base";
 import {ContextGroup, IRequest, IResponse} from "@typexs/server";
 import {Auth} from "../middleware/Auth";
-import {AuthUser} from "../entities/AuthUser";
+
 import {IProcessData} from "../libs/models/IProcessData";
 import {PathParams} from "express-serve-static-core";
 import {inspect} from "util";
+import {User} from "../entities/User";
 
 
 @ContextGroup('api')
@@ -50,14 +51,14 @@ export class AuthenticationController {
 
   @Authorized()
   @Get('/user')
-  user(@CurrentUser({required: true}) user: AuthUser): Promise<IProcessData> {
+  user(@CurrentUser({required: true}) user: User): Promise<IProcessData> {
     return this.auth.getUserData(user);
   }
 
 
   @Authorized()
   @Get('/user/logout')
-  logout(@CurrentUser({required: true}) user: AuthUser, @Req() req: IRequest, @Res() res: IResponse) {
+  logout(@CurrentUser({required: true}) user: User, @Req() req: IRequest, @Res() res: IResponse) {
     return this.auth.doLogout(user, req, res);
   }
 

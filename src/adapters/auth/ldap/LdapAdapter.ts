@@ -4,10 +4,10 @@ import {AuthMethod} from "../../../entities/AuthMethod";
 import {DefaultUserLogin} from "../../../libs/models/DefaultUserLogin";
 import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
 import {AbstractInputData} from "../../../libs/models/AbstractInputData";
-import {AuthUser} from "../../../entities/AuthUser";
 import {ILdapAuthOptions} from "./ILdapAuthOptions";
 
 import {Log, NestedException} from "@typexs/base";
+import {User} from "../../../entities/User";
 
 export const K_AUTH_LDAP = 'ldap';
 
@@ -162,7 +162,7 @@ export class LdapAdapter extends AbstractAuthAdapter {
   }
 
 
-  async extend(obj: AuthUser | AuthMethod, data: AbstractInputData): Promise<void> {
+  async extend(obj: User | AuthMethod, data: AbstractInputData): Promise<void> {
 
   }
 

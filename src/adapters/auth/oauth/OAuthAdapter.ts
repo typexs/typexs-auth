@@ -4,12 +4,13 @@ import {AuthMethod} from "../../../entities/AuthMethod";
 import {DefaultUserLogin} from "../../../libs/models/DefaultUserLogin";
 import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
 import {AbstractInputData} from "../../../libs/models/AbstractInputData";
-import {AuthUser} from "../../../entities/AuthUser";
+
 
 import {Log, NestedException} from "@typexs/base";
 import {IOAuthOptions} from "./IOAuthOptions";
 import {IApplication} from "@typexs/server";
 import {T_AUTH_ADAPTER_STAGE} from "../../../libs/adapter/IAuthAdapter";
+import {User} from "../../../entities/User";
 
 export const K_AUTH_OAUTH = 'oauth';
 
@@ -96,7 +97,7 @@ export class OAuthAdapter extends AbstractAuthAdapter {
   }
 
 
-  async extend(obj: AuthUser | AuthMethod, data: AbstractInputData): Promise<void> {
+  async extend(obj: User | AuthMethod, data: AbstractInputData): Promise<void> {
 
   }
 

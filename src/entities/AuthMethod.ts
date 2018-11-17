@@ -2,19 +2,17 @@ import {
   AfterInsert,
   AfterLoad,
   AfterUpdate,
-  Index,
   BeforeInsert,
   BeforeUpdate,
-  Column,
   CreateDateColumn,
+  Index,
   Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn
+  Column,
+  UpdateDateColumn,
+  PrimaryGeneratedColumn
 } from "typeorm";
 
 import * as _ from "lodash";
-import {AuthUser} from "./AuthUser";
 import {IAuthMethod} from "../libs/models/IAuthMethod";
 
 
@@ -25,19 +23,17 @@ export class AuthMethod implements IAuthMethod {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(type => AuthUser, user => user.authMethods, {nullable: true})
-  user: AuthUser;
-
-  userId: number;
-
-  @Column()
+  @Column({type: 'varchar', length: 128})
   authId: string;
 
-  @Column()
+  @Column({type: 'varchar', length: 32})
   type: string;
 
-  @Column({nullable: true})
+  @Column({type: 'varchar', length: 256, nullable: true})
   mail: string;
+
+  @Column({type: 'int'})
+  userId: number;
 
   /**
    * default marker
@@ -46,16 +42,16 @@ export class AuthMethod implements IAuthMethod {
   @Column()
   standard: boolean = false;
 
-  @Column()
+  @Column({type: 'varchar', length: 256, nullable: true})
   identifier: string;
 
-  @Column({nullable: true})
+  @Column({type: 'varchar', length: 256, nullable: true})
   secret: string;
 
-  @Column()
+  @Column({type: 'int'})
   failed: number = 0;
 
-  @Column()
+  @Column({type: 'int'})
   failLimit: number = 100;
 
   @Column()
@@ -67,7 +63,7 @@ export class AuthMethod implements IAuthMethod {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @Column({type: 'text', nullable: true})
+  @Column({type: 'text'})
   data: any = null;
 
 

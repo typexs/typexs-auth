@@ -4,9 +4,10 @@ import {AuthMethod} from "../../entities/AuthMethod";
 
 import {AbstractUserSignup} from "../models/AbstractUserSignup";
 import {AbstractInputData} from "../models/AbstractInputData";
-import {AuthUser} from "../../entities/AuthUser";
+
 import {AbstractUserLogin} from "../models/AbstractUserLogin";
 import {IApplication, IRequest, IResponse} from "@typexs/server";
+import {User} from "../../entities/User";
 
 
 export type T_AUTH_ADAPTER_STAGE = 'before' | 'after'
@@ -56,6 +57,6 @@ export interface IAuthAdapter {
   updateOptions?(options: IAuthOptions): void;
 
 
-  extend(obj: AuthUser | AuthMethod, data: AbstractInputData): void;
+  extend(obj: User | AuthMethod, data: AbstractInputData): void;
 
 }

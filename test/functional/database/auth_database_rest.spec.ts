@@ -118,7 +118,9 @@ class AuthConfigSpec {
     let token = auth.getToken(res);
     let session = await auth.getSessionByToken(token);
     expect(session).to.not.be.empty;
-    expect(session.user.username).to.be.eq(logIn.username);
+    let user = await auth.getUser(session.userId);
+    expect(user.id).to.be.eq(session.userId);
+    expect(user.username).to.be.eq(logIn.username);
     expect(res.body.success).to.be.true;
     expect(res.body.isAuthenticated).to.be.true;
 

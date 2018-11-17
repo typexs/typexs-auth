@@ -6,10 +6,11 @@ import {IAuthOptions} from "../auth/IAuthOptions";
 import {AuthMethod} from "../../entities/AuthMethod";
 
 import * as _ from "lodash";
-import {AuthUser} from "../../entities/AuthUser";
+
 import {AbstractInputData} from "../models/AbstractInputData";
 import {DefaultUserLogout} from "../models/DefaultUserLogout";
 import {DefaultUserData} from "../models/DefaultUserData";
+import {User} from "../../entities/User";
 
 
 export abstract class AbstractAuthAdapter implements IAuthAdapter {
@@ -30,7 +31,7 @@ export abstract class AbstractAuthAdapter implements IAuthAdapter {
   abstract authenticate(login: any): Promise<boolean> | boolean;
 
 
-  extend(obj:AuthUser | AuthMethod, data: AbstractInputData):void{
+  extend(obj:User | AuthMethod, data: AbstractInputData):void{
   }
 
 

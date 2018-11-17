@@ -12,7 +12,7 @@ import {
 import {Action, IApplication, IMiddleware, IRoutingController, K_ROUTE_CONTROLLER} from '@typexs/server';
 import {AuthLifeCycle, K_LIB_AUTH_ADAPTERS} from "../types";
 import * as _ from 'lodash';
-import {AuthUser} from "../entities/AuthUser";
+
 import {AuthSession} from "../entities/AuthSession";
 import {AuthMethod} from "../entities/AuthMethod";
 import {EmptyHttpRequestError} from "../libs/exceptions/EmptyHttpRequestError";
@@ -28,13 +28,15 @@ import * as bcrypt from "bcrypt";
 import {IProcessData} from "../libs/models/IProcessData";
 import {IAuthMethodInfo} from "../libs/auth/IAuthMethodInfo";
 import {AuthConfigurationFactory} from "../libs/adapter/AuthConfigurationFactory";
+import {User} from "../entities/User";
+import {EntityController} from "@typexs/schema";
 
 
 const DEFAULT_CONFIG_OPTIONS: IAuthConfig = {
   httpAuthKey: 'txs-auth',
   allowSignup: true,
   saltRounds: 5,
-  userClass: AuthUser,
+  userClass: User,
 
   session: {
     secret: CryptUtils.shorthash(new Date() + ''),
@@ -52,6 +54,9 @@ export class Auth implements IMiddleware {
 
   @Inject('storage.default')
   private storage: StorageRef;
+
+  @Inject('EntityController.default')
+  private entityController: EntityController;
 
   @Inject()
   private authConfigFactory: AuthConfigurationFactory;
@@ -248,7 +253,7 @@ export class Auth implements IMiddleware {
   }
 
 
-  getUserData(user: AuthUser, authId: string = 'default') {
+  getUserData(user: User, authId: string = 'default') {
     let exchangeObject = this.getInstanceForData(authId, {user: user});
     exchangeObject.success = true;
     return exchangeObject;
@@ -287,6 +292,8 @@ export class Auth implements IMiddleware {
 
       // validate passed data
       signup = this.getInstanceForSignup(id, signup);
+
+
       let errors = await validate(signup, {validationError: {target: false}});
       if (_.isEmpty(errors)) {
 
@@ -405,7 +412,7 @@ export class Auth implements IMiddleware {
       loginInstance.getIdentifier()
     );
 
-    let user: AuthUser = null;
+    let user: User = null;
 
     if (_.isEmpty(method)) {
       // empty method => no account exists
@@ -418,7 +425,7 @@ export class Auth implements IMiddleware {
           try {
             if (adapter.createOnLogin(loginInstance)) {
               method = await this.createUserAndMethod(adapter, loginInstance);
-              user = method.user;
+              user = await this.getUser(method.userId);
             } else {
               loginInstance.success = false;
             }
@@ -454,7 +461,7 @@ export class Auth implements IMiddleware {
       }
     } else {
       await adapter.extend(method, loginInstance);
-      user = method.user;
+      user = await this.getUser(method.userId);
     }
 
     try {
@@ -479,7 +486,7 @@ export class Auth implements IMiddleware {
 
         let session = new AuthSession();
         session.ip = remoteAddress;
-        session.user = user;
+        session.userId = user.id;
         session.authId = adapter.authId;
         session.token = await this.createToken(session);
 
@@ -543,14 +550,14 @@ export class Auth implements IMiddleware {
   }
 
 
-  async doLogout(user: AuthUser, req: any, res: any) {
+  async doLogout(user: User, req: any, res: any) {
     let logout = this.getInstanceForLogout();
     const token = this.getToken(req);
     logout.success = false;
 
     if (!_.isEmpty(token)) {
       let session = await this.getSessionByToken(token);
-      if (!_.isEmpty(session) && session.user.id === user.id) {
+      if (!_.isEmpty(session) && session.userId === user.id) {
         let repo = this.connection.manager.getRepository(AuthSession);
         let q = repo.createQueryBuilder("s").delete();
         q.where("token = :token", {token: token});
@@ -592,7 +599,7 @@ export class Auth implements IMiddleware {
         let session = await this.getSessionByToken(token);
         if (!_.isEmpty(session)) {
           // TODO check roles
-          let user = session.user;
+          let user = await this.getUser(session.userId);
 
           await Promise.all([
             this.connection.manager.save(user),
@@ -626,25 +633,31 @@ export class Auth implements IMiddleware {
     const token = this.getToken(request);
     let session = await this.getSessionByToken(token);
     if (!_.isEmpty(session)) {
-      return session.user;
+      return this.getUser(session.userId);
     }
     return null;
 
   }
 
 
-  getUserByUsername(username: string) {
-    return this.connection.manager.findOne(AuthUser, {
-      where: {
-        username: username
-      }
-    });
+  getUser(id_or_username: number | string): Promise<User> {
+    let cond = {};
+    if (_.isString(id_or_username)) {
+      cond['username'] = id_or_username;
+    } else {
+      cond['id'] = id_or_username;
+    }
+    return this.entityController.find<User>(User, cond, {limit: 1}).then(u => u.shift());
+  }
+
+
+  async getUserByUsername(username: string) {
+    return this.getUser(username);
   }
 
 
   getMethodByUsername(authId: string, username: string) {
     return this.connection.manager.findOne(AuthMethod, {
-      relations: ["user"],
       where: {
         identifier: username,
         authId: authId
@@ -666,7 +679,7 @@ export class Auth implements IMiddleware {
 
       let method = await this.createMethod(adapter, data);
       method.standard = true;
-      method.user = user;
+      method.userId = user.id;
       return em.save(method);
     });
   }
@@ -678,7 +691,7 @@ export class Auth implements IMiddleware {
     method.authId = adapter.authId;
     method.type = adapter.type;
 
-    if (_.has(signup,'data')) {
+    if (_.has(signup, 'data')) {
       method.data = signup.data;
     }
 
@@ -704,7 +717,7 @@ export class Auth implements IMiddleware {
 
 
   private async createUser(adapter: IAuthAdapter, signup: AbstractUserSignup | AbstractUserLogin) {
-    let user = new AuthUser();
+    let user = new User();
     user.username = signup.getIdentifier();
     await adapter.extend(user, signup);
 

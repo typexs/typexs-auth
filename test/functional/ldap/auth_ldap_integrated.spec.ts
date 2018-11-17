@@ -7,9 +7,10 @@ import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
 import {MockResponse} from "../../helper/MockResponse";
 import {MockRequest} from "../../helper/MockRequest";
 import {ILdapAuthOptions} from "../../../src/adapters/auth/ldap/ILdapAuthOptions";
-import {AuthUser} from "../../../src/entities/AuthUser";
+
 import {AuthMethod} from "../../../src/entities/AuthMethod";
 import {AuthSession} from "../../../src/entities/AuthSession";
+import {User} from "../../../src/entities/User";
 
 let bootstrap: Bootstrap = null;
 
@@ -91,7 +92,7 @@ class AuthLdapSpec {
     expect(_.get(doingLogin.errors, '0.constraints.exists')).to.exist;
 
 
-    let userList = await c.manager.find(AuthUser);
+    let userList = await c.manager.find(User);
     let methodList = await c.manager.find(AuthMethod);
     let sessionList = await c.manager.find(AuthSession);
     console.log(userList,methodList,sessionList);
@@ -109,7 +110,7 @@ class AuthLdapSpec {
     expect(doingLogin.errors).to.be.null;
 
 
-    userList = await c.manager.find(AuthUser);
+    userList = await c.manager.find(User);
     methodList = await c.manager.find(AuthMethod);
     sessionList = await c.manager.find(AuthSession,{relations:['user']});
     console.log(userList,methodList,sessionList);

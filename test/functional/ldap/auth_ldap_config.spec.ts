@@ -3,8 +3,8 @@ import {expect} from 'chai';
 import {Config, Container, FileUtils, PlatformUtils, RuntimeLoader, Storage} from "@typexs/base";
 
 import {Auth} from "../../../src/middleware/Auth";
-import {AuthUser} from "../../../src/entities/AuthUser";
 import {IAuthConfig} from "../../../src/libs/auth/IAuthConfig";
+import {User} from "../../../src/entities/User";
 
 
 @suite('functional/ldap/auth_ldap_config')
@@ -24,7 +24,7 @@ class Auth_ldap_configSpec {
   @test
   async 'ldap integration'() {
     let authCfg: IAuthConfig = {
-      userClass: AuthUser, // ./User as string
+      userClass: User, // ./User as string
       methods: {
         default: {
           type: 'ldap',

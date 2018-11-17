@@ -4,7 +4,6 @@ import {AuthMethod} from "../../../entities/AuthMethod";
 import {DefaultUserLogin} from "../../../libs/models/DefaultUserLogin";
 import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
 import {AbstractInputData} from "../../../libs/models/AbstractInputData";
-import {AuthUser} from "../../../entities/AuthUser";
 
 import {Log, Inject} from "@typexs/base";
 import {IOAuth2Options} from "./IOAuth2Options";
@@ -15,6 +14,7 @@ import {IAuthConfiguration} from "../../../libs/adapter/IAuthConfiguration";
 import {IAuthMethod} from "../../../libs/models/IAuthMethod";
 import {Auth} from "../../../middleware/Auth";
 import {AuthSession} from "../../../entities/AuthSession";
+import {User} from "../../../entities/User";
 
 export const K_AUTH_OAUTH2 = 'oauth2';
 
@@ -157,9 +157,9 @@ export class OAuth2Adapter extends AbstractAuthAdapter {
   }
 
 
-  async extend(obj: AuthUser | AuthMethod | AuthSession, data: AbstractInputData): Promise<void> {
+  async extend(obj: User | AuthMethod | AuthSession, data: AbstractInputData): Promise<void> {
     let user = _.get(data, '_user');
-    if (obj instanceof AuthUser) {
+    if (obj instanceof User) {
       obj.displayName = user.displayName;
       obj.mail = user.mail;
     } else if (obj instanceof AuthMethod) {

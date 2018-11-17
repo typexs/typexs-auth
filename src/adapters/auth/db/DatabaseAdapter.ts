@@ -2,7 +2,7 @@
 import * as bcrypt from "bcrypt";
 import * as _ from "lodash";
 
-import {ConnectionWrapper, Inject, StorageRef,NestedException} from "@typexs/base";
+import {ConnectionWrapper, Inject, StorageRef, NestedException} from "@typexs/base";
 import {AuthMethod} from "../../../entities/AuthMethod";
 import {UserNotFoundError} from "../../../libs/exceptions/UserNotFoundError";
 import {PasswordIsWrongError} from "../../../libs/exceptions/PasswordIsWrongError";
@@ -12,7 +12,9 @@ import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
 
 import {DefaultUserSignup} from "../../../libs/models/DefaultUserSignup";
 import {AbstractInputData} from "../../../libs/models/AbstractInputData";
-import {AuthUser} from "../../../entities/AuthUser";
+import {User} from "../../../entities/User";
+import {EntityController} from "@typexs/schema";
+
 
 export const K_AUTH_DATABASE = 'database';
 
@@ -44,6 +46,9 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
   @Inject('storage.default')
   storage: StorageRef;
 
+  @Inject('EntityController.default')
+  entityController: EntityController;
+
   connection: ConnectionWrapper;
 
   type: string = K_AUTH_DATABASE;
@@ -70,11 +75,11 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
       let authMethod = await this.getAuth(login);
       if (authMethod) {
         login.success = true;
-        login.user = authMethod.user;
+        login.user = await this.entityController.find(User, {id: authMethod.userId},{limit:1});
         return true;
       }
     } catch (err) {
-      if(err instanceof Error){
+      if (err instanceof Error) {
         if (err instanceof PasswordIsWrongError) {
           // TODO handle error messages in error classes and not here
           login.errors = [{
@@ -97,7 +102,7 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
           throw err;
         }
       } else {
-        throw new NestedException(err,"UNKNOWN");
+        throw new NestedException(err, "UNKNOWN");
       }
     }
     return false;
@@ -118,7 +123,7 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
     return bcrypt.compare(str, secret);
   }
 
-  async extend(obj: AuthUser | AuthMethod, data: AbstractInputData): Promise<void> {
+  async extend(obj: User | AuthMethod, data: AbstractInputData): Promise<void> {
     if (obj instanceof AuthMethod && data instanceof DefaultUserSignup) {
       obj.secret = data.password ? await this.crypt(data.password) : null;
     }
@@ -129,34 +134,33 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
     let username = login.username;
     let password = login.password;
 
-    let auth = await this.connection.manager.findOne(AuthMethod,
+    let authMethod = await this.connection.manager.findOne(AuthMethod,
       {
         where:
           {
             identifier: username,
             authId: this.authId,
             type: this.type
-          },
-        relations: ["user"]
+          }
       });
 
-    if (!auth) {
+    if (!authMethod) {
       throw new UserNotFoundError(username);
     }
     // TODO: if password was  wrongly submitted multiple times then disable account and inform user
     // TODO: if disabled the admin should be contacted for re-enabling
 
-    let equal = await this.cryptCompare(password, auth.secret);
+    let equal = await this.cryptCompare(password, authMethod.secret);
     if (!equal) {
-      auth.failed += 1;
-      await this.connection.save(auth);
+      authMethod.failed += 1;
+      await this.connection.save(authMethod);
       throw new PasswordIsWrongError(username);
     }
 
-    auth.failed = 0;
-    await this.connection.save(auth);
+    authMethod.failed = 0;
+    await this.connection.save(authMethod);
 
-    return auth;
+    return authMethod;
   }
 
 
