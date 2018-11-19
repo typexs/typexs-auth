@@ -3,11 +3,12 @@ import {AuthLifeCycle} from "../../types";
 import {AuthMethod} from "../../entities/AuthMethod";
 
 import {AbstractUserSignup} from "../models/AbstractUserSignup";
-import {AbstractInputData} from "../models/AbstractInputData";
+
 
 import {AbstractUserLogin} from "../models/AbstractUserLogin";
 import {IApplication, IRequest, IResponse} from "@typexs/server";
 import {User} from "../../entities/User";
+import {AuthDataContainer} from "../auth/AuthDataContainer";
 
 
 export type T_AUTH_ADAPTER_STAGE = 'before' | 'after'
@@ -32,17 +33,17 @@ export interface IAuthAdapter {
 
   getModelFor(stage: AuthLifeCycle): Function;
 
-  authenticate(login: any): Promise<boolean> | boolean;
+  authenticate<T>(login: AuthDataContainer<T>): Promise<boolean> | boolean;
 
   // getAuth(login: any): Promise<AuthMethod>;
   canCreateOnLogin(): boolean;
 
   canSignup(): boolean;
 
-  signup?(signup: AbstractUserSignup): boolean;
+  signup?(signup: AuthDataContainer<AbstractUserSignup>): boolean;
 
 
-  createOnLogin?(login: AbstractUserLogin): boolean;
+  createOnLogin?(login: AuthDataContainer<AbstractUserLogin>): boolean;
 
 
   handleCallback?(req: IRequest, res: IResponse): void;
@@ -57,6 +58,6 @@ export interface IAuthAdapter {
   updateOptions?(options: IAuthOptions): void;
 
 
-  extend(obj: User | AuthMethod, data: AbstractInputData): void;
+  extend(obj: User | AuthMethod, data: any): void;
 
 }

@@ -28,7 +28,7 @@ const OPTIONS: ITypexsOptions = <ITypexsOptions>{
       }
     }
   }
-}
+};
 
 @suite('functional/auth_database_config')
 class AuthConfigSpec {

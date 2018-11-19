@@ -1,11 +1,6 @@
-import {AbstractInputData} from "./AbstractInputData";
 
-export abstract class AbstractUserLogout extends AbstractInputData{
+export abstract class AbstractUserLogout {
 
   authId: string;
-
-  errors: any = null;
-
-  success: boolean = false;
 
 }

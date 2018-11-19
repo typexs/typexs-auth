@@ -98,7 +98,7 @@ class AuthConfigSpec {
       .send(signUp)
       .expect(200);
 
-    let c = await bootstrap.getStorage().get("default").connect()
+    let c = await bootstrap.getStorage().get("default").connect();
     let data = await c.manager.query("select * from auth_method");
 
     expect(res.body.success).to.be.true;

@@ -1,25 +1,26 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "build/out-tsc/app",
+    "outDir": "build/app",
     "target": "es5",
     "types": [
       "node"
     ]
   },
+  "include": [
+    "src/app/**/*.ts",
+    "src/modules/**/*.ts"
+  ],
+  "exclude": [
+    "src/app/test.ts",
+    "src/modules/**/api/*.ts",
+    "src/modules/**/*.spec.ts",
+    "src/app/**/*.spec.ts"
+  ],
   "angularCompilerOptions": {
     "genDir": "build/app-aot",
     "skipMetadataEmit": false,
     "skipTemplateCodegen": false
-  },
-  "include": [
-    "src/app/**/*.ts",
-    "src/modules/**/*.ts",
-    "node_modules/*/modules/**/*.ts"
-  ],
-  "exclude": [
-    "src/app/test.ts",
-    "src/modules/**/*.spec.ts",
-    "src/app/**/*.spec.ts"
-  ]
+    //"aot":false
+  }
 }

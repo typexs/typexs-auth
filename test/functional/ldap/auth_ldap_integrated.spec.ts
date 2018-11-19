@@ -38,7 +38,7 @@ const settingsTemplate = {
       }
     }
   }
-}
+};
 
 @suite('functional/auth_ldap_integrated')
 class AuthLdapSpec {

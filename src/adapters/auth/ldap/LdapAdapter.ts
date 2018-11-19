@@ -3,11 +3,12 @@ import * as _ from "lodash";
 import {AuthMethod} from "../../../entities/AuthMethod";
 import {DefaultUserLogin} from "../../../libs/models/DefaultUserLogin";
 import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
-import {AbstractInputData} from "../../../libs/models/AbstractInputData";
+
 import {ILdapAuthOptions} from "./ILdapAuthOptions";
 
 import {Log, NestedException} from "@typexs/base";
 import {User} from "../../../entities/User";
+import {AuthDataContainer} from "../../../libs/auth/AuthDataContainer";
 
 export const K_AUTH_LDAP = 'ldap';
 
@@ -54,7 +55,7 @@ const DEFAULTS: ILdapAuthOptions = {
 
 export class LdapAdapter extends AbstractAuthAdapter {
 
-  static clazz: Function
+  static clazz: Function;
 
   type: string = K_AUTH_LDAP;
 
@@ -76,13 +77,14 @@ export class LdapAdapter extends AbstractAuthAdapter {
   }
 
 
-  async authenticate(login: DefaultUserLogin): Promise<boolean> {
+  async authenticate(container: AuthDataContainer<DefaultUserLogin>): Promise<boolean> {
     let ldap = Reflect.construct(LdapAdapter.clazz,[this.options]);
     try {
-      login.isAuthenticated = await ldap.authenticate(login.username, login.password);
-      if (login.isAuthenticated) {
-        login.data = ldap.user;
-        login.success = login.isAuthenticated;
+      let login = container.instance;
+      container.isAuthenticated = await ldap.authenticate(login.username, login.password);
+      if (container.isAuthenticated) {
+        container.data = ldap.user;
+        container.success = container.isAuthenticated;
       } else {
         Log.info('EERR', ldap.error);
       }
@@ -92,7 +94,7 @@ export class LdapAdapter extends AbstractAuthAdapter {
         if (/no such user/.test(ldap.error)) {
           // TODO handle error messages in error classes and not here
           // TODO ISSUE
-          login.addError({
+          container.addError({
             property: "username", // Object's property that haven't pass validation.
             value: "username", // Value that haven't pass a validation.
             constraints: { // Constraints that failed validation with error messages.
@@ -106,7 +108,7 @@ export class LdapAdapter extends AbstractAuthAdapter {
 
         if (/Invalid Credentials/.test(ldap.error.message)) {
           // TODO handle error messages in error classes and not here
-          login.addError({
+          container.addError({
             property: "password", // Object's property that haven't pass validation.
             value: "password", // Value that haven't pass a validation.
             constraints: { // Constraints that failed validation with error messages.
@@ -126,7 +128,7 @@ export class LdapAdapter extends AbstractAuthAdapter {
     } finally {
       await ldap.close();
     }
-    return login.isAuthenticated;
+    return container.isAuthenticated;
 
   }
 
@@ -138,7 +140,7 @@ export class LdapAdapter extends AbstractAuthAdapter {
   */
 
 
-  createOnLogin(login: DefaultUserLogin): boolean {
+  createOnLogin(login: AuthDataContainer<DefaultUserLogin>): boolean {
     let ldapData = login.data;
     let mail = null;
     if (_.has(ldapData, this.options.mailAttr)) {
@@ -162,7 +164,7 @@ export class LdapAdapter extends AbstractAuthAdapter {
   }
 
 
-  async extend(obj: User | AuthMethod, data: AbstractInputData): Promise<void> {
+  async extend(obj: User | AuthMethod, data: any): Promise<void> {
 
   }
 

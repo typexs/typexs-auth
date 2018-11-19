@@ -63,7 +63,7 @@ export class AuthMethod implements IAuthMethod {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @Column({type: 'text'})
+  @Column({type: 'text', nullable: true})
   data: any = null;
 
 

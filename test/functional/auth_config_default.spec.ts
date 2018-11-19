@@ -59,7 +59,7 @@ class AuthConfigSpec {
       name: 'default',
       type: "sqlite",
       database: ":memory:"
-    })
+    });
     await storageRef.prepare();
     Container.set('storage.default', storageRef);
 

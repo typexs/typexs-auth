@@ -11,9 +11,10 @@ import {IDatabaseAuthOptions} from "./IDatabaseAuthOptions";
 import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
 
 import {DefaultUserSignup} from "../../../libs/models/DefaultUserSignup";
-import {AbstractInputData} from "../../../libs/models/AbstractInputData";
+
 import {User} from "../../../entities/User";
 import {EntityController} from "@typexs/schema";
+import {AuthDataContainer} from "../../../libs/auth/AuthDataContainer";
 
 
 export const K_AUTH_DATABASE = 'database';
@@ -23,12 +24,6 @@ const DEFAULTS: IDatabaseAuthOptions = {
 
   type: K_AUTH_DATABASE,
 
-  /*
-  passReqToCallback: false,
-  usernameField: 'authId',
-  passwordField: 'password',
-  */
-
   /**
    * Database auth can't support create on login
    */
@@ -37,6 +32,7 @@ const DEFAULTS: IDatabaseAuthOptions = {
   allowSignup: true,
 
   saltRound: 5
+
 };
 
 
@@ -69,35 +65,35 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
   }
 
 
-  async authenticate(login: DefaultUserLogin) {
+  async authenticate(container: AuthDataContainer<DefaultUserLogin>) {
 
     try {
-      let authMethod = await this.getAuth(login);
+      let authMethod = await this.getAuth(container.instance);
       if (authMethod) {
-        login.success = true;
-        login.user = await this.entityController.find(User, {id: authMethod.userId},{limit:1});
+        container.success = true;
+        container.user = await this.entityController.find(User, {id: authMethod.userId}, {limit: 1});
         return true;
       }
     } catch (err) {
       if (err instanceof Error) {
         if (err instanceof PasswordIsWrongError) {
           // TODO handle error messages in error classes and not here
-          login.errors = [{
+          container.addError({
             property: "password", // Object's property that haven't pass validation.
             value: "password", // Value that haven't pass a validation.
             constraints: { // Constraints that failed validation with error messages.
               exists: "username or password is wrong."
             }
-          }];
+          });
         } else if (err instanceof UserNotFoundError) {
           // TODO handle error messages in error classes and not here
-          login.errors = [{
+          container.addError({
             property: "username", // Object's property that haven't pass validation.
             value: "username", // Value that haven't pass a validation.
             constraints: { // Constraints that failed validation with error messages.
               exists: "username not found"
             }
-          }];
+          });
         } else {
           throw err;
         }
@@ -123,7 +119,7 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
     return bcrypt.compare(str, secret);
   }
 
-  async extend(obj: User | AuthMethod, data: AbstractInputData): Promise<void> {
+  async extend(obj: User | AuthMethod, data: any): Promise<void> {
     if (obj instanceof AuthMethod && data instanceof DefaultUserSignup) {
       obj.secret = data.password ? await this.crypt(data.password) : null;
     }

@@ -1,4 +1,4 @@
-import {suite, test} from "mocha-typescript";
+import {suite, test, timeout} from "mocha-typescript";
 import {Bootstrap, Container, StorageRef} from "@typexs/base";
 import * as _ from "lodash";
 import {Auth} from "../../../src/middleware/Auth";
@@ -13,6 +13,7 @@ import {Action} from "routing-controllers";
 import {ITypexsOptions} from "@typexs/base/libs/ITypexsOptions";
 import {User} from "../../../src/entities/User";
 import {TESTDB_SETTING, TestHelper} from "../TestHelper";
+import {AuthDataContainer} from "../../../src/libs/auth/AuthDataContainer";
 
 let bootstrap: Bootstrap = null;
 let auth: Auth = null;
@@ -35,10 +36,11 @@ const OPTIONS = <ITypexsOptions>{
     level: 'debug',
     transports: [{console: {}}]
   }
-}
+};
 
-@suite('functional/auth_database_integrated')
+@suite('functional/auth_database_integrated') @timeout(10000)
 class Auth_database_integratedSpec {
+
 
   static async before() {
     bootstrap = await TestHelper.bootstrap_basic(OPTIONS);
@@ -56,7 +58,7 @@ class Auth_database_integratedSpec {
 
   @test
   async 'do signup'() {
-    let doingSignup = null;
+    let doingSignup: AuthDataContainer<DefaultUserSignup> = null;
     let signUp: DefaultUserSignup = null;
     let res: any = {};
     let req: any = {};
@@ -66,6 +68,7 @@ class Auth_database_integratedSpec {
     signUp.username = 'superma';
     signUp.mail = `superman${inc++}@test.me`;
     signUp.password = 'passWord2';
+    //signUp.passwordConfirm = 'passWord2';
     doingSignup = await auth.doSignup(signUp, req, res);
 
     expect(doingSignup.success).to.be.false;
@@ -77,31 +80,31 @@ class Auth_database_integratedSpec {
     signUp = auth.getInstanceForSignup('default');
     signUp.username = 's123456789123456789123456789123456789123456789123456789123456789';
     signUp.mail = `superman${inc++}@test.me`;
-    ;
     signUp.password = 'paSsword1';
     doingSignup = await auth.doSignup(signUp, req, res);
     expect(doingSignup.success).to.be.false;
-    expect(doingSignup.errors).to.have.length(1);
+    expect(doingSignup.errors).to.have.length(2);
     expect(_.get(doingSignup.errors, '0.constraints.maxLength')).to.exist;
+    expect(_.get(doingSignup.errors, '1.constraints.equalWith')).to.exist;
 
     // wrong chars in username and password
     signUp = auth.getInstanceForSignup('default');
     signUp.username = 'su$perman';
     signUp.mail = `superman${inc++}@test.me`;
-    ;
     signUp.password = 'paSsw ord';
     doingSignup = await auth.doSignup(signUp, req, res);
     expect(doingSignup.success).to.be.false;
     expect(doingSignup.errors).to.have.length(2);
     expect(_.get(doingSignup.errors, '0.constraints.allowedString')).to.exist;
-    expect(_.get(doingSignup.errors, '1.constraints.allowedString')).to.exist;
+    expect(_.get(doingSignup.errors, '1.constraints.equalWith')).to.exist;
 
     // signup per db
     signUp = auth.getInstanceForSignup('default');
     signUp.username = 'superman';
     signUp.mail = `superman${inc++}@test.me`;
-    ;
     let pwd = signUp.password = 'password';
+    signUp.passwordConfirm = 'password';
+
     doingSignup = await auth.doSignup(signUp, req, res);
     expect(doingSignup.success).to.be.true;
     expect(doingSignup.errors).to.have.length(0);
@@ -140,11 +143,13 @@ class Auth_database_integratedSpec {
     let res = new MockResponse();
     let req = new MockRequest();
 
-    let signUp = auth.getInstanceForSignup('default');
+    let signUp = auth.getInstanceForSignup<DefaultUserSignup>('default');
     signUp.username = 'supermann';
     signUp.mail = `superman${inc++}@test.me`;
     signUp.password = 'password2';
-    await auth.doSignup(signUp, req, res);
+    signUp.passwordConfirm = 'password2';
+    let doingSignup = await auth.doSignup(signUp, req, res);
+    expect(doingSignup.success).to.be.true;
 
 
     // user does not exists
@@ -160,8 +165,8 @@ class Auth_database_integratedSpec {
 
     // content of username and password are wrong
     login = auth.getInstanceForLogin('default');
-    login.username = 'super$man';
-    login.password = 'pass$Word2';
+    login.username = 'super$ man';
+    login.password = 'pass$Wo# rd2';
     doingLogin = await auth.doLogin(login, req, res);
     expect(doingLogin.success).to.be.false;
     expect(doingLogin.isAuthenticated).to.be.false;
@@ -191,13 +196,12 @@ class Auth_database_integratedSpec {
     expect(doingLogin.isAuthenticated).to.be.true;
     expect(doingLogin.user).to.be.not.empty;
     expect(doingLogin.user.id).to.be.greaterThan(0);
-    expect(doingLogin.errors).to.be.null;
+    expect(doingLogin.hasErrors()).to.be.false;
 
     let storageRef: StorageRef = Container.get('storage.default');
     let c = await storageRef.connect();
-    let sessions = await c.manager.getRepository(AuthSession).find({relations: ["user"]});
+    let session = await c.manager.getRepository(AuthSession).findOne({where:{token:doingLogin.token}});
 
-    let session = sessions.shift();
     expect(session.token).to.be.eq(auth.getToken(res));
     //expect(session.user.id).to.be.greaterThan(0);
 
@@ -209,23 +213,24 @@ class Auth_database_integratedSpec {
     let res = new MockResponse();
     let req = new MockRequest();
 
-    let signUp = auth.getInstanceForSignup('default');
+    let signUp = auth.getInstanceForSignup<DefaultUserSignup>('default');
     signUp.username = 'testmann';
     signUp.mail = `superman${inc++}@test.me`;
-    ;
     signUp.password = 'password2';
-    await auth.doSignup(signUp, req, res);
+    signUp.passwordConfirm = 'password2';
+    let doingSignup = await auth.doSignup(signUp, req, res);
+    expect(doingSignup.success).to.be.true;
 
-    let login = auth.getInstanceForLogin('default');
+    let login = auth.getInstanceForLogin<DefaultUserLogin>('default');
     login.username = 'testmann';
     login.password = 'password2';
-    await auth.doLogin(login, req, res);
+    let doingLogin = await auth.doLogin(login, req, res);
+    expect(doingLogin.success).to.be.true;
     req = res;
 
     let action: Action = {
       request: req,
-      response: res,
-      //context:null,
+      response: res
     };
 
     let isAuthenticated = await auth.authorizationChecker(action, []);
@@ -238,35 +243,38 @@ class Auth_database_integratedSpec {
     currentUser = await auth.currentUserChecker(action);
     expect(currentUser.id).to.be.greaterThan(0);
     expect(currentUser.username).to.be.eq("testmann");
-
-
   }
+
 
   @test
   async 'do logout'() {
     let res = new MockResponse();
     let req = new MockRequest();
 
-    let signUp = auth.getInstanceForSignup('default');
-    signUp.username = 'supermann';
+    const USERNAME = 'supermann3';
+
+    let signUp = auth.getInstanceForSignup<DefaultUserSignup>('default');
+    signUp.username = USERNAME;
     signUp.mail = `superman${inc++}@test.me`;
-    ;
     signUp.password = 'password2';
-    await auth.doSignup(signUp, req, res);
+    signUp.passwordConfirm = 'password2';
+    let doingSignup = await auth.doSignup(signUp, req, res);
+    expect(doingSignup.success).to.be.true;
 
-    let login = auth.getInstanceForLogin('default');
-    login.username = 'supermann';
+    let login = auth.getInstanceForLogin<DefaultUserLogin>('default');
+    login.username = USERNAME;
     login.password = 'password2';
-    await auth.doLogin(login, req, res);
+    let doingLogin = await auth.doLogin(login, req, res);
+    expect(doingLogin.success).to.be.true;
     req = res;
-
 
     let req2 = new MockRequest();
     let res2 = new MockResponse();
 
     // empty header, no token found
-    let logout = auth.getInstanceForLogout('default');
-    let doingLogout = await auth.doLogout(logout, req2, res2);
+    let user = new User();
+
+    let doingLogout = await auth.doLogout(user, req2, res2);
     expect(doingLogout.success).to.be.false;
     expect(doingLogout.errors).to.have.length(1);
     expect(_.get(doingLogout.errors, '0.constraints.token_error')).to.exist;
@@ -277,17 +285,17 @@ class Auth_database_integratedSpec {
     res2 = new MockResponse();
 
     // no session found for token
-    logout = auth.getInstanceForLogout('default');
-    doingLogout = await auth.doLogout(logout, req2, res2);
+    user = new User()
+    doingLogout = await auth.doLogout(user, req2, res2);
     expect(doingLogout.success).to.be.false;
     expect(doingLogout.errors).to.have.length(1);
     expect(_.get(doingLogout.errors, '0.constraints.session_error')).to.exist;
 
     // normal logout
-    let user = await auth.getUserByRequest(req);
+    user = await auth.getUserByRequest(req);
     doingLogout = await auth.doLogout(user, req, res);
     expect(doingLogout.success).to.be.true;
-    expect(doingLogout.errors).to.be.null;
+    expect(doingLogout.hasErrors()).to.be.false;
   }
 
   @test.skip()

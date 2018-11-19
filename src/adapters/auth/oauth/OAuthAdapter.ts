@@ -3,14 +3,12 @@ import * as _ from "lodash";
 import {AuthMethod} from "../../../entities/AuthMethod";
 import {DefaultUserLogin} from "../../../libs/models/DefaultUserLogin";
 import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
-import {AbstractInputData} from "../../../libs/models/AbstractInputData";
-
-
-import {Log, NestedException} from "@typexs/base";
+import {Log} from "@typexs/base";
 import {IOAuthOptions} from "./IOAuthOptions";
 import {IApplication} from "@typexs/server";
 import {T_AUTH_ADAPTER_STAGE} from "../../../libs/adapter/IAuthAdapter";
 import {User} from "../../../entities/User";
+import {AuthDataContainer} from "../../../libs/auth/AuthDataContainer";
 
 export const K_AUTH_OAUTH = 'oauth';
 
@@ -69,13 +67,8 @@ export class OAuthAdapter extends AbstractAuthAdapter {
     done();
   }
 
-  async authenticate(login: DefaultUserLogin): Promise<boolean> {
-
-
-
-
-    return login.isAuthenticated;
-
+  async authenticate(container: AuthDataContainer<DefaultUserLogin>): Promise<boolean> {
+    return container.isAuthenticated;
   }
 
   /*
@@ -97,15 +90,8 @@ export class OAuthAdapter extends AbstractAuthAdapter {
   }
 
 
-  async extend(obj: User | AuthMethod, data: AbstractInputData): Promise<void> {
+  async extend(obj: User | AuthMethod, data: any): Promise<void> {
 
   }
 
 }
-
-
-
-/**
- *
- *
- */

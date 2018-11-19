@@ -49,7 +49,7 @@ class Auth_ldap_configSpec {
       name: 'default',
       type: "sqlite",
       database: ":memory:"
-    })
+    });
     await storageRef.prepare();
     Container.set('storage.default', storageRef);
 

@@ -1,7 +1,7 @@
 
 
 export class MockRequest {
-  headers:any = {}
+  headers:any = {};
 
   setHeader(k:string,v:string) {
     this.headers[k] = v;

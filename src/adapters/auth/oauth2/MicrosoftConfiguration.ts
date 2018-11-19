@@ -2,8 +2,8 @@ import {IAuthConfiguration} from "../../../libs/adapter/IAuthConfiguration";
 import {IOAuth2Options} from "./IOAuth2Options";
 import * as _ from "lodash";
 import {OAuth2Adapter} from "./OAuth2Adapter";
-import {Log} from "@typexs/base";
 import {IAuthMethod} from "../../../libs/models/IAuthMethod";
+import {IAuthAdapter} from "../../../libs/adapter/IAuthAdapter";
 
 
 const AUTH_URL = 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize';
@@ -30,11 +30,10 @@ export class MicrosoftConfiguration implements IAuthConfiguration {
   }
 
 
-  onAuthentication(adapter: OAuth2Adapter, accessToken: string, refreshToken: string, profile: any) {
+  onAuthentication(adapter: IAuthAdapter, accessToken: string, refreshToken: string, profile: any) : Promise<any> {
     let self = this;
     return new Promise((resolve, reject) => {
-
-      adapter.strategy._oauth2.get(
+      (<any>adapter).strategy._oauth2.get(
         'https://graph.microsoft.com/v1.0/me',
         //'https://api.onedrive.com/v1.0/drive',
         accessToken,

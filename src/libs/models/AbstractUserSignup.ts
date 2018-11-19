@@ -1,15 +1,8 @@
-import {AbstractInputData} from "./AbstractInputData";
 
-export abstract class AbstractUserSignup extends AbstractInputData {
+
+export abstract class AbstractUserSignup {
 
   authId: string;
-
-  user: any = null;
-
-  errors: any = [];
-
-  success: boolean = false;
-
 
   abstract resetSecret(): void;
 

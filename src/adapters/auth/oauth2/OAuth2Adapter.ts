@@ -3,18 +3,19 @@ import * as _ from "lodash";
 import {AuthMethod} from "../../../entities/AuthMethod";
 import {DefaultUserLogin} from "../../../libs/models/DefaultUserLogin";
 import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
-import {AbstractInputData} from "../../../libs/models/AbstractInputData";
+
 
 import {Log, Inject} from "@typexs/base";
 import {IOAuth2Options} from "./IOAuth2Options";
 import {IApplication, IRequest, IResponse} from "@typexs/server";
-import {T_AUTH_ADAPTER_STAGE} from "../../../libs/adapter/IAuthAdapter";
+import {IAuthAdapter, T_AUTH_ADAPTER_STAGE} from "../../../libs/adapter/IAuthAdapter";
 import {AuthConfigurationFactory} from "../../../libs/adapter/AuthConfigurationFactory";
 import {IAuthConfiguration} from "../../../libs/adapter/IAuthConfiguration";
 import {IAuthMethod} from "../../../libs/models/IAuthMethod";
 import {Auth} from "../../../middleware/Auth";
 import {AuthSession} from "../../../entities/AuthSession";
 import {User} from "../../../entities/User";
+import {AuthDataContainer} from "../../../libs/auth/AuthDataContainer";
 
 export const K_AUTH_OAUTH2 = 'oauth2';
 
@@ -82,7 +83,7 @@ export class OAuth2Adapter extends AbstractAuthAdapter {
     let error = null;
     if (this.configuration) {
       try {
-        profile = await this.configuration.onAuthentication(this, accessToken, refreshToken, profile);
+        profile = await this.configuration.onAuthentication(<any>this, accessToken, refreshToken, profile);
       } catch (e) {
         Log.error(e);
         error = e;
@@ -91,14 +92,12 @@ export class OAuth2Adapter extends AbstractAuthAdapter {
 
     done(error, profile, {accessToken: accessToken, refreshToken: refreshToken});
 
-
   }
 
 
-  async authenticate(login: DefaultUserLogin): Promise<boolean> {
+  async authenticate(container: AuthDataContainer<DefaultUserLogin>): Promise<boolean> {
     Log.info('OAuth2->authenticate');
-
-    return login.isAuthenticated;
+    return container.isAuthenticated;
   }
 
 
@@ -125,21 +124,22 @@ export class OAuth2Adapter extends AbstractAuthAdapter {
             }
 
             let login = new DefaultUserLogin();
+            let container = new AuthDataContainer(login);
             login.username = user.identifier;
             login.password = 'XXXXXXXXXXXXXXX';
             login.authId = self.authId;
-            login.data = user.data;
+            container.data = user.data;
             (<any>login)._user = user;
             (<any>login)._info = info;
 
-            login = <any>await self.auth.doAuthenticatedLogin(login, req, res);
-            Log.info(login);
+            container = <any>await self.auth.doAuthenticatedLogin(container, req, res);
+            Log.info(container);
 
             // TODO add hasErrors
-            if (login.errors && login.errors.length > 0) {
+            if (container.hasErrors()) {
               return res.redirect('/user/login');
             }
-            return res.redirect('/users/' + login.user.id);
+            return res.redirect('/users/' + container.user.id);
           })(req, res, next);
 
         });
@@ -157,7 +157,7 @@ export class OAuth2Adapter extends AbstractAuthAdapter {
   }
 
 
-  async extend(obj: User | AuthMethod | AuthSession, data: AbstractInputData): Promise<void> {
+  async extend(obj: User | AuthMethod | AuthSession, data: any): Promise<void> {
     let user = _.get(data, '_user');
     if (obj instanceof User) {
       obj.displayName = user.displayName;

@@ -10,7 +10,7 @@ export const TESTDB_SETTING = {
   database: ':memory:',
   logger: 'simple-console',
   logging: 'all'
-}
+};
 
 
 export class TestHelper {

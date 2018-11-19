@@ -1,13 +1,14 @@
-import {Param, Authorized, Body, CurrentUser, Get, JsonController, Post, Req, Res} from "routing-controllers";
+import {Authorized, Body, CurrentUser, Get, JsonController, Post, Req, Res} from "routing-controllers";
 
-import {Config, Inject, Log, StorageRef} from "@typexs/base";
+import {Inject} from "@typexs/base";
 import {ContextGroup, IRequest, IResponse} from "@typexs/server";
 import {Auth} from "../middleware/Auth";
 
-import {IProcessData} from "../libs/models/IProcessData";
-import {PathParams} from "express-serve-static-core";
-import {inspect} from "util";
+
 import {User} from "../entities/User";
+import {AuthDataContainer} from "../libs/auth/AuthDataContainer";
+import {AbstractUserSignup} from "../libs/models/AbstractUserSignup";
+import {AbstractUserLogin} from "../libs/models/AbstractUserLogin";
 
 
 @ContextGroup('api')
@@ -15,8 +16,8 @@ import {User} from "../entities/User";
 export class AuthenticationController {
 
 
-  @Inject("storage.default")
-  storage: StorageRef;
+  //@Inject("storage.default")
+  //storage: StorageRef;
 
 
   @Inject("Auth")
@@ -38,21 +39,21 @@ export class AuthenticationController {
 
 
   @Post('/user/signup')
-  register(@Body() signup: any, @Req() req: IRequest, @Res() res: IResponse): Promise<IProcessData> {
+  register(@Body() signup: any, @Req() req: IRequest, @Res() res: IResponse): Promise<AuthDataContainer<AbstractUserSignup>> {
     return this.auth.doSignup(signup, req, res);
   }
 
 
   @Post('/user/login')
-  login(@Body() login: any, @Req() req: IRequest, @Res() res: IResponse): Promise<IProcessData> {
+  login(@Body() login: any, @Req() req: IRequest, @Res() res: IResponse): Promise<AuthDataContainer<AbstractUserLogin>> {
     return this.auth.doLogin(login, req, res);
   }
 
 
   @Authorized()
   @Get('/user')
-  user(@CurrentUser({required: true}) user: User): Promise<IProcessData> {
-    return this.auth.getUserData(user);
+  async user(@CurrentUser({required: true}) user: User): Promise<User> {
+    return user;
   }
 
 

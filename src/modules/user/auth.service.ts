@@ -10,8 +10,8 @@ import {AbstractUserLogin} from "../../libs/models/AbstractUserLogin";
 import {AbstractUserLogout} from "../../libs/models/AbstractUserLogout";
 import {DefaultUserLogout} from "../../libs/models/DefaultUserLogout";
 import {Observable} from "rxjs/Observable";
-import {AbstractUserData} from "../../libs/models/AbstractUserData";
-import {DefaultUserData} from "../../libs/models/DefaultUserData";
+import {User} from "../../entities/User";
+import {AuthDataContainer} from "../../libs/auth/AuthDataContainer";
 
 
 @Injectable()
@@ -79,12 +79,12 @@ export class AuthService {
   }
 
 
-  getUser(): Promise<AbstractUserData> {
+  getUser(): Promise<User> {
     this.loading = true;
     let req = this.http.get('/api/user');
     return new Promise((resolve, reject) => {
       req.subscribe(
-        (user: AbstractUserData) => {
+        (user: User) => {
           console.log(user);
           this.loading = false;
           resolve(user);
@@ -92,9 +92,7 @@ export class AuthService {
         (error: Error) => {
           console.error(error);
           this.loading = false;
-          let user = new DefaultUserData();
-          user.addError({property: 'error', value: error.message, error: error});
-          resolve(user);
+          reject(error);
         }
       );
     });
@@ -143,12 +141,12 @@ export class AuthService {
   }
   */
 
-  signup(signup: AbstractUserSignup): Promise<AbstractUserSignup> {
+  signup(signup: AbstractUserSignup): Promise<AuthDataContainer<AbstractUserSignup>> {
     this.loading = true;
     let signupReq = this.http.post('/api/user/signup', signup);
     return new Promise((resolve, reject) => {
       signupReq.subscribe(
-        (user: AbstractUserSignup) => {
+        (user: AuthDataContainer<AbstractUserSignup>) => {
           this.loading = false;
           console.log(user);
           this.connected = false;
@@ -157,23 +155,24 @@ export class AuthService {
         (error: Error) => {
           this.loading = false;
           this.connected = false;
-          signup.addError({property: 'error', value: error.message, error: error});
+          //signup.addError({property: 'error', value: error.message, error: error});
           signup.resetSecret();
           console.error(error);
-          resolve(signup);
+          //resolve(signup);
+          reject(error);
         }
       );
     });
   }
 
 
-  authenticate(login: AbstractUserLogin): Promise<AbstractUserLogin> {
+  authenticate(login: AbstractUserLogin): Promise<AuthDataContainer<AbstractUserLogin>> {
     this.loading = true;
     let loginReq = this.http.post('/api/user/login', login);
 
     return new Promise((resolve, reject) => {
       loginReq.subscribe(
-        (user: AbstractUserLogin) => {
+        (user: AuthDataContainer<AbstractUserLogin>) => {
           this.loading = false;
           this.connected = true;
           console.log(user);
@@ -183,12 +182,12 @@ export class AuthService {
         (error: Error) => {
           this.loading = false;
           this.connected = false;
-          login.addError({property: 'error', value: error.message, error: error});
+         // login.addError({property: 'error', value: error.message, error: error});
           login.resetSecret();
           this.clearStoredToken();
 
           console.error(error);
-          resolve(login);
+          reject(error);
         }
       );
     })
@@ -196,13 +195,13 @@ export class AuthService {
 
 
 
-  logout(logout: AbstractUserLogout): Promise<AbstractUserLogout> {
+  logout(logout: AbstractUserLogout): Promise<AuthDataContainer<AbstractUserLogout>> {
     this.loading = true;
     let req = this.http.get('/api/user/logout');
 
     return new Promise((resolve, reject) => {
       req.subscribe(
-        (user: AbstractUserLogout) => {
+        (user: AuthDataContainer<AbstractUserLogout>) => {
           console.log(user);
           this.loading = false;
           this.clearStoredToken();
@@ -212,8 +211,7 @@ export class AuthService {
           console.error(error);
           this.loading = false;
           this.clearStoredToken();
-          logout.addError({property: 'error', value: error.message, error: error});
-          resolve(logout);
+          reject(error);
         }
       );
 

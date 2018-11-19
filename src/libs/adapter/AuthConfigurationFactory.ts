@@ -26,7 +26,7 @@ export class AuthConfigurationFactory {
       let cfg: IAuthConfigurationDef = {
         id: adapterInstance.id,
         cls: cls
-      }
+      };
       this.configurations.push(cfg);
     }
   }
