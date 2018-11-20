@@ -371,12 +371,11 @@ export class Auth implements IMiddleware {
    * @returns {Promise<AbstractUserLogin>}
    */
   async doLogin(login: AbstractUserLogin, req: any, res: any): Promise<AuthDataContainer<AbstractUserLogin>> {
-    // if logged in
-    // passport.authenticate()
+    let id = this.getAuthIdFromObject(login);
+    login = this.getInstanceForLogin(id, login);
     let container: AuthDataContainer<AbstractUserLogin> = new AuthDataContainer<AbstractUserLogin>(login);
     let isAuthenticated = await this.isAuthenticated(req);
     if (isAuthenticated) {
-
       container.isAuthenticated = isAuthenticated;
       login.resetSecret();
       return container;

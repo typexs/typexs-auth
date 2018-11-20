@@ -43,6 +43,7 @@ export class DefaultUserSignup extends AbstractUserSignup {
 
   resetSecret() {
     this.password = null;
+    this.passwordConfirm = null;
   }
 
 

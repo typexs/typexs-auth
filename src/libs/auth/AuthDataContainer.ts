@@ -1,5 +1,5 @@
-import {DataContainer} from "@typexs/schema/libs/DataContainer";
-
+import {DataContainer, STATE_KEY} from "@typexs/schema/libs/DataContainer";
+import * as _ from 'lodash'
 
 export class AuthDataContainer<T> extends DataContainer<T> {
 
@@ -24,5 +24,16 @@ export class AuthDataContainer<T> extends DataContainer<T> {
     super(instance);
   }
 
+  applyState(): void {
+    super.applyState();
+
+    ['isAuthenticated', 'success', 'method', 'token', 'user', 'data'].forEach(k => {
+      const value = _.get(this, k, null);
+      if (_.isBoolean(value) || !_.isEmpty(value)) {
+        _.set(<any>this.instance, [STATE_KEY, k].join('.'), value);
+      }
+    });
+
+  }
 
 }

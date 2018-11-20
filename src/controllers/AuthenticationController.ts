@@ -4,9 +4,7 @@ import {Inject} from "@typexs/base";
 import {ContextGroup, IRequest, IResponse} from "@typexs/server";
 import {Auth} from "../middleware/Auth";
 
-
 import {User} from "../entities/User";
-import {AuthDataContainer} from "../libs/auth/AuthDataContainer";
 import {AbstractUserSignup} from "../libs/models/AbstractUserSignup";
 import {AbstractUserLogin} from "../libs/models/AbstractUserLogin";
 
@@ -39,14 +37,20 @@ export class AuthenticationController {
 
 
   @Post('/user/signup')
-  register(@Body() signup: any, @Req() req: IRequest, @Res() res: IResponse): Promise<AuthDataContainer<AbstractUserSignup>> {
-    return this.auth.doSignup(signup, req, res);
+  register(@Body() signup: any, @Req() req: IRequest, @Res() res: IResponse): Promise<AbstractUserSignup> {
+    return this.auth.doSignup(signup, req, res).then(c => {
+      c.applyState();
+      return c.instance
+    });
   }
 
 
   @Post('/user/login')
-  login(@Body() login: any, @Req() req: IRequest, @Res() res: IResponse): Promise<AuthDataContainer<AbstractUserLogin>> {
-    return this.auth.doLogin(login, req, res);
+  login(@Body() login: any, @Req() req: IRequest, @Res() res: IResponse): Promise<AbstractUserLogin> {
+    return this.auth.doLogin(login, req, res).then(c => {
+      c.applyState();
+      return c.instance
+    });
   }
 
 
@@ -60,7 +64,10 @@ export class AuthenticationController {
   @Authorized()
   @Get('/user/logout')
   logout(@CurrentUser({required: true}) user: User, @Req() req: IRequest, @Res() res: IResponse) {
-    return this.auth.doLogout(user, req, res);
+    return this.auth.doLogout(user, req, res).then(e => {
+      e.applyState();
+      return e.instance
+    });
   }
 
 
