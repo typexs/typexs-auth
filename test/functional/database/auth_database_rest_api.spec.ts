@@ -1,4 +1,4 @@
-import {suite, test} from "mocha-typescript";
+import {suite, timeout, test} from "mocha-typescript";
 
 import {expect} from 'chai';
 import * as request from 'supertest';
@@ -10,37 +10,37 @@ import {Auth} from "../../../src/middleware/Auth";
 import {DefaultUserSignup} from "../../../src/libs/models/DefaultUserSignup";
 import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
 import {ITypexsOptions} from "@typexs/base/libs/ITypexsOptions";
+import {TESTDB_SETTING, TestHelper} from "../TestHelper";
 
 let inc = 0;
 let bootstrap: Bootstrap = null;
 let web: WebServer = null;
 
-@suite('functional/auth_database_rest')
+
+const OPTIONS = <ITypexsOptions>{
+  storage: {
+    default: TESTDB_SETTING
+  },
+  auth: {
+    methods: {
+      default: {
+        type: 'database',
+      }
+    }
+  },
+  logging: {
+    enable: true,
+    level: 'debug',
+    transports: [{console: {}}]
+  }
+};
+
+
+@suite('functional/auth_database_rest_api') @timeout(10000)
 class AuthConfigSpec {
 
   static async before() {
-    bootstrap = Bootstrap.setConfigSources([{type: 'system'}])
-      .configure(<ITypexsOptions>{
-        storage: {
-          default: {
-            synchronize: true,
-            type: 'sqlite',
-            database: ':memory:'
-          }
-        },
-        auth: {
-          methods: {
-            default: {
-              type: 'database'
-            }
-          }
-        }
-      })
-      .activateErrorHandling()
-      .activateLogger();
-
-    await bootstrap.prepareRuntime();
-    await bootstrap.activateStorage();
+    bootstrap = await TestHelper.bootstrap_basic(OPTIONS);
 
     web = Container.get(WebServer);
     await web.initialize({
@@ -74,13 +74,17 @@ class AuthConfigSpec {
     signUp.username = 'superman';
     signUp.mail = `superman${inc++}@test.me`;
     signUp.password = 'password';
+    signUp.passwordConfirm = 'password';
 
     let res = await request(web.getUri())
       .post('/api/user/signup')
       .send(signUp)
       .expect(200);
-    expect(res.body.success).to.be.true;
+
+
+    expect(res.body.$state.success).to.be.true;
     expect(res.body.password).to.be.null;
+    expect(res.body.passwordConfirm).to.be.null;
   }
 
 
@@ -92,6 +96,7 @@ class AuthConfigSpec {
     signUp.username = 'testmann';
     signUp.mail = 'testman@test.tx';
     signUp.password = 'password';
+    signUp.passwordConfirm = 'password';
 
     let res = await request(web.getUri())
       .post('/api/user/signup')
@@ -101,7 +106,7 @@ class AuthConfigSpec {
     let c = await bootstrap.getStorage().get("default").connect();
     let data = await c.manager.query("select * from auth_method");
 
-    expect(res.body.success).to.be.true;
+    expect(res.body.$state.success).to.be.true;
     expect(res.body.password).to.be.null;
 
 
@@ -121,23 +126,23 @@ class AuthConfigSpec {
     let user = await auth.getUser(session.userId);
     expect(user.id).to.be.eq(session.userId);
     expect(user.username).to.be.eq(logIn.username);
-    expect(res.body.success).to.be.true;
-    expect(res.body.isAuthenticated).to.be.true;
+    expect(res.body.$state.success).to.be.true;
+    expect(res.body.$state.isAuthenticated).to.be.true;
 
     res = await request(web.getUri())
       .get('/api/user')
       .set(auth.getHttpAuthKey(), token)
       .expect(200);
 
-    expect(res.body.success).to.be.true;
-    expect(res.body.user.username).to.be.eq(logIn.username);
+    expect(res.body.id).to.be.greaterThan(0);
+    expect(res.body.username).to.be.eq(logIn.username);
 
     res = await request(web.getUri())
       .get('/api/user/logout')
       .set(auth.getHttpAuthKey(), token)
       .expect(200);
 
-    expect(res.body.success).to.be.true;
+    expect(res.body.$state.success).to.be.true;
 
     res = await request(web.getUri())
       .get('/api/user')
