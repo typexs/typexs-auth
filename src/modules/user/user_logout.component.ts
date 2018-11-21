@@ -10,11 +10,6 @@ import * as _ from 'lodash';
 export class UserLogoutComponent implements OnInit {
 
 
-  validation: { [key: string]: { valid: boolean, checked: boolean, messages: Array<{ type: string, content: string }> } } = {
-    errors: {valid: false, checked: false, messages: []}
-  };
-
-
   constructor(private auth: AuthService, private router: Router) {
 
   }
@@ -23,18 +18,19 @@ export class UserLogoutComponent implements OnInit {
     let logout = this.auth.newUserLogout();
     logout = <any>await this.auth.logout(logout);
 
-    if (logout.success) {
+    if (logout.$state.success) {
       await this.router.navigateByUrl('/');
     } else {
       // TODO how to handle errors
-      if (_.isArray(logout.errors)) {
+      /*
+      if (_.isArray(logout.$state.errors)) {
         this.validation.errors.messages.push({type: 'error', content: JSON.stringify(logout.errors)})
       } else {
         this.validation.errors.messages.push({type: 'error', content: 'UNKNOWN'})
       }
       this.validation.errors.valid = false;
       this.validation.errors.checked = true;
-
+*/
     }
   }
 

@@ -1,7 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {AuthService} from "./auth.service";
 import {Router} from "@angular/router";
-import {DefaultUserData} from "../../libs/models/DefaultUserData";
+import {User} from "../../entities/User";
+
 
 /*
 @NgRoute({
@@ -17,7 +18,7 @@ import {DefaultUserData} from "../../libs/models/DefaultUserData";
 })
 export class UserProfileComponent implements OnInit {
 
-  data: DefaultUserData;
+  data: User;
 
   constructor(private auth: AuthService, private router: Router) {
   }

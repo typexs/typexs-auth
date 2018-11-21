@@ -48,7 +48,12 @@ const DEFAULTS: ILdapAuthOptions = {
   allowSignup: false,
 
 
-  reconnect: true
+  reconnect: true,
+
+  timeout: 5000,
+
+//  connectTimeout: 5000,
+
 
 };
 
@@ -106,7 +111,7 @@ export class LdapAdapter extends AbstractAuthAdapter {
         }
       } else if (ldap.error instanceof Error) {
 
-        if (/Invalid Credentials/.test(ldap.error.message)) {
+        if (/Invalid Credentials/.test(ldap.error.lde_message)) {
           // TODO handle error messages in error classes and not here
           container.addError({
             property: "password", // Object's property that haven't pass validation.
@@ -126,7 +131,9 @@ export class LdapAdapter extends AbstractAuthAdapter {
 
 
     } finally {
-      await ldap.close();
+      //if(!_.get(this.options,'reconnect',false)){
+        await ldap.close();
+      //}
     }
     return container.isAuthenticated;
 

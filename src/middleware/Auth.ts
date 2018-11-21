@@ -318,7 +318,7 @@ export class Auth implements IMiddleware {
           try {
             let isSignuped = await adapter.signup(dataContainer);
             if (isSignuped) {
-              method = await this.createUserAndMethod(adapter, signup);
+              method = await this.createUserAndMethod(adapter, dataContainer);
               dataContainer.success = isSignuped;
             } else {
               // TODO
@@ -432,7 +432,7 @@ export class Auth implements IMiddleware {
           // user with name does not exists
           try {
             if (adapter.createOnLogin(dataContainer)) {
-              method = await this.createUserAndMethod(adapter, loginInstance);
+              method = await this.createUserAndMethod(adapter, dataContainer);
               user = await this.getUser(method.userId);
             } else {
               dataContainer.success = false;
@@ -675,13 +675,13 @@ export class Auth implements IMiddleware {
   }
 
 
-  async createUserAndMethod(adapter: IAuthAdapter, data: AbstractUserSignup | AbstractUserLogin): Promise<AuthMethod> {
+  async createUserAndMethod(adapter: IAuthAdapter,dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>): Promise<AuthMethod> {
     let mgr = this.connection.manager;
-    let user = await this.createUser(adapter, data);
+    let user = await this.createUser(adapter, dataContainer);
     user = await this.entityController.save(user);
 
     return mgr.transaction(async em => {
-      let method = await this.createMethod(adapter, data);
+      let method = await this.createMethod(adapter, dataContainer);
       method.standard = true;
       method.userId = user.id;
       return em.save(method);
@@ -689,14 +689,15 @@ export class Auth implements IMiddleware {
   }
 
 
-  private async createMethod(adapter: IAuthAdapter, signup: AbstractUserSignup | AbstractUserLogin) {
+  private async createMethod(adapter: IAuthAdapter, dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>) {
     let method = new AuthMethod();
+    let signup = dataContainer.instance;
     method.identifier = signup.getIdentifier();
     method.authId = adapter.authId;
     method.type = adapter.type;
 
-    if (_.has(signup, 'data')) {
-      method.data = _.get(signup, 'data');
+    if (_.has(dataContainer, 'data')) {
+      method.data = _.get(dataContainer, 'data');
     }
 
     await adapter.extend(method, signup);
@@ -706,8 +707,8 @@ export class Auth implements IMiddleware {
         method.mail = signup.getMail();
       } else if (signup instanceof AbstractUserLogin) {
         // mail could be passed by freestyle data object
-        if (_.has(signup, 'data.mail')) {
-          method.mail = _.get(signup, 'data.mail');
+        if (_.has(dataContainer, 'data.mail')) {
+          method.mail = _.get(dataContainer, 'data.mail');
         }
       }
     }
@@ -720,8 +721,9 @@ export class Auth implements IMiddleware {
   }
 
 
-  private async createUser(adapter: IAuthAdapter, signup: AbstractUserSignup | AbstractUserLogin) {
+  private async createUser(adapter: IAuthAdapter, dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>) {
     let user = new User();
+    let signup = dataContainer.instance;
     user.username = signup.getIdentifier();
     await adapter.extend(user, signup);
 
@@ -730,8 +732,8 @@ export class Auth implements IMiddleware {
         user.mail = signup.getMail();
       } else if (signup instanceof AbstractUserLogin) {
         // mail could be passed by freestyle data object
-        if (_.has(signup, 'data.mail')) {
-          user.mail = _.get(signup, 'data.mail');
+        if (_.has(dataContainer, 'data.mail')) {
+          user.mail = _.get(dataContainer, 'data.mail');
         }
       }
     }

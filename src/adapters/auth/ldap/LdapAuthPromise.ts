@@ -12,6 +12,8 @@ export class LdapAuthPromise {
 
   error: Error | string = null;
 
+  abort: number = 2000;
+
   constructor(options: ILdapAuthOptions) {
     this.ldap = new LdapAuth(options);
   }
@@ -35,12 +37,9 @@ export class LdapAuthPromise {
   async close() {
     return new Promise((resolve, reject) => {
       this.ldap.close((err: Error) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
+        reject(err);
       })
+      resolve();
     });
   }
 

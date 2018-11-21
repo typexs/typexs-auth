@@ -11,7 +11,7 @@ import {AbstractUserLogout} from "../../libs/models/AbstractUserLogout";
 import {DefaultUserLogout} from "../../libs/models/DefaultUserLogout";
 import {Observable} from "rxjs/Observable";
 import {User} from "../../entities/User";
-import {AuthDataContainer} from "../../libs/auth/AuthDataContainer";
+
 
 
 @Injectable()
@@ -141,12 +141,12 @@ export class AuthService {
   }
   */
 
-  signup(signup: AbstractUserSignup): Promise<AuthDataContainer<AbstractUserSignup>> {
+  signup(signup: AbstractUserSignup): Promise<AbstractUserSignup> {
     this.loading = true;
     let signupReq = this.http.post('/api/user/signup', signup);
     return new Promise((resolve, reject) => {
       signupReq.subscribe(
-        (user: AuthDataContainer<AbstractUserSignup>) => {
+        (user: AbstractUserSignup) => {
           this.loading = false;
           console.log(user);
           this.connected = false;
@@ -166,17 +166,17 @@ export class AuthService {
   }
 
 
-  authenticate(login: AbstractUserLogin): Promise<AuthDataContainer<AbstractUserLogin>> {
+  authenticate(login: AbstractUserLogin): Promise<AbstractUserLogin> {
     this.loading = true;
     let loginReq = this.http.post('/api/user/login', login);
 
     return new Promise((resolve, reject) => {
       loginReq.subscribe(
-        (user: AuthDataContainer<AbstractUserLogin>) => {
+        (user: AbstractUserLogin) => {
           this.loading = false;
           this.connected = true;
           console.log(user);
-          this.saveStoredToken(user.token);
+          this.saveStoredToken(user.$state.token);
           resolve(user);
         },
         (error: Error) => {
@@ -195,14 +195,15 @@ export class AuthService {
 
 
 
-  logout(logout: AbstractUserLogout): Promise<AuthDataContainer<AbstractUserLogout>> {
+  logout(logout: AbstractUserLogout): Promise<AbstractUserLogout> {
     this.loading = true;
     let req = this.http.get('/api/user/logout');
 
     return new Promise((resolve, reject) => {
       req.subscribe(
-        (user: AuthDataContainer<AbstractUserLogout>) => {
+        (user: AbstractUserLogout) => {
           console.log(user);
+
           this.loading = false;
           this.clearStoredToken();
           resolve(user);
