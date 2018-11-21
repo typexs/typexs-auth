@@ -3,7 +3,7 @@ import {Bootstrap, Container, Log} from "@typexs/base";
 import {expect} from 'chai';
 import {Auth} from "../../../src/middleware/Auth";
 import {ITypexsOptions} from "@typexs/base/libs/ITypexsOptions";
-import {TestHelper} from "../TestHelper";
+import {TESTDB_SETTING, TestHelper} from "../TestHelper";
 import _ = require("lodash");
 import {IAuthOptions} from "../../../src/libs/auth/IAuthOptions";
 import {IAuthConfig} from "../../../src/libs/auth/IAuthConfig";
@@ -13,11 +13,7 @@ let auth: Auth = null;
 
 const OPTIONS: ITypexsOptions = <ITypexsOptions>{
   storage: {
-    default: {
-      synchronize: true,
-      type: 'sqlite',
-      database: ':memory:'
-    }
+    default: TESTDB_SETTING
   },
   auth: {
     //allowSignup: true,

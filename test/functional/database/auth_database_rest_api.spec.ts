@@ -4,7 +4,7 @@ import {expect} from 'chai';
 import * as request from 'supertest';
 
 import {K_ROUTE_CONTROLLER, WebServer} from "@typexs/server";
-import {Bootstrap, Container} from "@typexs/base";
+import {Bootstrap, Container, Config} from "@typexs/base";
 
 import {Auth} from "../../../src/middleware/Auth";
 import {DefaultUserSignup} from "../../../src/libs/models/DefaultUserSignup";
@@ -40,6 +40,8 @@ const OPTIONS = <ITypexsOptions>{
 class AuthConfigSpec {
 
   static async before() {
+    Config.clear();
+    Container.reset();
     bootstrap = await TestHelper.bootstrap_basic(OPTIONS);
 
     web = Container.get(WebServer);
@@ -62,8 +64,11 @@ class AuthConfigSpec {
   }
 
   static async after() {
-    await web.stop();
+    if(web){
+      await web.stop();
+    }
     Bootstrap.reset();
+
   }
 
 

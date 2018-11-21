@@ -16,6 +16,7 @@ import {Auth} from "../../src/middleware/Auth";
 import {IAuthConfig} from "../../src/libs/auth/IAuthConfig";
 import {User} from "../../src/entities/User";
 import {EntityController, EntityRegistry, FrameworkFactory} from "@typexs/schema";
+import {TESTDB_SETTING, TestHelper} from "./TestHelper";
 
 @suite('functional/auth_config_default')
 class AuthConfigSpec {
@@ -52,26 +53,10 @@ class AuthConfigSpec {
     await loader.prepare();
     Container.set("RuntimeLoader", loader);
     Config.set('auth', authCfg);
-    let storage = new Storage();
-    storage['schemaHandler']['__default__'] =  DefaultSchemaHandler;
-    storage['schemaHandler']['sqlite'] =  SqliteSchemaHandler;
-    let storageRef = storage.register('default', <any>{
-      name: 'default',
-      type: "sqlite",
-      database: ":memory:"
-    });
-    await storageRef.prepare();
-    Container.set('storage.default', storageRef);
 
-    const options = {name:'default'};
 
-    let schemaDef = EntityRegistry.getSchema(options.name);
-
-    const framework = FrameworkFactory.$().get(storageRef);
-    let entityController = new EntityController(options.name, schemaDef, storageRef, framework);
-    await entityController.initialize();
-    Container.set('EntityController.default',entityController);
-
+    const options = {name: 'default'};
+    let ref = await TestHelper.storage();
 
     let auth = Container.get(Auth);
     await auth.prepare({});

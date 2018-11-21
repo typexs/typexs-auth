@@ -285,7 +285,7 @@ class Auth_database_integratedSpec {
     res2 = new MockResponse();
 
     // no session found for token
-    user = new User()
+    user = new User();
     doingLogout = await auth.doLogout(user, req2, res2);
     expect(doingLogout.success).to.be.false;
     expect(doingLogout.errors).to.have.length(1);

@@ -1,19 +1,45 @@
-import {Bootstrap, SqliteSchemaHandler, StorageRef} from "@typexs/base";
+import {
+  Bootstrap,
+  DefaultSchemaHandler,
+  SqliteSchemaHandler,
+  Storage,
+  StorageRef,
+  Container,
+  IStorageOptions
+} from "@typexs/base";
 import {PlatformTools} from 'typeorm/platform/PlatformTools';
 import {EntityController, EntityRegistry, FrameworkFactory} from "@typexs/schema";
 import _ = require("lodash");
 
 
-export const TESTDB_SETTING = {
+export const TESTDB_SETTING: IStorageOptions & { database: string } = {
   synchronize: true,
   type: 'sqlite',
   database: ':memory:',
-  logger: 'simple-console',
-  logging: 'all'
+ // logger: 'simple-console',
+ // logging: 'all'
 };
 
 
 export class TestHelper {
+
+
+  static async storage(name:string = 'default',options = TESTDB_SETTING) {
+    let storage = new Storage();
+    storage['schemaHandler']['__default__'] = DefaultSchemaHandler;
+    storage['schemaHandler']['sqlite'] = SqliteSchemaHandler;
+    let storageRef = storage.register(name, options);
+    await storageRef.prepare();
+    Container.set('storage.'+name, storageRef);
+    let schemaDef = EntityRegistry.getSchema(name);
+    const framework = FrameworkFactory.$().get(storageRef);
+    let xsem = new EntityController(name, schemaDef, storageRef, framework);
+    await xsem.initialize();
+    Container.set('EntityController.'+name, xsem);
+
+    return storage;
+
+  }
 
   static async connect(options: any): Promise<{ ref: StorageRef, controller: EntityController }> {
     let ref = new StorageRef(options);

@@ -5,6 +5,7 @@ import {Config, Container, FileUtils, PlatformUtils, RuntimeLoader, Storage} fro
 import {Auth} from "../../../src/middleware/Auth";
 import {IAuthConfig} from "../../../src/libs/auth/IAuthConfig";
 import {User} from "../../../src/entities/User";
+import {TestHelper} from "../TestHelper";
 
 
 @suite('functional/ldap/auth_ldap_config')
@@ -44,15 +45,7 @@ class Auth_ldap_configSpec {
     Config.set('auth', authCfg);
 
 
-    let storage = new Storage();
-    let storageRef = storage.register('default', <any>{
-      name: 'default',
-      type: "sqlite",
-      database: ":memory:"
-    });
-    await storageRef.prepare();
-    Container.set('storage.default', storageRef);
-
+    await TestHelper.storage();
 
     let auth = Container.get(Auth);
     await auth.prepare({});

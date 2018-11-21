@@ -5,6 +5,7 @@ import * as request from 'supertest';
 
 import {ServerRegistry,WebServer,K_ROUTE_CONTROLLER,C_DEFAULT} from "@typexs/server";
 import {Bootstrap, Config, IFileConfigOptions, PlatformUtils, ClassesLoader, Container,RuntimeLoader} from "@typexs/base";
+import {TestHelper} from "./TestHelper";
 
 
 @suite('functional/middleware')
@@ -40,7 +41,9 @@ class MiddlewareSpec {
     Container.set("RuntimeLoader", loader);
 
     // Dummy storage entry for auth
-    Container.set("storage.default", {});
+    Container.set("storage.default", {connect:function(){}});
+    Container.set("EntityController.default", {});
+
 
     let web = <WebServer>Container.get(WebServer);
     await web.initialize({
