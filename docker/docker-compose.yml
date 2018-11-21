@@ -1,25 +1,28 @@
-version: '2'
+version: '3'
 services:
-#  ldap:
-#    image: "osixia/openldap"
-#    ports:
-#    - 389:389
-#    - 689:689
-#    volumes:
-#    - './ldap:/ext-mount'
-#
-# https://hub.docker.com/r/unicon/shibboleth-idp/
-  shibboleth-idp:
-    image: "unicon/shibboleth-idp"
+  ldap:
+    image: osixia/openldap
+    container_name: openldap
     ports:
-    - 8443:8443
-    - 443:4443
+    - 389:389
+    - 689:689
     volumes:
-    - './shibboleth-idp:/ext-mount'
+    - ./ldap/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
+    command: --copy-service
+
+
+# https://hub.docker.com/r/unicon/shibboleth-idp/
+#  shibboleth-idp:
+#    image: "unicon/shibboleth-idp"
+#    ports:
+#    - 8443:8443
+#    - 443:4443
+#    volumes:
+#    - './shibboleth-idp:/ext-mount'
 
 # https://hub.docker.com/r/unicon/shibboleth-sp/
-  shibboleth-sp:
-    image: "unicon/shibboleth-sp"
-    ports:
-    - 80:80
-    - 443:443
+#  shibboleth-sp:
+#    image: "unicon/shibboleth-sp"
+#    ports:
+#    - 80:80
+#    - 443:443
