@@ -101,6 +101,7 @@ export class Gulpfile {
       '!./src/modules/*/!(api|entities)/**/*.ts',
       './src/modules/*/+(api|entities)/*.ts',
       './src/modules/*/+(api|entities)/**/*.ts',
+      '!./src/modules/app/**/*.ts',
       './node_modules/@types/**/*.ts'])
       .pipe(sourcemaps.init())
       .pipe(tsProject());
@@ -112,6 +113,7 @@ export class Gulpfile {
         .pipe(gulp.dest('./build/package'))
     ];
   }
+
 
   @Task()
   packageNgCompile() {
@@ -127,12 +129,11 @@ export class Gulpfile {
       './src/modules/**/*.+(html|css|less|sass|scss)',
       '!./src/modules/*/api/**',
       '!./src/modules/*/entities/**',
-      // "./build/app/src/modules/**/*",
-      // "!./build/app/src/modules/app/**",
       '!./src/modules/app/**'])
     //  .pipe(debug())
       .pipe(gulp.dest('./build/ngPackage/modules'));
   }
+
 
   @Task()
   packageNgMetadataCopy() {
