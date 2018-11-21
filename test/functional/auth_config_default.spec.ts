@@ -1,24 +1,14 @@
-import {suite, test} from "mocha-typescript";
+import {suite, test, timeout} from "mocha-typescript";
 import {expect} from 'chai';
-import {
-  Config,
-  Container,
-  DefaultSchemaHandler,
-  FileUtils,
-  PlatformUtils,
-  RuntimeLoader,
-  SqliteSchemaHandler,
-  Storage
-} from "@typexs/base";
+import {Config, Container, FileUtils, PlatformUtils, RuntimeLoader} from "@typexs/base";
 
 import {Auth} from "../../src/middleware/Auth";
 
 import {IAuthConfig} from "../../src/libs/auth/IAuthConfig";
 import {User} from "../../src/entities/User";
-import {EntityController, EntityRegistry, FrameworkFactory} from "@typexs/schema";
-import {TESTDB_SETTING, TestHelper} from "./TestHelper";
+import {TestHelper} from "./TestHelper";
 
-@suite('functional/auth_config_default')
+@suite('functional/auth_config_default') @timeout(10000)
 class AuthConfigSpec {
 
 

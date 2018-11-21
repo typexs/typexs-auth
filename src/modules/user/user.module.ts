@@ -9,7 +9,8 @@ import {UserLogoutComponent} from "./user_logout.component";
 import {FormsModule as NgFormsModule} from "@angular/forms";
 import {CommonModule} from "@angular/common";
 import {AuthTokenInterceptor} from "./authtoken.interceptor";
-import {FormsModule} from "@typexs/ng-base";
+import {FormsModule, SystemModule} from "@typexs/ng-base";
+import {AuthService as BaseAuthService} from "@typexs/ng-base/modules/system/api/auth/auth.service";
 
 
 @NgModule({
@@ -29,11 +30,15 @@ import {FormsModule} from "@typexs/ng-base";
     CommonModule,
     HttpClientModule,
     NgFormsModule,
-    FormsModule
+    FormsModule,
+    SystemModule
   ],
   exports: [RouterModule],
   providers: [
-    AuthService,
+    {
+      provide: BaseAuthService,
+      useClass: AuthService
+    },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthTokenInterceptor,
