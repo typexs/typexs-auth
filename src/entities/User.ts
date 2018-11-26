@@ -1,5 +1,3 @@
-import {CreateDateColumn, OneToMany, UpdateDateColumn} from "typeorm";
-import {AuthMethod} from "./AuthMethod";
 import {IAuthUser} from "../libs/models/IAuthUser";
 import {Entity, Property} from "@typexs/schema";
 

@@ -1,14 +1,10 @@
-export interface IAuthUser {
+import {IUser} from "@typexs/ng-base/libs/api/auth/IUser";
+
+export interface IAuthUser extends IUser {
+
   id: number;
-
-  username: string;
-
-  mail: string;
 
   disabled: boolean;
 
-  created_at: Date;
-
-  updated_at: Date;
 
 }

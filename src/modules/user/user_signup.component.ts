@@ -1,7 +1,8 @@
 import {Component, OnInit} from '@angular/core';
-import {AuthService} from "./auth.service";
+import {UserAuthServiceProvider} from "./user-auth-service-provider.service";
 import {DefaultUserSignup} from "../../libs/models/DefaultUserSignup";
 import {Router} from "@angular/router";
+import {AuthService} from "@typexs/ng-base";
 
 
 @Component({
@@ -10,32 +11,21 @@ import {Router} from "@angular/router";
 })
 export class UserSignupComponent implements OnInit {
 
-  //auth_token: string;
-
   signup: DefaultUserSignup;
-/*
-  password_confirm: string;
 
-  validation: { [key: string]: { valid: boolean, checked: boolean, messages: Array<{ type: string, content: string }> } } = {
-    errors: {valid: false, checked: false, messages: []},
-    username: {valid: false, checked: false, messages: []},
-    password: {valid: false, checked: false, messages: []},
-    mail: {valid: false, checked: false, messages: []}
-  };
-*/
-  constructor(private auth: AuthService, private router: Router) {
+  constructor(private auth: AuthService<UserAuthServiceProvider>, private router: Router) {
   }
 
 
   ngOnInit() {
     // TODO check if signup supported
     // TODO must we wait here
-    this.signup = this.auth.newUserSignup();
+    this.signup = this.auth.getProvider().newUserSignup();
   }
 
 
   isAuthenticated() {
-    return this.auth.isAuthenticated();
+    return this.auth.getProvider().isLoggedIn();
   }
 
 

@@ -1,5 +1,6 @@
 import * as _ from "lodash";
 import {Injectable} from "@angular/core";
+import {ActivatedRouteSnapshot,RouterStateSnapshot} from "@angular/router";
 import {HttpClient} from "@angular/common/http";
 import {AbstractUserSignup} from "../../libs/models/AbstractUserSignup";
 import {IAuthUser} from "../../libs/models/IAuthUser";
@@ -10,12 +11,13 @@ import {AbstractUserLogin} from "../../libs/models/AbstractUserLogin";
 import {AbstractUserLogout} from "../../libs/models/AbstractUserLogout";
 import {DefaultUserLogout} from "../../libs/models/DefaultUserLogout";
 import {Observable} from "rxjs/Observable";
+import {IAuthServiceProvider} from "@typexs/ng-base/modules/system/api/auth/IAuthServiceProvider";
 import {User} from "../../entities/User";
-
+import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
 
 
 @Injectable()
-export class AuthService {
+export class UserAuthServiceProvider implements IAuthServiceProvider {
 
   private _initialized: boolean = false;
 
@@ -79,10 +81,12 @@ export class AuthService {
   }
 
 
-  getUser(): Promise<User> {
+
+
+  async getUser(): Promise<User> {
     this.loading = true;
     let req = this.http.get('/api/user');
-    return new Promise((resolve, reject) => {
+    return new Promise<User>((resolve, reject) => {
       req.subscribe(
         (user: User) => {
           console.log(user);
@@ -103,7 +107,6 @@ export class AuthService {
     // TODO check if token is expired
     let token = this.getStoredToken();
     return this.connected && this.getStoredToken() != null && token === this.token;
-    //return this.http.get()
   }
 
 
@@ -244,6 +247,34 @@ export class AuthService {
   newUserLogout(): DefaultUserLogout {
     return new DefaultUserLogout();
   }
+
+  isLoggedIn(): Promise<boolean> | boolean {
+    return this.isAuthenticated();
+  }
+
+  hasPermission(right: string, params?: any): Promise<boolean> | boolean {
+    throw new NotYetImplementedError()
+  }
+
+  hasPermissionsFor(object: any): Promise<boolean> | boolean {
+    throw new NotYetImplementedError()
+  }
+
+  //getPermissions()?: Promise<string[]> | string[];
+
+  getRoles(): Promise<string[]> | string[] {
+    throw new NotYetImplementedError()
+  }
+
+
+  hasRole(role: string): Promise<boolean> | boolean {
+    throw new NotYetImplementedError()
+  }
+
+  hasRoutePermissions(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
+    throw new NotYetImplementedError()
+  }
+
 
 
 }

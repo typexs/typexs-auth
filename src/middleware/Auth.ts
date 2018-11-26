@@ -32,6 +32,7 @@ import {AbstractUserLogout} from "../libs/models/AbstractUserLogout";
 import {AuthDataContainer} from "../libs/auth/AuthDataContainer";
 
 
+
 const DEFAULT_CONFIG_OPTIONS: IAuthConfig = {
   httpAuthKey: 'txs-auth',
   allowSignup: true,

@@ -1,7 +1,8 @@
 import {Component, OnInit} from '@angular/core';
-import {AuthService} from "./auth.service";
+import {UserAuthServiceProvider} from "./user-auth-service-provider.service";
 import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
 import {Router} from "@angular/router";
+import {AuthService} from "@typexs/ng-base";
 
 
 @Component({
@@ -15,13 +16,13 @@ export class UserLoginComponent implements OnInit {
   user: DefaultUserLogin;
 
 
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(private authService: AuthService<UserAuthServiceProvider>, private router: Router) {
   }
 
 
   ngOnInit() {
     // TODO must we wait here
-    this.user = this.authService.newUserLogin();
+    this.user = this.authService.getProvider().newUserLogin();
   }
 
 

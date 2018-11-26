@@ -1,7 +1,8 @@
 import {Component, OnInit} from '@angular/core';
-import {AuthService} from "./auth.service";
+import {UserAuthServiceProvider} from "./user-auth-service-provider.service";
 import {Router} from "@angular/router";
 import * as _ from 'lodash';
+import {AuthService} from "@typexs/ng-base";
 
 @Component({
   selector: 'user-logout',
@@ -10,13 +11,13 @@ import * as _ from 'lodash';
 export class UserLogoutComponent implements OnInit {
 
 
-  constructor(private auth: AuthService, private router: Router) {
+  constructor(private auth: AuthService<UserAuthServiceProvider>, private router: Router) {
 
   }
 
   async ngOnInit() {
-    let logout = this.auth.newUserLogout();
-    logout = <any>await this.auth.logout(logout);
+    let logout = this.auth.getProvider().newUserLogout();
+    logout = <any>await this.auth.getProvider().logout(logout);
 
     if (logout.$state.success) {
       await this.router.navigateByUrl('/');
@@ -35,7 +36,7 @@ export class UserLogoutComponent implements OnInit {
   }
 
   isAuthenticated() {
-    return this.auth.isAuthenticated();
+    return this.auth.getProvider().isAuthenticated();
   }
 
 

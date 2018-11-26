@@ -13,11 +13,6 @@ import {AbstractUserLogin} from "../libs/models/AbstractUserLogin";
 @JsonController()
 export class AuthenticationController {
 
-
-  //@Inject("storage.default")
-  //storage: StorageRef;
-
-
   @Inject("Auth")
   auth: Auth;
 

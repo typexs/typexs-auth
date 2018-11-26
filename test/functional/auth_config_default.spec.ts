@@ -14,13 +14,13 @@ class AuthConfigSpec {
 
   before() {
     Config.clear();
-
   }
 
 
   after() {
     Config.clear();
   }
+
 
   @test
   async 'auth config'() {

@@ -1,0 +1,43 @@
+<div class="container">
+  <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
+    <a class="navbar-brand" href="#">Welcome to {{ title }} Demo!</a>
+    <div class="collapse navbar-collapse">
+      <ul class="mr-auto"></ul>
+      <span class="navbar-text">
+        <a routerLink="/admin" class="btn btn-outline-success">Admin</a>
+      </span>
+    </div>
+  </nav>
+
+  <menu base="demo"></menu>
+
+  <div class="container bg-transparent">
+
+    <div class="container">
+      <h1>Live-Demo</h1>
+      <div>
+        <ul class="nav nav-tabs">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/demo/user/signup" routerLinkActive="active"
+               [class.disabled]="isAuthenticated() ? true : null">Signup</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/demo/user/login" routerLinkActive="active"
+               [class.disabled]="isAuthenticated() ? true : null">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/demo/user/profile" [class.disabled]="!isAuthenticated() ? true : null">User</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/demo/user/logout" routerLinkActive="active"
+               [class.disabled]="!isAuthenticated() ? true : null">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <router-outlet></router-outlet>
+</div>
+
+
