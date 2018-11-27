@@ -5,9 +5,13 @@
   </div>
 
   <div class="card-body">
-    <div *ngIf="isAuthenticated() && data">
-      User {{ data.user.username }} is authenicated.
 
+    <div *ngIf="isAuthenticated() && user">
+      User {{ user.username }} is authenicated.
+
+      <pre>
+        {{user|json}}
+      </pre>
 
     </div>
     <div *ngIf="!isAuthenticated()">

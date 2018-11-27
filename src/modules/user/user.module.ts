@@ -1,52 +1,59 @@
-import {NgModule} from '@angular/core';
+import {NgModule, APP_INITIALIZER} from '@angular/core';
 import {RouterModule} from '@angular/router';
 import {UserProfileComponent} from './user_profile.component';
 import {HTTP_INTERCEPTORS, HttpClientModule} from '@angular/common/http';
-import {UserAuthServiceProvider} from "./user-auth-service-provider.service";
+
 import {UserSignupComponent} from "./user_signup.component";
 import {UserLoginComponent} from "./user_login.component";
 import {UserLogoutComponent} from "./user_logout.component";
 import {FormsModule as NgFormsModule} from "@angular/forms";
 import {CommonModule} from "@angular/common";
 import {AuthTokenInterceptor} from "./authtoken.interceptor";
-import {AUTH_SERVICE_GUARD_PROVIDER, AUTH_SERVICE_PROVIDER, FormsModule, SystemModule} from "@typexs/ng-base";
-import {UserAuthGuardProvider} from "./UserAuthGuardProvider";
+import {
+
+  AuthGuardService,
+  AuthService,
+  FormsModule,
+  NavigatorModule,
+  SystemModule
+} from "@typexs/ng-base";
+import {UserAuthGuardService} from "./user-auth-guard.service";
 import {APP_ROUTES} from "./user.routes";
+import {UserAuthService} from "./user-auth.service";
 
 const PROVIDERS = [
+  UserAuthService,
   {
-    provide: AUTH_SERVICE_PROVIDER,
-    useClass: UserAuthServiceProvider
+    provide: AuthService,
+    useClass: UserAuthService
   },
   {
-    provide: AUTH_SERVICE_GUARD_PROVIDER,
-    useClass: UserAuthGuardProvider
+    provide: AuthGuardService,
+    useClass: UserAuthGuardService
   },
   {
     provide: HTTP_INTERCEPTORS,
     useClass: AuthTokenInterceptor,
     multi: true
   },
-  /*
-      {
-        provide: APP_INITIALIZER,
-        multi: true,
-        deps: [UserAuthServiceProvider],
 
+  {
+    provide: APP_INITIALIZER,
+    multi: true,
+    deps: [AuthService],
+    useFactory: function (auth: AuthService) {
 
-        useFactory: function (auth:UserAuthServiceProvider) {
-
-
-          async function startup() {
-            await auth.configure().toPromise();
-            await auth.initialAuthCheck();
-          }
-
-          return startup;
-
+      async function startup() {
+        console.log('startup')
+        await (<any>auth).configure().toPromise();
+        await (<any>auth).initialAuthCheck();
       }
+
+      return startup;
+
     }
-          */
+  }
+
 ]
 
 @NgModule({
@@ -62,7 +69,8 @@ const PROVIDERS = [
     HttpClientModule,
     NgFormsModule,
     FormsModule,
-    SystemModule
+    SystemModule,
+    NavigatorModule
   ],
   exports: [RouterModule],
   providers: PROVIDERS

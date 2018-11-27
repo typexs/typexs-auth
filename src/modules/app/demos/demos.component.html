@@ -10,7 +10,7 @@
   </nav>
 
   <menu base="demo"></menu>
-
+<!--
   <div class="container bg-transparent">
 
     <div class="container">
@@ -19,24 +19,25 @@
         <ul class="nav nav-tabs">
           <li class="nav-item">
             <a class="nav-link" routerLink="/demo/user/signup" routerLinkActive="active"
-               [class.disabled]="isAuthenticated() ? true : null">Signup</a>
+               [class.disabled]="isAuthenticated()">Signup</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" routerLink="/demo/user/login" routerLinkActive="active"
-               [class.disabled]="isAuthenticated() ? true : null">Login</a>
+               [class.disabled]="isAuthenticated()">Login</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" routerLink="/demo/user/profile" [class.disabled]="!isAuthenticated() ? true : null">User</a>
+            <a class="nav-link" routerLink="/demo/user/profile" routerLinkActive="active"
+               [class.disabled]="!isAuthenticated()">User</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" routerLink="/demo/user/logout" routerLinkActive="active"
-               [class.disabled]="!isAuthenticated() ? true : null">Logout</a>
+               [class.disabled]="!isAuthenticated()">Logout</a>
           </li>
         </ul>
       </div>
     </div>
   </div>
-
+-->
   <router-outlet></router-outlet>
 </div>
 

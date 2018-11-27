@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import {Injectable} from "@angular/core";
-import {ActivatedRouteSnapshot,RouterStateSnapshot} from "@angular/router";
+import {ActivatedRouteSnapshot, RouterStateSnapshot} from "@angular/router";
 import {HttpClient} from "@angular/common/http";
 import {AbstractUserSignup} from "../../libs/models/AbstractUserSignup";
 import {IAuthUser} from "../../libs/models/IAuthUser";
@@ -17,7 +17,7 @@ import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImpleme
 
 
 @Injectable()
-export class UserAuthServiceProvider implements IAuthServiceProvider {
+export class UserAuthService implements IAuthServiceProvider {
 
   private _initialized: boolean = false;
 
@@ -35,8 +35,9 @@ export class UserAuthServiceProvider implements IAuthServiceProvider {
   private loading: boolean = false;
 
   constructor(private http: HttpClient) {
-    // this.configure();
+
   }
+
 
   public isInitialized() {
     return this._initialized;
@@ -44,8 +45,10 @@ export class UserAuthServiceProvider implements IAuthServiceProvider {
 
 
   configure(): Observable<any> {
-    let config = this.http.get('/api/user/$config');
+    console.log('auth config ',this._config)
+    let config = this.http.get('/api/user/_config');
     config.subscribe(obj => {
+
       _.assign(this._config, obj);
       this._initialized = true;
     });
@@ -63,11 +66,11 @@ export class UserAuthServiceProvider implements IAuthServiceProvider {
     return _.isUndefined(token) ? null : token;
   }
 
-  saveStoredToken(token:string){
+  saveStoredToken(token: string) {
     localStorage.setItem('token.' + this.getTokenKey(), token);
   }
 
-  clearStoredToken(){
+  clearStoredToken() {
     this.connected = false;
     localStorage.removeItem('token.' + this.getTokenKey());
   }
@@ -79,8 +82,6 @@ export class UserAuthServiceProvider implements IAuthServiceProvider {
   public setToken(token: string): void {
     this.token = token;
   }
-
-
 
 
   async getUser(): Promise<User> {
@@ -106,7 +107,8 @@ export class UserAuthServiceProvider implements IAuthServiceProvider {
   isAuthenticated() /*:Observable<boolean>*/ {
     // TODO check if token is expired
     let token = this.getStoredToken();
-    return this.connected && this.getStoredToken() != null && token === this.token;
+    const isAuth = this.connected && token != null && token === this.token;
+    return isAuth;
   }
 
 
@@ -114,28 +116,35 @@ export class UserAuthServiceProvider implements IAuthServiceProvider {
    * startup method to check if an existing token is still active
    */
   initialAuthCheck() {
-    let token = this.getStoredToken();
-    if (token) {
-      let req = this.http.get('/api/user/isAuthenticated');
-      this.connected = false;
-      req.subscribe(
-        (res: boolean) => {
-          console.log('check out = ' + res);
-          this.connected = res;
-          if(!res){
+    return new Promise((resolve, reject) => {
+      let token = this.getStoredToken();
+      console.log('auth check ',token)
+      if (token) {
+
+        let req = this.http.get('/api/user/isAuthenticated');
+        this.connected = false;
+        req.subscribe(
+          (res: boolean) => {
+            console.log('check out = ' + res);
+            this.connected = res;
+            if (!res) {
+              this.clearStoredToken();
+            }
+            resolve();
+
+          },
+          (error: Error) => {
+            console.error(error);
+            this.loading = false;
             this.clearStoredToken();
+            resolve();
           }
-
-        },
-        (error: Error) => {
-          console.error(error);
-          this.loading = false;
-          this.clearStoredToken();
-        }
-      );
-    }
+        );
+      }else{
+        resolve();
+      }
+    })
   }
-
 
 
   /*
@@ -185,7 +194,7 @@ export class UserAuthServiceProvider implements IAuthServiceProvider {
         (error: Error) => {
           this.loading = false;
           this.connected = false;
-         // login.addError({property: 'error', value: error.message, error: error});
+          // login.addError({property: 'error', value: error.message, error: error});
           login.resetSecret();
           this.clearStoredToken();
 
@@ -195,7 +204,6 @@ export class UserAuthServiceProvider implements IAuthServiceProvider {
       );
     })
   }
-
 
 
   logout(logout: AbstractUserLogout): Promise<AbstractUserLogout> {
@@ -248,7 +256,7 @@ export class UserAuthServiceProvider implements IAuthServiceProvider {
     return new DefaultUserLogout();
   }
 
-  isLoggedIn(): Promise<boolean> | boolean {
+  isLoggedIn(): boolean {
     return this.isAuthenticated();
   }
 
@@ -272,9 +280,9 @@ export class UserAuthServiceProvider implements IAuthServiceProvider {
   }
 
   hasRoutePermissions(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
-    throw new NotYetImplementedError()
+    console.log(route);
+    return true;
   }
-
 
 
 }

@@ -1,18 +1,19 @@
 import {getTestBed, TestBed} from '@angular/core/testing';
-import {UserAuthServiceProvider} from "./user-auth-service-provider.service";
+
 import {expect} from 'chai';
 import {HttpClientModule} from "@angular/common/http";
 import {Observable} from "rxjs/Observable";
+import {UserAuthService} from "./user-auth.service";
 
 
 
-describe('UserAuthServiceProvider', () => {
-  let service: UserAuthServiceProvider;
+describe('UserAuthService', () => {
+  let service: UserAuthService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports:[HttpClientModule],
-      providers: [UserAuthServiceProvider]
+      providers: [UserAuthService]
     });
   });
 
@@ -23,7 +24,7 @@ describe('UserAuthServiceProvider', () => {
 
   it('should have a service instance and load configuration', () => {
     // inject the service
-    service = TestBed.get(UserAuthServiceProvider);
+    service = TestBed.get(UserAuthService);
     expect(service).to.exist;
     expect(service.isInitialized()).to.be.false;
 

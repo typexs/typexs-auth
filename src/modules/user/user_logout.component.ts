@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
-import {UserAuthServiceProvider} from "./user-auth-service-provider.service";
+
 import {Router} from "@angular/router";
-import * as _ from 'lodash';
+import {UserAuthService} from "./user-auth.service";
 import {AuthService} from "@typexs/ng-base";
 
 @Component({
@@ -11,15 +11,21 @@ import {AuthService} from "@typexs/ng-base";
 export class UserLogoutComponent implements OnInit {
 
 
-  constructor(private auth: AuthService<UserAuthServiceProvider>, private router: Router) {
+  constructor(private authService: AuthService, private router: Router) {
 
   }
 
+
+  getUserAuthService(): UserAuthService {
+    return this.authService instanceof UserAuthService ? <UserAuthService>this.authService : <any>this.authService;
+  }
+
   async ngOnInit() {
-    let logout = this.auth.getProvider().newUserLogout();
-    logout = <any>await this.auth.getProvider().logout(logout);
+    let logout = this.getUserAuthService().newUserLogout();
+    logout = <any>await this.getUserAuthService().logout(logout);
 
     if (logout.$state.success) {
+      // TODO logout
       await this.router.navigateByUrl('/');
     } else {
       // TODO how to handle errors
@@ -36,7 +42,7 @@ export class UserLogoutComponent implements OnInit {
   }
 
   isAuthenticated() {
-    return this.auth.getProvider().isAuthenticated();
+    return this.getUserAuthService().isLoggedIn();
   }
 
 

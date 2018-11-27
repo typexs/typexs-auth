@@ -1,8 +1,9 @@
 import {Component, OnInit} from '@angular/core';
-import {UserAuthServiceProvider} from "./user-auth-service-provider.service";
+
 import {DefaultUserSignup} from "../../libs/models/DefaultUserSignup";
 import {Router} from "@angular/router";
-import {AuthService} from "@typexs/ng-base";
+import {UserAuthService} from "./user-auth.service";
+import {AuthService, NavigatorService} from "@typexs/ng-base";
 
 
 @Component({
@@ -13,24 +14,46 @@ export class UserSignupComponent implements OnInit {
 
   signup: DefaultUserSignup;
 
-  constructor(private auth: AuthService<UserAuthServiceProvider>, private router: Router) {
+
+
+
+
+  constructor(private authService: AuthService, private navigatorService: NavigatorService,private router:Router) {
   }
 
+
+  getUserAuthService(): UserAuthService {
+    return this.authService instanceof UserAuthService ? <UserAuthService>this.authService : <any>this.authService;
+  }
 
   ngOnInit() {
     // TODO check if signup supported
     // TODO must we wait here
-    this.signup = this.auth.getProvider().newUserSignup();
+    this.signup = this.getUserAuthService().newUserSignup();
   }
 
 
   isAuthenticated() {
-    return this.auth.getProvider().isLoggedIn();
+    return  this.getUserAuthService().isLoggedIn();
   }
 
 
   async onSubmit($event:any){
-    console.log($event);
+    if($event.data.isSuccessValidated){
+
+      try{
+        let data = await this.getUserAuthService().signup($event.data.instance);
+        // TODO navigate to the preferred startup state
+        let nav = this.navigatorService.entries.find(e => e.path == 'user/login');
+        await this.router.navigate([nav.getRealPath()]);
+      }catch(e){
+        console.error(e);
+      }
+
+    }else{
+      console.error($event);
+    }
+
   }
 
 

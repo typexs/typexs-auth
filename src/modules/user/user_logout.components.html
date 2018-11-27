@@ -5,11 +5,7 @@
   </div>
 
   <div class="card-body">
-    <div [hidden]="!(validation.errors.checked && !validation.errors.valid)" class="alert alert-danger">
-      <ul>
-        <li *ngFor="let message of validation.errors.messages">{{ message.type }} - {{ message.content }}</li>
-      </ul>
-    </div>
+
 
     <div *ngIf="isAuthenticated()">
       Log out failed.

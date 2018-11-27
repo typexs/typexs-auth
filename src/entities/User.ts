@@ -1,5 +1,6 @@
 import {IAuthUser} from "../libs/models/IAuthUser";
-import {Entity, Property} from "@typexs/schema";
+import {Entity} from "@typexs/schema/libs/decorators/Entity";
+import {Property} from "@typexs/schema/libs/decorators/Property";
 
 
 @Entity()
@@ -26,4 +27,11 @@ export class User implements IAuthUser {
   @Property({type: 'date:updated'})
   updated_at: Date;
 
+
+  label(){
+    if(this.displayName){
+      return this.displayName;
+    }
+    return this.username;
+  }
 }

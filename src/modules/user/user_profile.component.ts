@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
-import {UserAuthServiceProvider} from "./user-auth-service-provider.service";
 import {Router} from "@angular/router";
 import {User} from "../../entities/User";
+import {UserAuthService} from "./user-auth.service";
 import {AuthService} from "@typexs/ng-base";
 
 
@@ -11,20 +11,24 @@ import {AuthService} from "@typexs/ng-base";
 })
 export class UserProfileComponent implements OnInit {
 
-  data: User;
+  user: User;
 
-  constructor(private auth: AuthService<UserAuthServiceProvider>, private router: Router) {
+  constructor(private authService: AuthService, private router: Router) {
   }
 
 
+  getUserAuthService(): UserAuthService {
+    return this.authService instanceof UserAuthService ? <UserAuthService>this.authService : <any>this.authService;
+  }
+
   async ngOnInit() {
-    this.data = await <User>this.auth.getUser();
-    console.log(this.auth.getProvider().getStoredToken())
+    this.user = await this.getUserAuthService().getUser();
+    console.log(this.getUserAuthService().getStoredToken(),this.user)
   }
 
 
   isAuthenticated() {
-    return this.data && this.auth.getProvider().isAuthenticated();
+    return this.user && this.getUserAuthService().isLoggedIn();
   }
 
 }

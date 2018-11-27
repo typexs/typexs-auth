@@ -1,6 +1,6 @@
 import {Component, ViewEncapsulation} from '@angular/core';
 import {AuthService} from "@typexs/ng-base";
-import {UserAuthServiceProvider} from "../../user/user-auth-service-provider.service";
+
 
 
 @Component({
@@ -11,7 +11,7 @@ import {UserAuthServiceProvider} from "../../user/user-auth-service-provider.ser
 export class DemosComponent {
   title = 'TypexsAuth';
 
-  constructor(private auth: AuthService<UserAuthServiceProvider>){}
+  constructor(private auth: AuthService){}
 
 
   isAuthenticated(){

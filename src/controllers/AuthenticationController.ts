@@ -16,7 +16,7 @@ export class AuthenticationController {
   @Inject("Auth")
   auth: Auth;
 
-  @Get('/user/$config')
+  @Get('/user/_config')
   config(): any {
     let methods = this.auth.getSupportedMethodsInfos();
     return {
