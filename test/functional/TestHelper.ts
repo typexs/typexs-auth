@@ -16,26 +16,26 @@ export const TESTDB_SETTING: IStorageOptions & { database: string } = {
   synchronize: true,
   type: 'sqlite',
   database: ':memory:',
- // logger: 'simple-console',
- // logging: 'all'
+  logger: 'simple-console',
+  logging: 'all'
 };
 
 
 export class TestHelper {
 
 
-  static async storage(name:string = 'default',options = TESTDB_SETTING) {
+  static async storage(name: string = 'default', options = TESTDB_SETTING) {
     let storage = new Storage();
     storage['schemaHandler']['__default__'] = DefaultSchemaHandler;
     storage['schemaHandler']['sqlite'] = SqliteSchemaHandler;
     let storageRef = storage.register(name, options);
     await storageRef.prepare();
-    Container.set('storage.'+name, storageRef);
+    Container.set('storage.' + name, storageRef);
     let schemaDef = EntityRegistry.getSchema(name);
     const framework = FrameworkFactory.$().get(storageRef);
     let xsem = new EntityController(name, schemaDef, storageRef, framework);
     await xsem.initialize();
-    Container.set('EntityController.'+name, xsem);
+    Container.set('EntityController.' + name, xsem);
 
     return storage;
 

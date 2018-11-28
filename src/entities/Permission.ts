@@ -1,26 +1,25 @@
-import {IAuthUser} from "../libs/models/IAuthUser";
 import {Entity} from "@typexs/schema/libs/decorators/Entity";
 import {Property} from "@typexs/schema/libs/decorators/Property";
-import {Permission} from "./Permission";
 import {And, Asc, Eq, From, Join, Key, To, Value} from "@typexs/schema";
 import {RBelongsTo} from "./RBelongsTo";
 import {Role} from "./Role";
 
 
 @Entity()
-export class User implements IAuthUser {
+export class Permission {
 
   @Property({type: 'number', auto: true})
   id: number;
 
   @Property({type: 'string', typeorm: {unique: true}})
-  username: string;
+  permission: string;
 
-  @Property({type: 'string', typeorm: {unique: true}})
-  mail: string;
+  @Property({type: 'string', typeorm: {index: true}})
+  module: string;
 
-  @Property({type: 'string', nullable: true})
-  displayName: string;
+  // Is single permission or permission pattern ...
+  @Property({type: 'string', typeorm: {index: true}})
+  type: string;
 
   @Property({type: 'boolean'})
   disabled: boolean = false;
@@ -28,16 +27,15 @@ export class User implements IAuthUser {
   @Property({
     type: 'Role', cardinality: 0,
     join: Join(RBelongsTo, [
-        From(Eq('ownerid', Key('id'))),
-        To(Eq('id', Key('refid')))
+        From(Eq('refid', Key('id'))),
+        To(Eq('id', Key('ownerid')))
       ],
       And(
-        Eq('ownertab', Value('user')),
-        Eq('reftab', Value('role'))),
+        Eq('ownertab', Value('role')),
+        Eq('reftab', Value('permission'))),
       [Asc(Key('sort')), Asc(Key('id'))])
   })
   roles: Role[];
-
 
   @Property({type: 'date:created'})
   created_at: Date;
@@ -46,10 +44,8 @@ export class User implements IAuthUser {
   updated_at: Date;
 
 
-  label(){
-    if(this.displayName){
-      return this.displayName;
-    }
-    return this.username;
+
+  label() {
+    return this.permission;
   }
 }

@@ -2,7 +2,6 @@ import {suite, test, timeout} from "mocha-typescript";
 import {Bootstrap, Config, Container, Log} from "@typexs/base";
 import * as _ from "lodash";
 import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
-import {ILdapAuthOptions} from "../../../src/adapters/auth/ldap/ILdapAuthOptions";
 import {LdapAdapter} from "../../../src/adapters/auth/ldap/LdapAdapter";
 import {expect} from "chai";
 import {TESTDB_SETTING, TestHelper} from "../TestHelper";

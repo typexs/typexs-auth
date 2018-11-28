@@ -1,0 +1,61 @@
+import {Inject, Bootstrap as CoreBootrap, ClassesLoader, IBootstrap, IPermissions, StorageRef} from "@typexs/base";
+import {Permission} from "./entities/Permission";
+import * as _ from 'lodash'
+
+
+export class Bootstrap implements IBootstrap {
+
+  @Inject('storage.default')
+  private storageRef: StorageRef;
+
+  async bootstrap() {
+    const activators = CoreBootrap._().getActivators();
+
+    // collect permissions
+    let backend = await this.storageRef.connect();
+    let foundPermissions = await backend.manager.find(Permission);
+    let storePermission: Permission[] = []
+
+    for (let activator of activators) {
+      const ipermissions: IPermissions = (<IPermissions>(<any>activator));
+      if (ipermissions.permissions) {
+        // if methods
+
+        let _module = ClassesLoader.getModulName((<any>ipermissions).__proto__.constructor);
+        let modul_permissions = await ipermissions.permissions();
+
+        modul_permissions.forEach(p => {
+          let _permissions = _.remove(foundPermissions, fp => fp.permission == p && fp.module == _module);
+          let permission = new Permission();
+          if (_permissions.length == 1) {
+            permission = _permissions.shift();
+          } else if (_permissions.length > 1) {
+            throw new Error('to many permissions ' + JSON.stringify(p));
+          } else {
+            permission.permission = p;
+            permission.disabled = false;
+            permission.type = 'single';
+            permission.module = _module;
+            storePermission.push(permission);
+          }
+        })
+      }
+    }
+
+    if(storePermission.length > 0){
+      await backend.manager.save(storePermission);
+    }
+    if(foundPermissions.length > 0){
+      await backend.manager.remove(foundPermissions);
+    }
+
+
+    // TODO create default permissions
+
+    // TODO create default roles
+
+    // TODO create default user
+  }
+
+}
+
