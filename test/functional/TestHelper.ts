@@ -54,17 +54,22 @@ export class TestHelper {
     return {ref: ref, controller: xsem}
   }
 
+
   static resetTypeorm() {
     PlatformTools.getGlobalVariable().typeormMetadataArgsStorage = null;
   }
 
 
-  static async bootstrap_basic(options: any = {}, config: any = [{type: 'system'}]) {
+  static async bootstrap_basic(options: any = {}, config: any = [{type: 'system'}], settings={startup:true}) {
     let _options = _.clone(options);
     let bootstrap = Bootstrap.setConfigSources(config).configure(_options).activateErrorHandling().activateLogger();
     await bootstrap.prepareRuntime();
     await bootstrap.activateStorage();
-    await bootstrap.startup();
+
+    if(settings.startup){
+      await bootstrap.startup();
+    }
+
 
     return bootstrap;
   }

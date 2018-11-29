@@ -5,11 +5,11 @@ import {DefaultUserLogin} from "../../../libs/models/DefaultUserLogin";
 import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
 
 
-import {Log, Inject} from "@typexs/base";
+import {Inject, Log} from "@typexs/base";
 import {IOAuth2Options} from "./IOAuth2Options";
 import {IApplication, IRequest, IResponse} from "@typexs/server";
-import {IAuthAdapter, T_AUTH_ADAPTER_STAGE} from "../../../libs/adapter/IAuthAdapter";
-import {AuthConfigurationFactory} from "../../../libs/adapter/AuthConfigurationFactory";
+import {T_AUTH_ADAPTER_STAGE} from "../../../libs/adapter/IAuthAdapter";
+
 import {IAuthConfiguration} from "../../../libs/adapter/IAuthConfiguration";
 import {IAuthMethod} from "../../../libs/models/IAuthMethod";
 import {Auth} from "../../../middleware/Auth";
@@ -31,8 +31,6 @@ const DEFAULTS: IOAuth2Options = {
 export class OAuth2Adapter extends AbstractAuthAdapter {
 
 
-  @Inject('AuthConfigurationFactory')
-  configurationFactory: AuthConfigurationFactory;
 
   @Inject('Auth')
   auth: Auth;
@@ -67,7 +65,7 @@ export class OAuth2Adapter extends AbstractAuthAdapter {
     super.prepare(opts);
 
     if (this.options.configuration) {
-      this.configuration = this.configurationFactory.get(this.options.configuration);
+      this.configuration = this.auth.getManager().getConfiguration(this.options.configuration);
       if (this.configuration) {
         this.configuration.configure(this.options);
       }

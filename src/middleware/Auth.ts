@@ -1,57 +1,30 @@
-import {
-  ClassesLoader,
-  Config,
-  ConnectionWrapper,
-  Container,
-  CryptUtils,
-  Inject,
-  Log,
-  RuntimeLoader,
-  StorageRef
-} from '@typexs/base';
-import {Action, IApplication, IMiddleware, IRoutingController, K_ROUTE_CONTROLLER} from '@typexs/server';
-import {AuthLifeCycle, K_LIB_AUTH_ADAPTERS} from "../types";
 import * as _ from 'lodash';
 import * as bcrypt from "bcrypt";
+
+import {ConnectionWrapper, Container, Inject, Log, StorageRef} from '@typexs/base';
+import {Action, IApplication, IMiddleware, IRoutingController, K_ROUTE_CONTROLLER} from '@typexs/server';
+import {AuthLifeCycle} from "../types";
 
 import {AuthSession} from "../entities/AuthSession";
 import {AuthMethod} from "../entities/AuthMethod";
 import {EmptyHttpRequestError} from "../libs/exceptions/EmptyHttpRequestError";
 import {BadRequestError} from "routing-controllers";
 import {IAuthConfig} from "../libs/auth/IAuthConfig";
-import {IAdapterDef} from "../libs/adapter/IAdapterDef";
 import {IAuthAdapter} from "../libs/adapter/IAuthAdapter";
 import {IAuthOptions} from "../libs/auth/IAuthOptions";
 import {AbstractUserSignup} from "../libs/models/AbstractUserSignup";
 import {AbstractUserLogin} from "../libs/models/AbstractUserLogin";
 import {IAuthMethodInfo} from "../libs/auth/IAuthMethodInfo";
-import {AuthConfigurationFactory} from "../libs/adapter/AuthConfigurationFactory";
+
 import {User} from "../entities/User";
 import {EntityController} from "@typexs/schema";
 import {AbstractUserLogout} from "../libs/models/AbstractUserLogout";
 import {AuthDataContainer} from "../libs/auth/AuthDataContainer";
-
-
-
-const DEFAULT_CONFIG_OPTIONS: IAuthConfig = {
-  httpAuthKey: 'txs-auth',
-  allowSignup: true,
-  saltRounds: 5,
-  userClass: User,
-
-  session: {
-    secret: CryptUtils.shorthash(new Date() + ''),
-    resave: true,
-    saveUninitialized: true
-  }
-};
-
+import {AuthHelper} from "../libs/auth/AuthHelper";
+import {AuthManager} from "../libs/auth/AuthManager";
 
 export class Auth implements IMiddleware {
 
-
-  @Inject('RuntimeLoader')
-  private loader: RuntimeLoader;
 
   @Inject('storage.default')
   private storage: StorageRef;
@@ -59,20 +32,13 @@ export class Auth implements IMiddleware {
   @Inject('EntityController.default')
   private entityController: EntityController;
 
-  @Inject()
-  private authConfigFactory: AuthConfigurationFactory;
+  @Inject(AuthManager.NAME)
+  private authManager: AuthManager;
+
 
   private connection: ConnectionWrapper;
 
-  private authConfig: IAuthConfig;
-
-  private allAdapters: IAdapterDef[] = [];
-
-  private adapters: IAuthAdapter[] = [];
-
   private frameworkId: string;
-
-  private enabled: boolean = false;
 
 
   // support currently only express
@@ -87,56 +53,20 @@ export class Auth implements IMiddleware {
 
   async prepare(options: any = {}) {
     Container.set("Auth", this);
-    let x = Config.get("auth", {});
-    this.authConfig = <IAuthConfig>x;
-    _.defaults(this.authConfig, DEFAULT_CONFIG_OPTIONS);
 
-    await this.authConfigFactory.initialize();
 
-    let classes = this.loader.getClasses(K_LIB_AUTH_ADAPTERS);
-
-    for (let cls of classes) {
-      let authAdapter = <IAuthAdapter>Reflect.construct(cls, []);
-
-      if (!authAdapter.hasRequirements()) {
-        Log.error('Can\'t load adapter ' + authAdapter.type + '! Skipping ... ');
-        continue;
-      }
-
-      if (authAdapter.type) {
-        let def: IAdapterDef = {
-          className: cls.name,
-          filepath: ClassesLoader.getSource(cls),
-          moduleName: ClassesLoader.getModulName(cls),
-          name: authAdapter.type
-        };
-
-        if (!_.isEmpty(this.authConfig) && !_.isEmpty(this.authConfig.methods)) {
-          for (let authId in this.authConfig.methods) {
-            let methodOptions = this.authConfig.methods[authId];
-            methodOptions.authId = authId;
-            if (methodOptions.type === authAdapter.type) {
-              methodOptions.clazz = cls;
-
-              if (authAdapter.updateOptions) {
-                authAdapter.updateOptions(methodOptions);
-              }
-
-              let adapterInstance = <IAuthAdapter>Container.get(cls);
-              adapterInstance.authId = authId;
-              this.adapters.push(adapterInstance);
-              await adapterInstance.prepare(methodOptions);
-            }
-          }
-        }
-        this.allAdapters.push(def);
-      }
-    }
-    this.enabled = !_.isEmpty(this.authConfig) && _.keys(this.authConfig.methods).length > 0;
     if (this.isEnabled()) {
       this.connection = await this.storage.connect();
 
     }
+  }
+
+  getManager() {
+    return this.authManager;
+  }
+
+  private getAuthConfig() {
+    return this.authManager.getConfig();
   }
 
   getConfig() {
@@ -145,12 +75,12 @@ export class Auth implements IMiddleware {
 
 
   isEnabled() {
-    return this.enabled;
+    return this.authManager.isEnabled();
   }
 
 
   getHttpAuthKey() {
-    return this.authConfig.httpAuthKey.toLocaleLowerCase();
+    return this.getAuthConfig().httpAuthKey.toLocaleLowerCase();
   }
 
 
@@ -162,22 +92,22 @@ export class Auth implements IMiddleware {
     }
   }
 
-
-  getDefinedAdapters(): IAdapterDef[] {
-    return this.allAdapters;
-  }
-
+  /*
+    getDefinedAdapters(): IAdapterDef[] {
+      return this.allAdapters;
+    }
+  */
 
   getUsedAuthMethods(): IAuthOptions[] {
-    if (!_.isEmpty(this.authConfig)) {
-      return _.values(this.authConfig.methods);
+    if (!_.isEmpty(this.getAuthConfig())) {
+      return _.values(this.getAuthConfig().methods);
     }
     return [];
   }
 
 
   getAdapters(): IAuthAdapter[] {
-    return this.adapters;
+    return this.authManager.getAdapters();
   }
 
 
@@ -216,7 +146,7 @@ export class Auth implements IMiddleware {
 
 
   config(): IAuthConfig {
-    return _.clone(this.authConfig);
+    return _.clone(this.getAuthConfig());
   }
 
   private getInstanceFor(stage: AuthLifeCycle, authId: string = 'default', values: any = null): any {
@@ -267,7 +197,7 @@ export class Auth implements IMiddleware {
 
 
   private canSignup(adapter: IAuthAdapter) {
-    return adapter.canSignup() && _.get(this.authConfig, 'allowSignup', false);
+    return adapter.canSignup() && _.get(this.getAuthConfig(), 'allowSignup', false);
   }
 
 
@@ -319,7 +249,11 @@ export class Auth implements IMiddleware {
           try {
             let isSignuped = await adapter.signup(dataContainer);
             if (isSignuped) {
-              method = await this.createUserAndMethod(adapter, dataContainer);
+              await AuthHelper.createUserAndMethod(
+                this.entityController,
+                adapter,
+                dataContainer
+              );
               dataContainer.success = isSignuped;
             } else {
               // TODO
@@ -433,8 +367,12 @@ export class Auth implements IMiddleware {
           // user with name does not exists
           try {
             if (adapter.createOnLogin(dataContainer)) {
-              method = await this.createUserAndMethod(adapter, dataContainer);
-              user = await this.getUser(method.userId);
+              user = await AuthHelper.createUserAndMethod(
+                this.entityController,
+                adapter,
+                dataContainer
+              );
+              // user = await this.getUser(method.userId);
             } else {
               dataContainer.success = false;
             }
@@ -528,8 +466,8 @@ export class Auth implements IMiddleware {
 
 
   private authChain(): string[] {
-    if (this.authConfig.chain && !_.isEmpty(this.authConfig.chain)) {
-      return this.authConfig.chain;
+    if (this.getAuthConfig().chain && !_.isEmpty(this.getAuthConfig().chain)) {
+      return this.getAuthConfig().chain;
     } else {
       let first = _.first(this.getAdapters());
       return [first.authId];
@@ -676,85 +614,14 @@ export class Auth implements IMiddleware {
   }
 
 
-  async createUserAndMethod(adapter: IAuthAdapter,dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>): Promise<AuthMethod> {
-    let mgr = this.connection.manager;
-    let user = await this.createUser(adapter, dataContainer);
-    user = await this.entityController.save(user);
-
-    return mgr.transaction(async em => {
-      let method = await this.createMethod(adapter, dataContainer);
-      method.standard = true;
-      method.userId = user.id;
-      return em.save(method);
-    });
-  }
-
-
-  private async createMethod(adapter: IAuthAdapter, dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>) {
-    let method = new AuthMethod();
-    let signup = dataContainer.instance;
-    method.identifier = signup.getIdentifier();
-    method.authId = adapter.authId;
-    method.type = adapter.type;
-
-    if (_.has(dataContainer, 'data')) {
-      method.data = _.get(dataContainer, 'data');
-    }
-
-    await adapter.extend(method, signup);
-
-    if (!method.mail) {
-      if (signup instanceof AbstractUserSignup) {
-        method.mail = signup.getMail();
-      } else if (signup instanceof AbstractUserLogin) {
-        // mail could be passed by freestyle data object
-        if (_.has(dataContainer, 'data.mail')) {
-          method.mail = _.get(dataContainer, 'data.mail');
-        }
-      }
-    }
-
-    if (!method.mail) {
-      // TODO create MailError
-      throw new Error('no mail was found in data')
-    }
-    return method;
-  }
-
-
-  private async createUser(adapter: IAuthAdapter, dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>) {
-    let user = new User();
-    let signup = dataContainer.instance;
-    user.username = signup.getIdentifier();
-    await adapter.extend(user, signup);
-
-    if (!user.mail) {
-      if (signup instanceof AbstractUserSignup) {
-        user.mail = signup.getMail();
-      } else if (signup instanceof AbstractUserLogin) {
-        // mail could be passed by freestyle data object
-        if (_.has(dataContainer, 'data.mail')) {
-          user.mail = _.get(dataContainer, 'data.mail');
-        }
-      }
-    }
-
-    if (!user.mail) {
-      // TODO create MailError
-      throw new Error('no mail was found for the user account')
-    }
-    return user;
-  }
-
-
   use(app: IApplication): void {
     if (this.isEnabled()) {
       if (this.frameworkId === 'express') {
         const session = require('express-session');
         // TODO config session stuff
-        app.use(session(this.authConfig.session));
+        app.use(session(this.getAuthConfig().session));
 
-        for (let adapter of this.adapters) {
+        for (let adapter of this.authManager.getAdapters()) {
           if (adapter.use) {
             adapter.use(app, 'after');
           }

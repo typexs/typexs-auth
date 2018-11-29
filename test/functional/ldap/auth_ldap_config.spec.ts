@@ -14,7 +14,6 @@ class Auth_ldap_configSpec {
 
   before() {
     Config.clear();
-
   }
 
 
@@ -44,13 +43,12 @@ class Auth_ldap_configSpec {
     Container.set("RuntimeLoader", loader);
     Config.set('auth', authCfg);
 
-
     await TestHelper.storage();
 
     let auth = Container.get(Auth);
     await auth.prepare({});
 
-    let adapters = auth.getDefinedAdapters();
+    let adapters = auth.getManager().getDefinedAdapters();
     let authMethods = auth.getUsedAuthMethods();
     let authMethodsInfo = auth.getSupportedMethodsInfos();
 

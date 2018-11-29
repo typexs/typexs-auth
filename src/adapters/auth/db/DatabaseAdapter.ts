@@ -12,9 +12,11 @@ import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
 
 import {DefaultUserSignup} from "../../../libs/models/DefaultUserSignup";
 
+
 import {User} from "../../../entities/User";
 import {EntityController} from "@typexs/schema";
 import {AuthDataContainer} from "../../../libs/auth/AuthDataContainer";
+import {AbstractUserSignup} from "../../../libs/models/AbstractUserSignup";
 
 
 export const K_AUTH_DATABASE = 'database';
@@ -68,7 +70,8 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
   async authenticate(container: AuthDataContainer<DefaultUserLogin>) {
 
     try {
-      let authMethod = await this.getAuth(container.instance);
+      let login:DefaultUserLogin = container.instance;
+      let authMethod = await this.getAuth(<any>login);
       if (authMethod) {
         container.success = true;
         container.user = await this.entityController.find(User, {id: authMethod.userId}, {limit: 1});
@@ -105,7 +108,7 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
   }
 
 
-  async signup(data: DefaultUserSignup) {
+  async signup(signup: AuthDataContainer<AbstractUserSignup>): Promise<boolean>{
     // TODO impl method
     return true;
   }

@@ -51,7 +51,7 @@ class AuthConfigSpec {
     let auth = Container.get(Auth);
     await auth.prepare({});
 
-    let adapters = auth.getDefinedAdapters();
+    let adapters = auth.getManager().getDefinedAdapters();
     let authMethods = auth.getUsedAuthMethods();
 
     expect(adapters.map(x => x.name)).to.contains('database');

@@ -2,9 +2,10 @@ import {IUser} from "@typexs/ng-base/libs/api/auth/IUser";
 
 export interface IAuthUser extends IUser {
 
-  id: number;
+  id?: number;
 
-  disabled: boolean;
+
+  disabled?: boolean;
 
 
 }

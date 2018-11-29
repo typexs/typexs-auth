@@ -33,14 +33,14 @@ export interface IAuthAdapter {
 
   getModelFor(stage: AuthLifeCycle): Function;
 
-  authenticate<T>(login: AuthDataContainer<T>): Promise<boolean> | boolean;
+  authenticate(login: AuthDataContainer<AbstractUserLogin>): Promise<boolean> | boolean;
 
   // getAuth(login: any): Promise<AuthMethod>;
   canCreateOnLogin(): boolean;
 
   canSignup(): boolean;
 
-  signup?(signup: AuthDataContainer<AbstractUserSignup>): boolean;
+  signup?(signup: AuthDataContainer<AbstractUserSignup>): Promise<boolean> | boolean;
 
 
   createOnLogin?(login: AuthDataContainer<AbstractUserLogin>): boolean;

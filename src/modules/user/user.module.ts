@@ -72,7 +72,7 @@ const PROVIDERS = [
     SystemModule,
     NavigatorModule
   ],
-  exports: [RouterModule],
+  exports: [],
   providers: PROVIDERS
 })
 export class UserModule {

@@ -4,7 +4,6 @@ import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
 import {Router} from "@angular/router";
 import {UserAuthService} from "./user-auth.service";
 import {AuthService, NavigatorService} from "@typexs/ng-base";
-import {User} from "../../entities/User";
 
 
 @Component({

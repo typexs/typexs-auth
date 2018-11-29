@@ -10,6 +10,8 @@ import * as _ from "lodash";
 
 import {DefaultUserLogout} from "../models/DefaultUserLogout";
 import {User} from "../../entities/User";
+import {AuthDataContainer} from "../auth/AuthDataContainer";
+import {AbstractUserLogin} from "../models/AbstractUserLogin";
 
 
 export abstract class AbstractAuthAdapter implements IAuthAdapter {
@@ -27,7 +29,7 @@ export abstract class AbstractAuthAdapter implements IAuthAdapter {
   }
 
 
-  abstract authenticate(login: any): Promise<boolean> | boolean;
+  abstract authenticate(login: AuthDataContainer<AbstractUserLogin>): Promise<boolean> | boolean;
 
 
   extend(obj: User | AuthMethod, data: any): void {
