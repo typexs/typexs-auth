@@ -7,6 +7,7 @@ import {Auth} from "../../src/middleware/Auth";
 import {IAuthConfig} from "../../src/libs/auth/IAuthConfig";
 import {User} from "../../src/entities/User";
 import {TestHelper} from "./TestHelper";
+import {AuthManager} from "../../src/libs/auth/AuthManager";
 
 @suite('functional/auth_config_default') @timeout(10000)
 class AuthConfigSpec {
@@ -45,8 +46,14 @@ class AuthConfigSpec {
     Config.set('auth', authCfg);
 
 
+
+
     const options = {name: 'default'};
     let ref = await TestHelper.storage();
+
+    let manager = Container.get(AuthManager);
+    Container.set(AuthManager.NAME, manager);
+    await manager.prepare();
 
     let auth = Container.get(Auth);
     await auth.prepare({});

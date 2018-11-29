@@ -49,12 +49,11 @@ class AuthConfigSpec {
     ];
 
     let name = 'default';
-    let bootstrap = await TestHelper.bootstrap_basic(opts, [{type: 'system'}], {startup: false});
-    let schemaDef = EntityRegistry.getSchema(name);
-    let ref = bootstrap.getStorage().get(name);
-    const framework = FrameworkFactory.$().get(ref);
-    let xsem = new EntityController(name, schemaDef, ref, framework);
-    await xsem.initialize();
+
+    let ref = await TestHelper.bootstrap_auth(name,opts);
+    let auth = ref.auth;
+    let manager = ref.authManager;
+    let xsem = ref.controller;
 
     let roles = await AuthHelper.initRoles(xsem, opts.auth.initRoles);
     expect(roles).to.have.length(2);
@@ -86,18 +85,10 @@ class AuthConfigSpec {
     ];
     let name = 'default';
 
-    let bootstrap = await TestHelper.bootstrap_basic(opts, [{type: 'system'}], {startup: false});
-    let schemaDef = EntityRegistry.getSchema(name);
-    let ref = bootstrap.getStorage().get(name);
-    const framework = FrameworkFactory.$().get(ref);
-
-    let xsem = new EntityController(name, schemaDef, ref, framework);
-    await xsem.initialize();
-    Container.set('EntityController.default', xsem);
-
-    let manager = Container.get(AuthManager);
-    Container.set(AuthManager.NAME, manager);
-    await manager.prepare();
+    let ref = await TestHelper.bootstrap_auth(name,opts);
+    let auth = ref.auth;
+    let manager = ref.authManager;
+    let xsem = ref.controller;
 
 
     await AuthHelper.initRoles(xsem, opts.auth.initRoles);

@@ -1,11 +1,9 @@
 import {suite, test} from "mocha-typescript";
 import {expect} from 'chai';
-import * as _ from 'lodash';
-import * as request from 'supertest';
 
-import {ServerRegistry,WebServer,K_ROUTE_CONTROLLER,C_DEFAULT} from "@typexs/server";
-import {Bootstrap, Config, IFileConfigOptions, PlatformUtils, ClassesLoader, Container,RuntimeLoader} from "@typexs/base";
-import {TestHelper} from "./TestHelper";
+import {C_DEFAULT, K_ROUTE_CONTROLLER, WebServer} from "@typexs/server";
+import {Bootstrap, Container, PlatformUtils, RuntimeLoader} from "@typexs/base";
+import {AuthManager} from "../../src/libs/auth/AuthManager";
 
 
 @suite('functional/middleware')
@@ -43,6 +41,11 @@ class MiddlewareSpec {
     // Dummy storage entry for auth
     Container.set("storage.default", {connect:function(){}});
     Container.set("EntityController.default", {});
+
+
+    let manager = Container.get(AuthManager);
+    Container.set(AuthManager.NAME, manager);
+    await manager.prepare();
 
 
     let web = <WebServer>Container.get(WebServer);

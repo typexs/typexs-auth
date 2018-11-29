@@ -4,12 +4,12 @@ import {expect} from 'chai';
 import {Auth} from "../../../src/middleware/Auth";
 import {ITypexsOptions} from "@typexs/base/libs/ITypexsOptions";
 import {TESTDB_SETTING, TestHelper} from "../TestHelper";
-import _ = require("lodash");
-import {IAuthOptions} from "../../../src/libs/auth/IAuthOptions";
 import {IAuthConfig} from "../../../src/libs/auth/IAuthConfig";
+import {AuthManager} from "../../../src/libs/auth/AuthManager";
+import _ = require("lodash");
 
 
-let auth: Auth = null;
+
 
 const OPTIONS: ITypexsOptions = <ITypexsOptions>{
   storage: {
@@ -48,10 +48,9 @@ class AuthConfigSpec {
     let opts = _.clone(OPTIONS);
     opts.storage = {};
     (<IAuthConfig>(<any>opts).auth).allowSignup = false;
-    await TestHelper.bootstrap_basic(opts);
+    let ref = await TestHelper.bootstrap_auth('default',opts);
+    let auth = ref.auth;
 
-    auth = Container.get(Auth);
-    await auth.prepare();
     let adapter = auth.getAdapterByIdentifier('default');
     let r = adapter.canSignup();
     expect(r).to.be.true;
@@ -66,10 +65,9 @@ class AuthConfigSpec {
     let opts = _.clone(OPTIONS);
     opts.storage = {};
     (<IAuthConfig>(<any>opts).auth).methods.default.allowSignup = false;
-    await TestHelper.bootstrap_basic(opts);
+    let ref = await TestHelper.bootstrap_auth('default',opts);
+    let auth = ref.auth;
 
-    auth = Container.get(Auth);
-    await auth.prepare();
     let r = auth.getAdapterByIdentifier('default').canSignup();
     expect(r).to.be.false;
   }
@@ -80,10 +78,8 @@ class AuthConfigSpec {
     opts.storage = {};
     (<IAuthConfig>(<any>opts).auth).allowSignup = true;
     //(<IAuthConfig>(<any>opts).auth).methods.default.allowSignup = false;
-    await TestHelper.bootstrap_basic(opts);
-
-    auth = Container.get(Auth);
-    await auth.prepare();
+    let ref = await TestHelper.bootstrap_auth('default',opts);
+    let auth = ref.auth;
 
     expect(auth.config().allowSignup).to.be.true;
 
@@ -104,10 +100,9 @@ class AuthConfigSpec {
     opts.storage = {};
     (<IAuthConfig>(<any>opts).auth).allowSignup = true;
     (<IAuthConfig>(<any>opts).auth).methods.default.allowSignup = true;
-    await TestHelper.bootstrap_basic(opts);
+    let ref = await TestHelper.bootstrap_auth('default',opts);
+    let auth = ref.auth;
 
-    auth = Container.get(Auth);
-    await auth.prepare();
     expect(auth.config().allowSignup).to.be.true;
 
     let adapter = auth.getAdapterByIdentifier('default');

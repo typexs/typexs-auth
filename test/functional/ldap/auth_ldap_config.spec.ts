@@ -6,6 +6,7 @@ import {Auth} from "../../../src/middleware/Auth";
 import {IAuthConfig} from "../../../src/libs/auth/IAuthConfig";
 import {User} from "../../../src/entities/User";
 import {TestHelper} from "../TestHelper";
+import {AuthManager} from "../../../src/libs/auth/AuthManager";
 
 
 @suite('functional/ldap/auth_ldap_config')
@@ -43,7 +44,14 @@ class Auth_ldap_configSpec {
     Container.set("RuntimeLoader", loader);
     Config.set('auth', authCfg);
 
+
     await TestHelper.storage();
+
+
+    let manager = Container.get(AuthManager);
+    Container.set(AuthManager.NAME, manager);
+    await manager.prepare();
+
 
     let auth = Container.get(Auth);
     await auth.prepare({});

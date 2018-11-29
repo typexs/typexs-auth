@@ -10,14 +10,20 @@ import {
 import {PlatformTools} from 'typeorm/platform/PlatformTools';
 import {EntityController, EntityRegistry, FrameworkFactory} from "@typexs/schema";
 import _ = require("lodash");
+import {AuthManager} from "../../src/libs/auth/AuthManager";
+import {Auth} from "../../src/middleware/Auth";
 
 
-export const TESTDB_SETTING: IStorageOptions & { database: string } = {
+export const TESTDB_SETTING: IStorageOptions & { database: string } = process.env.LOG ? {
   synchronize: true,
   type: 'sqlite',
   database: ':memory:',
   logger: 'simple-console',
   logging: 'all'
+} : {
+  synchronize: true,
+  type: 'sqlite',
+  database: ':memory:'
 };
 
 
@@ -60,18 +66,41 @@ export class TestHelper {
   }
 
 
-  static async bootstrap_basic(options: any = {}, config: any = [{type: 'system'}], settings={startup:true}) {
+  static async bootstrap_basic(options: any = {}, config: any = [{type: 'system'}], settings = {startup: true}) {
     let _options = _.clone(options);
     let bootstrap = Bootstrap.setConfigSources(config).configure(_options).activateErrorHandling().activateLogger();
     await bootstrap.prepareRuntime();
     await bootstrap.activateStorage();
 
-    if(settings.startup){
+    if (settings.startup) {
       await bootstrap.startup();
     }
 
 
     return bootstrap;
+  }
+
+
+  static async bootstrap_auth(name: string, options: any = {}) {
+    let bootstrap = await TestHelper.bootstrap_basic(options, [{type: 'system'}], {startup: false});
+    let schemaDef = EntityRegistry.getSchema(name);
+    let ref = bootstrap.getStorage().get(name);
+    const framework = FrameworkFactory.$().get(ref);
+
+    let xsem = new EntityController(name, schemaDef, ref, framework);
+    await xsem.initialize();
+    Container.set('EntityController.' + name, xsem);
+
+    let manager = Container.get(AuthManager);
+    Container.set(AuthManager.NAME, manager);
+    await manager.prepare();
+
+    let auth = Container.get(Auth);
+    await auth.prepare();
+
+    return {bootstrap: bootstrap, auth: auth, authManager: manager, controller: xsem}
+
+
   }
 
 

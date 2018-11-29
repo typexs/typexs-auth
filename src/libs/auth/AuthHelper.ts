@@ -77,7 +77,7 @@ export class AuthHelper {
 
   static async createUserAndMethod(controller: EntityController,
                                    adapter: IAuthAdapter,
-                                   dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>): Promise<User> {
+                                   dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>) {
     let c = await controller.storageRef.connect();
     let user = await AuthHelper.createUser(adapter, dataContainer);
     user = await controller.save(user);
@@ -87,7 +87,7 @@ export class AuthHelper {
       method.userId = user.id;
       return em.save(method);
     }).then(r => {
-      return user;
+      return {user:user,method:r};
     });
   }
 
@@ -177,12 +177,12 @@ export class AuthHelper {
       let signup: DefaultUserSignup = Reflect.construct(adapter.getModelFor("signup"), []);
       _.assign(signup, user);
       signup.passwordConfirm = signup.password;
-      let saved_user = await this.createUserAndMethod(entityController, adapter, new AuthDataContainer(signup));
+      let saved = await this.createUserAndMethod(entityController, adapter, new AuthDataContainer(signup));
       if (user.roles.length > 0) {
-        saved_user.roles = existing_roles.filter(r => user.roles.indexOf(r.rolename) !== -1);
-        await entityController.save(saved_user);
+        saved.user.roles = existing_roles.filter(r => user.roles.indexOf(r.rolename) !== -1);
+        await entityController.save(saved.user);
       }
-      return_users.push(saved_user);
+      return_users.push(saved.user);
 
     }
 

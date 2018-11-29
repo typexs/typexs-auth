@@ -112,7 +112,7 @@ export class Auth implements IMiddleware {
 
 
   getAdapterByIdentifier(authId: string): IAuthAdapter {
-    return _.find(this.getAdapters(), a => a.authId === authId);
+    return this.authManager.getAdapter(authId);
   }
 
 
@@ -367,11 +367,13 @@ export class Auth implements IMiddleware {
           // user with name does not exists
           try {
             if (adapter.createOnLogin(dataContainer)) {
-              user = await AuthHelper.createUserAndMethod(
+              let ref = await AuthHelper.createUserAndMethod(
                 this.entityController,
                 adapter,
                 dataContainer
               );
+              user = ref.user;
+              method = ref.method;
               // user = await this.getUser(method.userId);
             } else {
               dataContainer.success = false;

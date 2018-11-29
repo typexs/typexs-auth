@@ -11,7 +11,7 @@ import {LDAP_CONFIG} from "./ldap_config";
 
 let bootstrap: Bootstrap = null;
 
-
+process.setMaxListeners(1000);
 const settingsTemplate = {
   logging: {enable: true, level: 'debug'},
   storage: {
@@ -46,10 +46,7 @@ class Auth_ldap_adapterSpec {
     let settings = _.clone(settingsTemplate);
     settings.auth.methods.default = _.clone(LDAP_CONFIG);
 
-    await TestHelper.bootstrap_basic(settings);
-
-    let auth = Container.get(Auth);
-    await auth.prepare();
+    await TestHelper.bootstrap_auth('default',settings);
 
     let adapter = Container.get(LdapAdapter);
     await adapter.prepare(Config.get('auth.methods.default'));

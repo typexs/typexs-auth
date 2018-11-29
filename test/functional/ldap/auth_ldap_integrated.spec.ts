@@ -1,7 +1,6 @@
 import {suite, test} from "mocha-typescript";
-import {Config, Bootstrap, Container, StorageRef} from "@typexs/base";
+import {Bootstrap, Config, Container, StorageRef} from "@typexs/base";
 import * as _ from "lodash";
-import {Auth} from "../../../src/middleware/Auth";
 import {expect} from "chai";
 import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
 import {MockResponse} from "../../helper/MockResponse";
@@ -12,10 +11,6 @@ import {AuthSession} from "../../../src/entities/AuthSession";
 import {User} from "../../../src/entities/User";
 import {TESTDB_SETTING, TestHelper} from "../TestHelper";
 import {LDAP_CONFIG} from "./ldap_config";
-
-let bootstrap: Bootstrap = null;
-
-let auth: Auth = null;
 
 let inc = 0;
 
@@ -50,12 +45,10 @@ class Auth_ldap_integratedSpec {
   async 'do login by user search through admin bind'() {
     let settings = _.clone(settingsTemplate);
 
-    await TestHelper.bootstrap_basic(settings);
+    let refs = await TestHelper.bootstrap_auth('default', settings);
+    let auth = refs.auth;
 
-    auth = Container.get(Auth);
-    await auth.prepare();
-
-    let ref:StorageRef = Container.get('storage.default');
+    let ref: StorageRef = Container.get('storage.default');
     let c = await ref.connect();
 
     let doingLogin = null;
@@ -79,8 +72,10 @@ class Auth_ldap_integratedSpec {
     let userList = await c.manager.find(User);
     let methodList = await c.manager.find(AuthMethod);
     let sessionList = await c.manager.find(AuthSession);
-    console.log(userList, methodList, sessionList);
+
     expect(userList).to.have.length(0);
+    expect(sessionList).to.have.length(0);
+    expect(methodList).to.have.length(0);
 
 
     // user exists and should be created if auth passed
@@ -97,8 +92,10 @@ class Auth_ldap_integratedSpec {
     userList = await c.manager.find(User);
     methodList = await c.manager.find(AuthMethod);
     sessionList = await c.manager.find(AuthSession);
-    console.log(userList, methodList, sessionList);
+    //console.log(userList, methodList, sessionList);
     expect(userList).to.have.length(1);
+    expect(sessionList).to.have.length(1);
+    expect(methodList).to.have.length(1);
 
   }
 
