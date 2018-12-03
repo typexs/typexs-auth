@@ -25,6 +25,7 @@ import {AuthManager} from "../libs/auth/AuthManager";
 
 export class Auth implements IMiddleware {
 
+  static NAME = 'Auth';
 
   @Inject('storage.default')
   private storage: StorageRef;
@@ -52,7 +53,7 @@ export class Auth implements IMiddleware {
 
 
   async prepare(options: any = {}) {
-    Container.set("Auth", this);
+
 
 
     if (this.isEnabled()) {

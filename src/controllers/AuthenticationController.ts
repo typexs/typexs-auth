@@ -13,7 +13,7 @@ import {AbstractUserLogin} from "../libs/models/AbstractUserLogin";
 @JsonController()
 export class AuthenticationController {
 
-  @Inject("Auth")
+  @Inject(Auth.NAME)
   auth: Auth;
 
   @Get('/user/_config')

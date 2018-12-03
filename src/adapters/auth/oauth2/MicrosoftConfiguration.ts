@@ -23,7 +23,12 @@ export class MicrosoftConfiguration implements IAuthConfiguration {
       options.tokenURL : TOKEN_URL;
 
     if (_.has(options, 'scope')) {
-      _.set(options, 'scope', options.scope.join(','))
+      if(_.isArray(options['scope'])){
+        _.set(options, 'scope', options.scope.join(','))
+      }else{
+        _.set(options, 'scope', options.scope)
+      }
+
     } else {
       throw new Error('scope is required for onedrive');
     }

@@ -5,11 +5,13 @@ import {RouterModule} from '@angular/router';
 import {ModuleWithProviders, Type} from '@angular/core';
 import {UserModule} from "../user/user.module";
 import {AdminModule, FormsModule, NavigatorModule, ViewsModule} from "@typexs/ng-base";
+import {UserAdminModule} from "../user_admin/user.admin.module";
 
 
 export const APP_MODULES: Array<Type<any> | ModuleWithProviders | any[]> = [
   BrowserModule,
   UserModule.forRoot(),
+  UserAdminModule,
   NavigatorModule,
   FormsModule,
   ViewsModule,

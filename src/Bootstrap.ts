@@ -27,6 +27,7 @@ export class Bootstrap implements IBootstrap {
 
 
   async bootstrap() {
+    await this.authManager.prepare();
     const activators = CoreBootrap._().getActivators();
 
     // collect permissions
