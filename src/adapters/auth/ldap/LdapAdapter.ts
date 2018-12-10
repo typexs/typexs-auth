@@ -136,15 +136,7 @@ export class LdapAdapter extends AbstractAuthAdapter {
       //}
     }
     return container.isAuthenticated;
-
   }
-
-  /*
-    async signup(data: DefaultUserSignup) {
-      // TODO impl method
-      return false;
-    }
-  */
 
 
   createOnLogin(login: AuthDataContainer<DefaultUserLogin>): boolean {
@@ -170,9 +162,5 @@ export class LdapAdapter extends AbstractAuthAdapter {
     return true;
   }
 
-
-  async extend(obj: User | AuthMethod, data: any): Promise<void> {
-
-  }
 
 }

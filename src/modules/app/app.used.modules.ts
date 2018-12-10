@@ -11,10 +11,11 @@ import {UserAdminModule} from "../user_admin/user.admin.module";
 export const APP_MODULES: Array<Type<any> | ModuleWithProviders | any[]> = [
   BrowserModule,
   UserModule.forRoot(),
-  UserAdminModule,
+
   NavigatorModule,
   FormsModule,
   ViewsModule,
   RouterModule.forRoot(APP_ROUTES),
-  AdminModule
+  AdminModule,
+  UserAdminModule.forRoot(),
 ];

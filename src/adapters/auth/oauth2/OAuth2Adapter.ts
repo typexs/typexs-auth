@@ -127,8 +127,8 @@ export class OAuth2Adapter extends AbstractAuthAdapter {
             login.password = 'XXXXXXXXXXXXXXX';
             login.authId = self.authId;
             container.data = user.data;
-            (<any>login)._user = user;
-            (<any>login)._info = info;
+            (<any>container)._user = user;
+            (<any>container)._info = info;
 
             container = <any>await self.auth.doAuthenticatedLogin(container, req, res);
             Log.info(container);
@@ -152,25 +152,6 @@ export class OAuth2Adapter extends AbstractAuthAdapter {
 
   canCreateOnLogin() {
     return true;
-  }
-
-
-  async extend(obj: User | AuthMethod | AuthSession, data: any): Promise<void> {
-    let user = _.get(data, '_user');
-    if (obj instanceof User) {
-      obj.displayName = user.displayName;
-      obj.mail = user.mail;
-    } else if (obj instanceof AuthMethod) {
-      let info = _.get(data, '_info');
-      if (!obj.mail) {
-        obj.mail = user.mail;
-      }
-      if (!obj.data) {
-        obj.data = {}
-      }
-      obj.data = _.merge(obj.data, info);
-
-    }
   }
 
 }

@@ -1,0 +1,27 @@
+== Auth Workflows
+
+
+Configurations:
+
+* adapter-specific approval settings
+
+
+=== Signup
+
+* User
+* Validate
+* Username check
+* Validate signup data check
+* on okay => insert new user and wait for approval (if not autoapprove)
+** notify system admin's about approval process
+** admin can approve user
+
+
+=== Login
+
+* check if user is approved => if not notify user on login
+* signup on login if extern auth system is configured => ldap
+*
+
+
+=== Approval

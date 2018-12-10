@@ -5,7 +5,15 @@ export interface IAuthOptions extends IAuthMethodInfo {
 
   authId?: string;
 
-  serverside?:boolean;
+  serverside?: boolean;
+
+
+  approval?: {
+    auto?: boolean,
+    notify?: string[]
+  }
+
+  role?: string;
 
   clazz?: Function
 

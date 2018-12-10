@@ -23,6 +23,7 @@ export interface IAuthConfig {
 
   initRoles?: IConfigRole[]
 
+
   chain?: string[];
 
   methods?: { [key: string]: IAuthOptions }

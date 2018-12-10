@@ -2,7 +2,7 @@
 import * as bcrypt from "bcrypt";
 import * as _ from "lodash";
 
-import {ConnectionWrapper, Inject, StorageRef, NestedException} from "@typexs/base";
+import {ConnectionWrapper, Inject, StorageRef, NestedException, Invoker} from "@typexs/base";
 import {AuthMethod} from "../../../entities/AuthMethod";
 import {UserNotFoundError} from "../../../libs/exceptions/UserNotFoundError";
 import {PasswordIsWrongError} from "../../../libs/exceptions/PasswordIsWrongError";
@@ -17,6 +17,8 @@ import {User} from "../../../entities/User";
 import {EntityController} from "@typexs/schema";
 import {AuthDataContainer} from "../../../libs/auth/AuthDataContainer";
 import {AbstractUserSignup} from "../../../libs/models/AbstractUserSignup";
+import {UserAuthApi} from "../../../api/UserAuth.api";
+import {DatabaseUserAuthExtenstion} from "./DatabaseUserAuthExtenstion";
 
 
 export const K_AUTH_DATABASE = 'database';
@@ -47,6 +49,9 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
   @Inject('EntityController.default')
   entityController: EntityController;
 
+  @Inject(Invoker.NAME)
+  invoker: Invoker;
+
   connection: ConnectionWrapper;
 
   type: string = K_AUTH_DATABASE;
@@ -63,6 +68,7 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
   async prepare(opts: IDatabaseAuthOptions) {
     _.defaults(opts, DEFAULTS);
     super.prepare(opts);
+    this.invoker.register(UserAuthApi, DatabaseUserAuthExtenstion);
     this.connection = await this.storage.connect();
   }
 
@@ -122,11 +128,13 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
     return bcrypt.compare(str, secret);
   }
 
+  /*
   async extend(obj: User | AuthMethod, data: any): Promise<void> {
     if (obj instanceof AuthMethod && data instanceof DefaultUserSignup) {
       obj.secret = data.password ? await this.crypt(data.password) : null;
     }
   }
+  */
 
   async getAuth(login: DefaultUserLogin): Promise<AuthMethod> {
 

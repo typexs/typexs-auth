@@ -1,9 +1,7 @@
 <div>
-<div *ngIf="matrixReady">
-  <xform formName="permissions-roles-matrix" [instance]="permissionsMatrix" (ngSubmit)="onSubmit($event)"></xform>
-
-</div>
-  <pre>
-
-</pre>
+  <div *ngIf="matrixReady">
+    <xform formName="permissions-roles-matrix" [instance]="permissionsMatrix" [channel]="channel"
+           (ngSubmit)="onSubmit($event)"></xform>
+  </div>
+  <div *ngIf="!matrixReady">loading ...</div>
 </div>

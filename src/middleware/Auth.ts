@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as bcrypt from "bcrypt";
 
-import {ConnectionWrapper, Container, Inject, Log, StorageRef} from '@typexs/base';
+import {ConnectionWrapper, Container, Inject, Invoker, Log, StorageRef} from '@typexs/base';
 import {Action, IApplication, IMiddleware, IRoutingController, K_ROUTE_CONTROLLER} from '@typexs/server';
 import {AuthLifeCycle} from "../types";
 
@@ -22,6 +22,10 @@ import {AbstractUserLogout} from "../libs/models/AbstractUserLogout";
 import {AuthDataContainer} from "../libs/auth/AuthDataContainer";
 import {AuthHelper} from "../libs/auth/AuthHelper";
 import {AuthManager} from "../libs/auth/AuthManager";
+import {UserAuthApi} from "../api/UserAuth.api";
+import {UserNotApprovedError} from "../libs/exceptions/UserNotApprovedError";
+import {UserDisabledError} from "../libs/exceptions/UserDisabledError";
+import {UserNotFoundError} from "../libs/exceptions/UserNotFoundError";
 
 export class Auth implements IMiddleware {
 
@@ -36,6 +40,9 @@ export class Auth implements IMiddleware {
   @Inject(AuthManager.NAME)
   private authManager: AuthManager;
 
+
+  @Inject(Invoker.NAME)
+  private invoker: Invoker;
 
   private connection: ConnectionWrapper;
 
@@ -53,7 +60,6 @@ export class Auth implements IMiddleware {
 
 
   async prepare(options: any = {}) {
-
 
 
     if (this.isEnabled()) {
@@ -92,12 +98,6 @@ export class Auth implements IMiddleware {
       return '127.0.0.2';
     }
   }
-
-  /*
-    getDefinedAdapters(): IAdapterDef[] {
-      return this.allAdapters;
-    }
-  */
 
   getUsedAuthMethods(): IAuthOptions[] {
     if (!_.isEmpty(this.getAuthConfig())) {
@@ -179,18 +179,6 @@ export class Auth implements IMiddleware {
     return this.getInstanceFor("logout", authId, values);
   }
 
-  /*
-    getInstanceForData(authId: string = 'default', values: any = null): any {
-      return this.getInstanceFor("data", authId, values);
-    }
-
-
-    getUserData(user: User, authId: string = 'default') {
-      let exchangeObject = this.getInstanceForData(authId, {user: user});
-      exchangeObject.success = true;
-      return exchangeObject;
-    }
-  */
 
   private getAuthIdFromObject(data: AbstractUserLogin | AbstractUserSignup) {
     return _.get(data, "authId", "default");
@@ -251,6 +239,7 @@ export class Auth implements IMiddleware {
             let isSignuped = await adapter.signup(dataContainer);
             if (isSignuped) {
               await AuthHelper.createUserAndMethod(
+                this.invoker,
                 this.entityController,
                 adapter,
                 dataContainer
@@ -364,11 +353,13 @@ export class Auth implements IMiddleware {
         // create method and user
         user = await this.getUserByUsername(loginInstance.getIdentifier());
 
+
         if (_.isEmpty(user)) {
           // user with name does not exists
           try {
             if (adapter.createOnLogin(dataContainer)) {
               let ref = await AuthHelper.createUserAndMethod(
+                this.invoker,
                 this.entityController,
                 adapter,
                 dataContainer
@@ -410,58 +401,87 @@ export class Auth implements IMiddleware {
         })
       }
     } else {
-      await adapter.extend(method, loginInstance);
+      await this.invoker.use(UserAuthApi).onLoginMethod(method, adapter, dataContainer);
+      //await adapter.extend(method, loginInstance);
       user = await this.getUser(method.userId);
     }
 
-    try {
 
-      let remoteAddress = this.getRemoteAddress(req);
-      let current = new Date((new Date()).getTime() - 24 * 60 * 60 * 1000);
-      let mgr = this.connection.manager;
+    if (user) {
+      if (user.isDisabled()) {
+        dataContainer.isAuthenticated = false;
+        dataContainer.user = null;
+        dataContainer.addError({
+          property: 'user',
+          value: loginInstance.getIdentifier(),
+          constraints: {
+            user_is_disabled: "$property is disabled. Please contact the administrator."
+          }
+        })
+      }
+      if (!user.isApproved()) {
+        dataContainer.isAuthenticated = false;
+        dataContainer.user = null;
+        dataContainer.addError({
+          property: 'user',
+          value: loginInstance.getIdentifier(),
+          constraints: {
+            user_is_not_approved: "$property is not approved. Please contact the administrator."
+          }
+        })
+      }
+    }
 
-      await mgr.transaction(async em => {
+    if (user.isApproved() && !user.isDisabled()) {
+      try {
 
-        // delete old user sessions which where last updated 24*60*60s
-        let q = em.createQueryBuilder(AuthSession, "s").delete();
-        q.where("userId = :userId and ip = :ip", {
-          userId: user.id,
-          ip: remoteAddress
+        let remoteAddress = this.getRemoteAddress(req);
+        let current = new Date((new Date()).getTime() - 24 * 60 * 60 * 1000);
+        let mgr = this.connection.manager;
+
+        await mgr.transaction(async em => {
+
+          // delete old user sessions which where last updated 24*60*60s
+          let q = em.createQueryBuilder(AuthSession, "s").delete();
+          q.where("userId = :userId and ip = :ip", {
+            userId: user.id,
+            ip: remoteAddress
+          });
+          q.orWhere("userId = :userId and updated_at < :updated_at", {
+            userId: user.id,
+            updated_at: current
+          });
+          await q.execute();
+
+          let session = new AuthSession();
+          session.ip = remoteAddress;
+          session.userId = user.id;
+          session.authId = adapter.authId;
+          session.token = await this.createToken(session);
+
+          await Promise.all([
+            em.save(session),
+            em.save(user),
+            em.save(method)
+          ]);
+
+          dataContainer.token = session.token;
+          dataContainer.user = user;
+          dataContainer.method = method;
+          dataContainer.success = true;
+          res.setHeader(this.getHttpAuthKey(), session.token);
         });
-        q.orWhere("userId = :userId and updated_at < :updated_at", {
-          userId: user.id,
-          updated_at: current
-        });
-        await q.execute();
 
-        let session = new AuthSession();
-        session.ip = remoteAddress;
-        session.userId = user.id;
-        session.authId = adapter.authId;
-        session.token = await this.createToken(session);
-
-        await Promise.all([
-          em.save(session),
-          em.save(user),
-          em.save(method)
-        ]);
-
-        dataContainer.token = session.token;
-        dataContainer.user = user;
-        dataContainer.method = method;
-        dataContainer.success = true;
-        res.setHeader(this.getHttpAuthKey(), session.token);
-      });
-
-    } catch (err) {
-      Log.error(err);
-      dataContainer.addError({
-        property: 'user',
-        value: err.message,
-        constraints: {
-          session_error: "$property can not be created for this authentication."
-        }
-      })
+      } catch (err) {
+        Log.error(err);
+        dataContainer.addError({
+          property: 'user',
+          value: err.message,
+          constraints: {
+            session_error: "$property can not be created for this authentication."
+          }
+        })
+      }
     }
 
     return dataContainer;
@@ -499,6 +519,9 @@ export class Auth implements IMiddleware {
 
 
   async doLogout(user: User, req: any, res: any): Promise<AuthDataContainer<User>> {
+    if(!user){
+      throw new UserNotFoundError(null);
+    }
     let container = new AuthDataContainer(user);
     const token = this.getToken(req);
     container.success = false;
@@ -548,6 +571,14 @@ export class Auth implements IMiddleware {
         if (!_.isEmpty(session)) {
           // TODO check roles
           let user = await this.getUser(session.userId);
+
+          if (!user.isApproved()) {
+            throw new UserNotApprovedError(user.username);
+          }
+
+          if (user.isDisabled()) {
+            throw new UserDisabledError(user.username);
+          }
 
           await Promise.all([
             this.connection.manager.save(user),

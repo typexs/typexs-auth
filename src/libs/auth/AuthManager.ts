@@ -17,6 +17,7 @@ const DEFAULT_CONFIG_OPTIONS: IAuthConfig = {
   saltRounds: 5,
   userClass: User,
 
+
   session: {
     secret: CryptUtils.shorthash(new Date() + ''),
     resave: true,
@@ -36,7 +37,6 @@ export class AuthManager {
 
   private configurations: IAuthConfigurationDef[] = [];
 
-
   private allAdapters: IAdapterDef[] = [];
 
   private adapters: IAuthAdapter[] = [];
@@ -47,7 +47,7 @@ export class AuthManager {
     Container.set("AuthManager", this);
     let x = Config.get("auth", {});
     this.authConfig = <IAuthConfig>x;
-    _.defaults(this.authConfig, DEFAULT_CONFIG_OPTIONS);
+    _.defaultsDeep(this.authConfig, DEFAULT_CONFIG_OPTIONS);
 
     await this.initConfigurations();
     await this.initAdapter();
@@ -117,7 +117,7 @@ export class AuthManager {
   }
 
 
-  getAdapter(authId:string){
+  getAdapter(authId: string) {
     return _.find(this.adapters, a => a.authId == authId);
   }
 

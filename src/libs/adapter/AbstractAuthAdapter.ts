@@ -13,6 +13,14 @@ import {User} from "../../entities/User";
 import {AuthDataContainer} from "../auth/AuthDataContainer";
 import {AbstractUserLogin} from "../models/AbstractUserLogin";
 
+const DEFAULT_AUTH_OPTIONS: IAuthOptions = {
+  type: 'none',
+  role: null,
+  approval: {
+    auto: true,
+    notify: []
+  },
+}
 
 export abstract class AbstractAuthAdapter implements IAuthAdapter {
 
@@ -26,15 +34,29 @@ export abstract class AbstractAuthAdapter implements IAuthAdapter {
 
   prepare(authOptions: IAuthOptions): void {
     this.options = authOptions;
+    _.defaultsDeep(this.options, DEFAULT_AUTH_OPTIONS)
   }
 
 
   abstract authenticate(login: AuthDataContainer<AbstractUserLogin>): Promise<boolean> | boolean;
 
 
-  extend(obj: User | AuthMethod, data: any): void {
+  canAutoApprove(): boolean {
+    return this.options.approval.auto;
   }
 
+  getDefaultRole(): string {
+    return this.options.role;
+  }
+
+  getOptions(): IAuthOptions {
+    return this.options;
+  }
+
+  /*
+    extend(obj: User | AuthMethod, data: any): void {
+    }
+  */
 
   canCreateOnLogin(): boolean {
     return _.get(this.options, 'createOnLogin', false) && _.isFunction(this['createOnLogin']);

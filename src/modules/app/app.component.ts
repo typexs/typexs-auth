@@ -1,6 +1,4 @@
 import {Component, OnInit, ViewEncapsulation} from '@angular/core';
-
-import {StartupService} from "./startup.service";
 import {AuthService} from "@typexs/ng-base";
 
 @Component({
@@ -12,12 +10,13 @@ import {AuthService} from "@typexs/ng-base";
 export class AppComponent implements OnInit {
   title = 'app';
 
-  constructor(public auth: AuthService, private startup:StartupService) {
-    console.log(auth)
+  constructor(public auth: AuthService) {
   }
+
 
   async ngOnInit() {
   }
+
 
   isAuthenticated(){
     return this.auth.isLoggedIn();

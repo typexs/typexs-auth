@@ -1,7 +1,7 @@
+import * as _ from 'lodash';
 import {IAuthUser} from "../libs/models/IAuthUser";
 import {Entity} from "@typexs/schema/libs/decorators/Entity";
 import {Property} from "@typexs/schema/libs/decorators/Property";
-import {Permission} from "./Permission";
 import {And, Asc, Eq, From, Join, Key, To, Value} from "@typexs/schema";
 import {RBelongsTo} from "./RBelongsTo";
 import {Role} from "./Role";
@@ -25,6 +25,9 @@ export class User implements IAuthUser {
   @Property({type: 'boolean'})
   disabled: boolean = false;
 
+  @Property({type: 'boolean'})
+  approved: boolean = false;
+
   @Property({
     type: 'Role', cardinality: 0,
     join: Join(RBelongsTo, [
@@ -45,9 +48,34 @@ export class User implements IAuthUser {
   @Property({type: 'date:updated'})
   updated_at: Date;
 
+  isApproved(): boolean {
+    if (!_.isBoolean(this.approved)) {
+      if (_.isString(this.approved)) {
+        if (this.approved === "0" || this.approved === 'false') {
+          this.approved = false;
+        }else if(this.approved === "1" || this.approved === 'true'){
+          this.approved = true;
+        }
+      }
+    }
+    return this.approved;
+  }
 
-  label(){
-    if(this.displayName){
+  isDisabled(): boolean {
+    if (!_.isBoolean(this.disabled)) {
+      if (_.isString(this.disabled)) {
+        if (this.disabled === "0" || this.disabled === 'false') {
+          this.disabled = false;
+        }else if(this.disabled === "1" || this.disabled === 'true'){
+          this.disabled = true;
+        }
+      }
+    }
+    return this.disabled;
+  }
+
+  label() {
+    if (this.displayName) {
       return this.displayName;
     }
     return this.username;

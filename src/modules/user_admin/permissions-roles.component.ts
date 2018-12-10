@@ -3,8 +3,7 @@ import {Component, OnInit} from '@angular/core';
 import {Entity} from "@typexs/schema/libs/decorators/Entity";
 import {Property} from "@typexs/schema/libs/decorators/Property";
 import {ISelectOption} from "@typexs/ng-base/modules/forms/libs/ISelectOption";
-import {IProperty} from "@typexs/schema/libs/registry/IProperty";
-import {EntityService, FormGrid} from "@typexs/ng-base";
+import {EntityService, FormGrid, IMessage, MessageChannel, MessageService, MessageType} from "@typexs/ng-base";
 import {Role} from "../../entities/Role";
 import {Permission} from "../../entities/Permission";
 
@@ -31,8 +30,6 @@ export class PermissionMatrix {
 }
 
 
-
-
 @Component({
   selector: 'permissions-rights-overview',
   templateUrl: './permissions-roles.component.html',
@@ -41,11 +38,19 @@ export class PermissionsRolesComponent implements OnInit {
 
   permissionsMatrix: PermissionMatrix;
 
-  matrixReady:boolean = false;
+  matrixReady: boolean = false;
+
+  private channel: MessageChannel<IMessage>;
+
+  private roles: Role[] = [];
+
+  private permissions: Permission[] = [];
 
   result: any;
 
-  constructor(private entityService: EntityService) {
+  constructor(private entityService: EntityService,
+              private messageService: MessageService) {
+    this.channel = messageService.get('form.permissions-roles');
   }
 
   isReady() {
@@ -53,35 +58,68 @@ export class PermissionsRolesComponent implements OnInit {
 
     this.entityService.query('Permission').subscribe((permissions) => {
       if (permissions) {
+        this.permissions = permissions.entities;
 
         this.entityService.query('Role').subscribe((roles) => {
           if (roles) {
+            this.roles = roles.entities;
             let roleNames = roles.entities.map((r: Role) => <ISelectOption>{value: r.rolename, label: r.displayName});
-            permissions.entities.forEach((p: Permission) => {
+            this.permissions.forEach((p: Permission) => {
               let per = new PermissionData();
               per.permission = p.permission;
-              per.roles = [];
+              per.roles = _.map(p.roles, r => r.rolename);
               per.roleNames = _.clone(roleNames);
               permissionsMatrix.permissions.push(per);
             });
             permissionsMatrix.permissions = _.orderBy(permissionsMatrix.permissions, ['permission']);
             this.permissionsMatrix = permissionsMatrix;
             this.matrixReady = true;
-            console.log(this.permissionsMatrix, permissionsMatrix);
-
           }
         });
       }
     });
   }
 
+
   ngOnInit(): void {
-
     this.entityService.isReady(this.isReady.bind(this));
-
   }
 
+
   onSubmit($event: any) {
-    console.log($event)
+    if ($event.data.isSuccessValidated) {
+      let instance: PermissionMatrix = $event.data.instance;
+
+      let tosave: Permission[] = [];
+      instance.permissions.forEach(p => {
+        let permission: Permission = _.find(this.permissions, _p => _p.permission == p.permission);
+        permission.roles = _.filter(this.roles, _r => p.roles.indexOf(_r.rolename) !== -1);
+        tosave.push(permission);
+      });
+
+      let observable = this.entityService.save('Permission', tosave);
+      observable.subscribe((v: any) => {
+        if (v) {
+          // TODO saved in form user
+          this.channel.publish({
+            type:MessageType.Success,
+            content: 'Permissions successful saved.'
+          });
+        }
+      }, (error: Error) => {
+        console.error(error);
+        this.channel.publish({
+          type:MessageType.Error,
+          content: error.message
+        });
+      })
+
+    } else {
+      this.channel.publish({
+        type:MessageType.Error,
+        content: 'Validation failed.'
+      });
+    }
+
   }
 }

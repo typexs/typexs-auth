@@ -90,8 +90,5 @@ export class OAuthAdapter extends AbstractAuthAdapter {
   }
 
 
-  async extend(obj: User | AuthMethod, data: any): Promise<void> {
-
-  }
 
 }

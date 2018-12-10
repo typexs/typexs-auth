@@ -1,14 +1,10 @@
 import {suite, test} from "mocha-typescript";
 import {Bootstrap, Container, Log} from "@typexs/base";
 import {expect} from 'chai';
-import {Auth} from "../../../src/middleware/Auth";
 import {ITypexsOptions} from "@typexs/base/libs/ITypexsOptions";
 import {TESTDB_SETTING, TestHelper} from "../TestHelper";
 import {IAuthConfig} from "../../../src/libs/auth/IAuthConfig";
-import {AuthManager} from "../../../src/libs/auth/AuthManager";
 import _ = require("lodash");
-
-
 
 
 const OPTIONS: ITypexsOptions = <ITypexsOptions>{

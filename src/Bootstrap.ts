@@ -1,17 +1,16 @@
 import {
-  Container,
-  Inject,
-  Config,
   Bootstrap as CoreBootrap,
   ClassesLoader,
+  Container,
   IBootstrap,
+  Inject,
+  Invoker,
   IPermissions,
   StorageRef
 } from "@typexs/base";
 import {Permission} from "./entities/Permission";
 import * as _ from 'lodash'
 import {AuthHelper} from "./libs/auth/AuthHelper";
-import {IAuthConfig} from "./libs/auth/IAuthConfig";
 
 import {EntityController} from "@typexs/schema";
 import {AuthManager} from "./libs/auth/AuthManager";
@@ -24,6 +23,9 @@ export class Bootstrap implements IBootstrap {
 
   @Inject(AuthManager.NAME)
   private authManager: AuthManager;
+
+  @Inject(Invoker.NAME)
+  private invoker: Invoker;
 
 
   async bootstrap() {
@@ -65,17 +67,17 @@ export class Bootstrap implements IBootstrap {
       await backend.manager.save(storePermission);
     }
 
-   let authConfig = this.authManager.getConfig();
+    let authConfig = this.authManager.getConfig();
 
     let controller: EntityController = Container.get('EntityController.default');
 
-    if(authConfig.initRoles){
+    if (authConfig.initRoles) {
       await AuthHelper.initRoles(controller, authConfig.initRoles);
     }
 
-    if(authConfig.initUsers){
+    if (authConfig.initUsers) {
       // user are dependent by the adapter + roles mapping
-      await AuthHelper.initUsers(controller,this.authManager, authConfig.initUsers);
+      await AuthHelper.initUsers(this.invoker, controller, this.authManager, authConfig.initUsers);
     }
     /* skip cleanup
     if(foundPermissions.length > 0){

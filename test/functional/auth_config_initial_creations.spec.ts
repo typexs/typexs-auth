@@ -50,7 +50,7 @@ class AuthConfigSpec {
 
     let name = 'default';
 
-    let ref = await TestHelper.bootstrap_auth(name,opts);
+    let ref = await TestHelper.bootstrap_auth(name, opts);
     let auth = ref.auth;
     let manager = ref.authManager;
     let xsem = ref.controller;
@@ -85,19 +85,20 @@ class AuthConfigSpec {
     ];
     let name = 'default';
 
-    let ref = await TestHelper.bootstrap_auth(name,opts);
-    let auth = ref.auth;
+    let ref = await TestHelper.bootstrap_auth(name, opts);
+    ///let auth = ref.auth;
     let manager = ref.authManager;
     let xsem = ref.controller;
+    let invoker = ref.invoker;
 
 
     await AuthHelper.initRoles(xsem, opts.auth.initRoles);
 
-    let users = await AuthHelper.initUsers(xsem, manager, opts.auth.initUsers);
+    let users = await AuthHelper.initUsers(invoker, xsem, manager, opts.auth.initUsers);
     expect(users).to.have.length(1);
     console.log(users);
 
-    users = await AuthHelper.initUsers(xsem, manager, opts.auth.initUsers);
+    users = await AuthHelper.initUsers(invoker, xsem, manager, opts.auth.initUsers);
     expect(users).to.have.length(0);
 
 

@@ -23,7 +23,7 @@ export class UserProfileComponent implements OnInit {
 
   async ngOnInit() {
     this.user = await this.getUserAuthService().getUser();
-    console.log(this.getUserAuthService().getStoredToken(),this.user)
+    //console.log(this.getUserAuthService().getStoredToken(),this.user)
   }
 
 

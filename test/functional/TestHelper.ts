@@ -5,7 +5,7 @@ import {
   Storage,
   StorageRef,
   Container,
-  IStorageOptions
+  IStorageOptions, Invoker
 } from "@typexs/base";
 import {PlatformTools} from 'typeorm/platform/PlatformTools';
 import {EntityController, EntityRegistry, FrameworkFactory} from "@typexs/schema";
@@ -98,7 +98,7 @@ export class TestHelper {
     let auth = Container.get(Auth);
     await auth.prepare();
 
-    return {bootstrap: bootstrap, auth: auth, authManager: manager, controller: xsem}
+    return {bootstrap: bootstrap, auth: auth, authManager: manager, controller: xsem, invoker: <Invoker>Container.get(Invoker.NAME)}
 
 
   }

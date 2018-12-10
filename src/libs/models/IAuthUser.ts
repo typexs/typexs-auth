@@ -7,5 +7,7 @@ export interface IAuthUser extends IUser {
 
   disabled?: boolean;
 
+  approved?: boolean;
+
 
 }

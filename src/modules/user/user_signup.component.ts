@@ -44,8 +44,8 @@ export class UserSignupComponent implements OnInit {
       try{
         let data = await this.getUserAuthService().signup($event.data.instance);
         // TODO navigate to the preferred startup state
-        let nav = this.navigatorService.entries.find(e => e.path == 'user/login');
-        await this.router.navigate([nav.getRealPath()]);
+        let nav = this.navigatorService.entries.find(e => e.path.includes('user/login'));
+        await this.router.navigateByUrl(nav.getFullPath());
       }catch(e){
         console.error(e);
       }

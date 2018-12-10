@@ -21,9 +21,11 @@ export class UserLoginComponent implements OnInit {
 
   }
 
+
   getUserAuthService(): UserAuthService {
     return this.authService instanceof UserAuthService ? <UserAuthService>this.authService : <any>this.authService;
   }
+
 
   ngOnInit() {
     // TODO must we wait here
@@ -32,15 +34,15 @@ export class UserLoginComponent implements OnInit {
 
 
   async onSubmit($event: any) {
-    console.log($event);
+
     if($event.data.isSuccessValidated){
 
       try{
         let user = await this.getUserAuthService().authenticate(this.user);
         if (user.$state.isAuthenticated) {
           // is login successfull
-          let nav = this.navigatorService.entries.find(e => e.path == 'user/profile');
-          await this.router.navigateByUrl(nav.getRealPath());
+          let nav = this.navigatorService.entries.find(e => e.path.includes('user/profile'));
+          await this.router.navigate([nav.getFullPath()]);
         } else {
           // TODO pass errors to form
           console.error(user.$state)

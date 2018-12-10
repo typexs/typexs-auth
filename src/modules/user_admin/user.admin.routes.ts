@@ -4,9 +4,9 @@ import {PermissionsRolesComponent} from "./permissions-roles.component";
 
 export const USER_ADMIN_ROUTES: Routes = [
   {
-    path: 'admin/user/permissions',
+    path: 'admin/users/permissions',
     component: PermissionsRolesComponent,
     canActivate: [AuthGuardService],
-    data: {label: 'Permissions', isAuthenticated: true}
+    data: {label: 'Permissions', isAuthenticated: true, group: 'admin'}
   }
 ]

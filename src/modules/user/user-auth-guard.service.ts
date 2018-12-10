@@ -1,29 +1,57 @@
-import {AuthService, IAuthGuardProvider, IMenuLinkGuard, NavEntry} from "@typexs/ng-base";
+import {AuthService, IAuthGuardProvider, IMenuLinkGuard, MessageService, NavEntry} from "@typexs/ng-base";
 import {ActivatedRouteSnapshot, RouterStateSnapshot} from "@angular/router";
 import {Observable} from 'rxjs/Observable';
+import {BehaviorSubject} from 'rxjs/BehaviorSubject';
 import {Injectable} from "@angular/core";
 import * as _ from 'lodash';
+import {UserAuthMessage} from "./user-auth.service";
 
 @Injectable()
 export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard {
 
-  constructor(private authService: AuthService) {
+
+  isAuthenticated: BehaviorSubject<boolean> = new BehaviorSubject(true);
+
+  isNotAuthenticated: BehaviorSubject<boolean> = new BehaviorSubject(false);
+
+
+  constructor(private authService: AuthService, private messageService: MessageService) {
+    messageService.get('UserAuthService').subscribe(this.onMessage.bind(this));
+    this._update();
+  }
+
+  private _update(){
+    const auth = this.authService.isLoggedIn();
+    this.isAuthenticated.next(auth == false);
+    this.isNotAuthenticated.next(auth == true);
+  }
+
+  async onMessage(m: any) {
+
+    if (m instanceof UserAuthMessage) {
+      this._update();
+    }
   }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {
     return this.authService.hasRoutePermissions(route, state);
   }
 
-  isDisabled(entry: NavEntry): boolean {
+  isDisabled(entry: NavEntry): Observable<boolean> {
+
     const isAuth = _.get(entry, 'route.data.isAuthenticated', null);
     if (_.isBoolean(isAuth)) {
-      return this.authService.isLoggedIn() != isAuth;
+      if (isAuth) {
+        return this.isAuthenticated.asObservable();
+      } else {
+        return this.isNotAuthenticated.asObservable();
+      }
     }
-    return false;
+    return new Observable<boolean>(subscriber => subscriber.next(false));
   }
 
-  isHidden(entry: NavEntry): boolean {
-    return false;
+  isShown(entry: NavEntry): Observable<boolean> {
+    return new Observable<boolean>(subscriber => subscriber.next(true));
   }
 
 }

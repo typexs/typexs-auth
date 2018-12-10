@@ -36,21 +36,16 @@ const PROVIDERS = [
     useClass: AuthTokenInterceptor,
     multi: true
   },
-
   {
     provide: APP_INITIALIZER,
     multi: true,
     deps: [AuthService],
     useFactory: function (auth: AuthService) {
-
       async function startup() {
-        console.log('startup')
         await (<any>auth).configure().toPromise();
         await (<any>auth).initialAuthCheck();
       }
-
       return startup;
-
     }
   }
 

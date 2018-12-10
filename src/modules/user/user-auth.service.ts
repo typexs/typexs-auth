@@ -3,7 +3,6 @@ import {Injectable} from "@angular/core";
 import {ActivatedRouteSnapshot, RouterStateSnapshot} from "@angular/router";
 import {HttpClient} from "@angular/common/http";
 import {AbstractUserSignup} from "../../libs/models/AbstractUserSignup";
-import {IAuthUser} from "../../libs/models/IAuthUser";
 import "rxjs/add/operator/publish";
 import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
 import {DefaultUserSignup} from "../../libs/models/DefaultUserSignup";
@@ -14,6 +13,13 @@ import {Observable} from "rxjs/Observable";
 import {IAuthServiceProvider} from "@typexs/ng-base/modules/system/api/auth/IAuthServiceProvider";
 import {User} from "../../entities/User";
 import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
+import {IMessage, MessageChannel, MessageService, MessageType} from "@typexs/ng-base";
+
+export class UserAuthMessage implements IMessage {
+  content: any;
+  topic: any;
+  type: MessageType;
+}
 
 
 @Injectable()
@@ -25,17 +31,18 @@ export class UserAuthService implements IAuthServiceProvider {
     authKey: "txs-auth"
   };
 
+  private channel: MessageChannel<any>;
 
   private token: string;
 
-  private user: IAuthUser;
+  private cacheUser: User;
 
   private connected: boolean = false;
 
   private loading: boolean = false;
 
-  constructor(private http: HttpClient) {
-
+  constructor(private http: HttpClient, private messageService: MessageService) {
+    this.channel = messageService.get('UserAuthService');
   }
 
 
@@ -45,10 +52,8 @@ export class UserAuthService implements IAuthServiceProvider {
 
 
   configure(): Observable<any> {
-    console.log('auth config ',this._config)
     let config = this.http.get('/api/user/_config');
     config.subscribe(obj => {
-
       _.assign(this._config, obj);
       this._initialized = true;
     });
@@ -68,13 +73,38 @@ export class UserAuthService implements IAuthServiceProvider {
 
   saveStoredToken(token: string) {
     localStorage.setItem('token.' + this.getTokenKey(), token);
+    this.setToken(token);
   }
 
   clearStoredToken() {
     this.connected = false;
+    this.resetUser();
     localStorage.removeItem('token.' + this.getTokenKey());
   }
 
+
+  setUser(user: User) {
+    if(this.cacheUser && this.cacheUser.id == user.id){
+      this.cacheUser = user;
+    }else{
+      this.cacheUser = user;
+      let msg = new UserAuthMessage();
+      msg.type = MessageType.Success;
+      msg.topic = 'set user';
+      this.channel.publish(msg);
+    }
+
+  }
+
+  resetUser() {
+    if(this.cacheUser){
+      this.cacheUser = null;
+      let msg = new UserAuthMessage();
+      msg.type = MessageType.Success;
+      msg.topic = 'unset user';
+      this.channel.publish(msg);
+    }
+  }
 
   /**
    * Method for interceptor to set the request token
@@ -84,18 +114,22 @@ export class UserAuthService implements IAuthServiceProvider {
   }
 
 
-  async getUser(): Promise<User> {
+  getUser(): Promise<User> | User {
+    if (this.cacheUser) {
+      return this.cacheUser;
+    }
     this.loading = true;
     let req = this.http.get('/api/user');
     return new Promise<User>((resolve, reject) => {
       req.subscribe(
         (user: User) => {
-          console.log(user);
           this.loading = false;
+          this.setUser(user);
           resolve(user);
         },
         (error: Error) => {
           console.error(error);
+          this.resetUser();
           this.loading = false;
           reject(error);
         }
@@ -118,40 +152,36 @@ export class UserAuthService implements IAuthServiceProvider {
   initialAuthCheck() {
     return new Promise((resolve, reject) => {
       let token = this.getStoredToken();
-      console.log('auth check ',token)
+      // console.log('auth check ', token)
       if (token) {
 
         let req = this.http.get('/api/user/isAuthenticated');
         this.connected = false;
         req.subscribe(
           (res: boolean) => {
-            console.log('check out = ' + res);
             this.connected = res;
+
             if (!res) {
               this.clearStoredToken();
+            }else{
+              this.getUser()
             }
             resolve();
-
           },
           (error: Error) => {
             console.error(error);
             this.loading = false;
             this.clearStoredToken();
+            this.resetUser();
             resolve();
           }
         );
-      }else{
+      } else {
         resolve();
       }
     })
   }
 
-
-  /*
-  signup(signup: AbstractUserSignup):Observable<any>{
-    return this.http.post('/api/user/signup', signup);
-  }
-  */
 
   signup(signup: AbstractUserSignup): Promise<AbstractUserSignup> {
     this.loading = true;
@@ -160,7 +190,7 @@ export class UserAuthService implements IAuthServiceProvider {
       signupReq.subscribe(
         (user: AbstractUserSignup) => {
           this.loading = false;
-          console.log(user);
+          // console.log(user);
           this.connected = false;
           resolve(user);
         },
@@ -187,8 +217,8 @@ export class UserAuthService implements IAuthServiceProvider {
         (user: AbstractUserLogin) => {
           this.loading = false;
           this.connected = true;
-          console.log(user);
           this.saveStoredToken(user.$state.token);
+          this.setUser(user.$state.user);
           resolve(user);
         },
         (error: Error) => {
@@ -213,16 +243,16 @@ export class UserAuthService implements IAuthServiceProvider {
     return new Promise((resolve, reject) => {
       req.subscribe(
         (user: AbstractUserLogout) => {
-          console.log(user);
-
           this.loading = false;
           this.clearStoredToken();
+          this.resetUser();
           resolve(user);
         },
         (error: Error) => {
           console.error(error);
           this.loading = false;
           this.clearStoredToken();
+          this.resetUser();
           reject(error);
         }
       );
@@ -270,17 +300,19 @@ export class UserAuthService implements IAuthServiceProvider {
 
   //getPermissions()?: Promise<string[]> | string[];
 
-  getRoles(): Promise<string[]> | string[] {
-    throw new NotYetImplementedError()
+  getRoles(): string[] {
+    if (this.cacheUser) {
+      return _.map(this.cacheUser.roles, r => r.rolename);
+    }
+    return [];
+
   }
 
-
-  hasRole(role: string): Promise<boolean> | boolean {
-    throw new NotYetImplementedError()
+  hasRole(role: string):  boolean {
+    return !!this.getRoles().find(roles => roles.indexOf(role) !== -1);
   }
 
   hasRoutePermissions(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
-    console.log(route);
     return true;
   }
 

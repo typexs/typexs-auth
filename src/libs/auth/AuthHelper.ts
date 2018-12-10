@@ -7,18 +7,19 @@ import * as _ from "lodash";
 import {User} from "../../entities/User";
 import {EntityManager, In} from 'typeorm';
 import {EntityController} from "@typexs/schema";
-import {StorageRef} from "@typexs/base";
+import {ConnectionWrapper, Invoker, StorageRef} from "@typexs/base";
 import {IConfigUser} from "../models/IConfigUser";
 import {DefaultUserSignup} from "../models/DefaultUserSignup";
 import {Role} from "../../entities/Role";
 import {IConfigRole} from "../models/IConfigRole";
 import {Permission} from "../../entities/Permission";
 import {AuthManager} from "./AuthManager";
+import {UserAuthApi} from "../../api/UserAuth.api";
 
 
 export class AuthHelper {
 
-  static async createMethod(adapter: IAuthAdapter, dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>) {
+  static async createMethod(invoker: Invoker, adapter: IAuthAdapter, dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>) {
     let method = new AuthMethod();
     let signup = dataContainer.instance;
     method.identifier = signup.getIdentifier();
@@ -29,7 +30,7 @@ export class AuthHelper {
       method.data = _.get(dataContainer, 'data');
     }
 
-    await adapter.extend(method, signup);
+    await invoker.use(UserAuthApi).onLoginMethod(method, adapter, dataContainer);
 
     if (!method.mail) {
       if (signup instanceof AbstractUserSignup) {
@@ -42,6 +43,7 @@ export class AuthHelper {
       }
     }
 
+
     if (!method.mail) {
       // TODO create MailError
       throw new Error('no mail was found in data')
@@ -50,11 +52,21 @@ export class AuthHelper {
   }
 
 
-  static async createUser(adapter: IAuthAdapter, dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>) {
+  static async createUser(connection: ConnectionWrapper,
+                          invoker: Invoker,
+                          adapter: IAuthAdapter,
+                          dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>) {
     let user = new User();
     let signup = dataContainer.instance;
     user.username = signup.getIdentifier();
-    await adapter.extend(user, signup);
+    user.approved = adapter.canAutoApprove();
+
+    let roleName = adapter.getDefaultRole();
+    if (roleName) {
+      user.roles = await connection.manager.getRepository(Role).find({where: {rolename: roleName}});
+    }
+
+    await invoker.use(UserAuthApi).onUserCreate(user, adapter, dataContainer);
 
     if (!user.mail) {
       if (signup instanceof AbstractUserSignup) {
@@ -75,19 +87,20 @@ export class AuthHelper {
   }
 
 
-  static async createUserAndMethod(controller: EntityController,
+  static async createUserAndMethod(invoker: Invoker,
+                                   controller: EntityController,
                                    adapter: IAuthAdapter,
                                    dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>) {
     let c = await controller.storageRef.connect();
-    let user = await AuthHelper.createUser(adapter, dataContainer);
+    let user = await AuthHelper.createUser(c, invoker, adapter, dataContainer);
     user = await controller.save(user);
     return c.manager.transaction(async em => {
-      let method = await AuthHelper.createMethod(adapter, dataContainer);
+      let method = await AuthHelper.createMethod(invoker, adapter, dataContainer);
       method.standard = true;
       method.userId = user.id;
       return em.save(method);
     }).then(r => {
-      return {user:user,method:r};
+      return {user: user, method: r};
     });
   }
 
@@ -135,9 +148,9 @@ export class AuthHelper {
     return [];
   }
 
-  static async initUsers(entityController: EntityController,
-                        // adapter: IAuthAdapter,
-                         authManager:AuthManager,
+  static async initUsers(invoker: Invoker,
+                         entityController: EntityController,
+                         authManager: AuthManager,
                          users: IConfigUser[]): Promise<User[]> {
     // TODO check if autocreation is enabled
     if (users.length == 0) {
@@ -170,18 +183,20 @@ export class AuthHelper {
 
       let adapter = authManager.getAdapter(user.adapter);
 
-      if(!user.mail){
+      if (!user.mail) {
         user.mail = user.username + '@local.local';
       }
 
       let signup: DefaultUserSignup = Reflect.construct(adapter.getModelFor("signup"), []);
       _.assign(signup, user);
       signup.passwordConfirm = signup.password;
-      let saved = await this.createUserAndMethod(entityController, adapter, new AuthDataContainer(signup));
+      let saved = await this.createUserAndMethod(invoker, entityController, adapter, new AuthDataContainer(signup));
+      // approve initial user automatically
+      saved.user.approved = true;
       if (user.roles.length > 0) {
         saved.user.roles = existing_roles.filter(r => user.roles.indexOf(r.rolename) !== -1);
-        await entityController.save(saved.user);
       }
+      await entityController.save(saved.user);
       return_users.push(saved.user);
 
     }

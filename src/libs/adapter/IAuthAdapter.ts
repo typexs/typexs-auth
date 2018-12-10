@@ -23,11 +23,6 @@ export interface IAuthAdapter {
 
   prepare(authOptions: IAuthOptions): void;
 
-//  beforeUse?(app: IApplication): void;
-
-//  afterUse?(app: IApplication): void;
-
-
 
   use?(app: IApplication, stage?: T_AUTH_ADAPTER_STAGE): void;
 
@@ -35,16 +30,19 @@ export interface IAuthAdapter {
 
   authenticate(login: AuthDataContainer<AbstractUserLogin>): Promise<boolean> | boolean;
 
-  // getAuth(login: any): Promise<AuthMethod>;
   canCreateOnLogin(): boolean;
 
   canSignup(): boolean;
 
+  canAutoApprove(): boolean;
+
+  getDefaultRole():string;
+
+  getOptions():IAuthOptions;
+
   signup?(signup: AuthDataContainer<AbstractUserSignup>): Promise<boolean> | boolean;
 
-
   createOnLogin?(login: AuthDataContainer<AbstractUserLogin>): boolean;
-
 
   handleCallback?(req: IRequest, res: IResponse): void;
 
@@ -58,6 +56,6 @@ export interface IAuthAdapter {
   updateOptions?(options: IAuthOptions): void;
 
 
-  extend(obj: User | AuthMethod, data: any): void;
+//  extend(obj: User | AuthMethod, data: any): void;
 
 }

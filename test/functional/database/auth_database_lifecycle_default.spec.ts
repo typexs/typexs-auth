@@ -38,8 +38,8 @@ const OPTIONS = <ITypexsOptions>{
   }
 };
 
-@suite('functional/auth_database_integrated') @timeout(10000)
-class Auth_database_integratedSpec {
+@suite('functional/auth_database_lifecycle_default') @timeout(20000)
+class Auth_database_lifecycle_defaultSpec {
 
 
   static async before() {
@@ -130,8 +130,13 @@ class Auth_database_integratedSpec {
     let user = users.shift();
     expect(user).to.deep.include({
       username: signUp.getIdentifier(),
-      mail: signUp.getMail()
+      mail: signUp.getMail(),
+      disabled:"0",
+      approved:"1"
     });
+
+
+
 
   }
 
@@ -186,17 +191,16 @@ class Auth_database_integratedSpec {
     expect(_.get(doingLogin.errors, '0.constraints.exists')).to.exist;
 
 
-    // user exists and login
+    // user exists and auto approved
     login = auth.getInstanceForLogin('default');
     login.username = 'supermann';
     login.password = 'password2';
     doingLogin = await auth.doLogin(login, req, res);
-
     expect(doingLogin.success).to.be.true;
     expect(doingLogin.isAuthenticated).to.be.true;
-    expect(doingLogin.user).to.be.not.empty;
-    expect(doingLogin.user.id).to.be.greaterThan(0);
+    expect(doingLogin.user).to.not.be.empty;
     expect(doingLogin.hasErrors()).to.be.false;
+
 
     let storageRef: StorageRef = Container.get('storage.default');
     let c = await storageRef.connect();
