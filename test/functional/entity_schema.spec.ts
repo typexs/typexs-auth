@@ -59,7 +59,6 @@ class Entity_schemaSpec {
     permission.type = 'single';
 
     permission = await controller.save(permission);
-    console.log(permission);
 
     let role = new Role();
     role.rolename = 'admin';
@@ -68,10 +67,8 @@ class Entity_schemaSpec {
     role.permissions = [permission];
 
     role = await controller.save(role);
-    console.log(role);
 
     let found = await controller.find(Role, {id: 1});
-    console.log(found)
 
     // TODO current reseted permission, because of double insertes
     role.permissions = null;
@@ -84,13 +81,10 @@ class Entity_schemaSpec {
     user.roles = [role];
 
     user = await controller.save(user);
-    console.log(user);
 
     found = await controller.find(Role, {id: 1});
-    console.log(found)
 
     let results: any[] = await c.connection.query('SELECT * FROM r_belongsto;');
-    console.log(results);
     expect(results).to.have.length(2);
   }
 
