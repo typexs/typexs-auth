@@ -27,7 +27,7 @@ const settingsTemplate = {
 };
 
 
-@suite('functional/ldap/auth_ldap_adapter') @timeout(10000)
+@suite('functional/ldap/auth_ldap_adapter') @timeout(20000)
 class Auth_ldap_adapterSpec {
 
   static async before() {

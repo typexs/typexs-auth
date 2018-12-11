@@ -19,7 +19,7 @@ const settingsTemplate = {
 };
 
 
-@suite('functional/entity_schema') @timeout(10000)
+@suite('functional/entity_schema') @timeout(20000)
 class Entity_schemaSpec {
 
   static async before() {

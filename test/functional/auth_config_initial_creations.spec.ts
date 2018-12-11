@@ -25,7 +25,7 @@ const OPTIONS: ITypexsOptions = <ITypexsOptions>{
   }
 };
 
-@suite('functional/auth_config_initial_creations') @timeout(10000)
+@suite('functional/auth_config_initial_creations') @timeout(20000)
 class AuthConfigSpec {
 
 

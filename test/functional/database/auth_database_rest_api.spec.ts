@@ -36,7 +36,7 @@ const OPTIONS = <ITypexsOptions>{
 };
 
 
-@suite('functional/auth_database_rest_api') @timeout(10000)
+@suite('functional/auth_database_rest_api') @timeout(20000)
 class AuthConfigSpec {
 
   static async before() {

@@ -9,7 +9,7 @@ import {User} from "../../src/entities/User";
 import {TestHelper} from "./TestHelper";
 import {AuthManager} from "../../src/libs/auth/AuthManager";
 
-@suite('functional/auth_config_default') @timeout(10000)
+@suite('functional/auth_config_default') @timeout(20000)
 class AuthConfigSpec {
 
 

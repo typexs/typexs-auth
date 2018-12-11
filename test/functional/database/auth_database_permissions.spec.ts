@@ -73,7 +73,7 @@ const OPTIONS = <ITypexsOptions>{
 };
 
 
-@suite('functional/auth_database_permissions') @timeout(10000)
+@suite('functional/auth_database_permissions') @timeout(20000)
 class Auth_database_permissionsSpec {
 
   static async before() {
