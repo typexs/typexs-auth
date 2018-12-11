@@ -40,7 +40,7 @@ export class PermissionsRolesComponent implements OnInit {
 
   matrixReady: boolean = false;
 
-  private channel: MessageChannel<IMessage>;
+  channel: MessageChannel<IMessage>;
 
   private roles: Role[] = [];
 

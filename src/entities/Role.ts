@@ -4,6 +4,7 @@ import {Property} from "@typexs/schema/libs/decorators/Property";
 import {And, Asc, Eq, From, Join, Key, To, Value} from "@typexs/schema";
 import {RBelongsTo} from "./RBelongsTo";
 import {Permission} from "./Permission";
+import {FormReadonly} from "@typexs/ng";
 
 
 @Entity()
@@ -34,10 +35,11 @@ export class Role {
   })
   permissions: Permission[];
 
-
+  @FormReadonly()
   @Property({type: 'date:created'})
   created_at: Date;
 
+  @FormReadonly()
   @Property({type: 'date:updated'})
   updated_at: Date;
 

@@ -35,19 +35,23 @@ const PROVIDERS = [
     provide: HTTP_INTERCEPTORS,
     useClass: AuthTokenInterceptor,
     multi: true
-  },
-  {
-    provide: APP_INITIALIZER,
-    multi: true,
-    deps: [AuthService],
-    useFactory: function (auth: AuthService) {
-      async function startup() {
-        await (<any>auth).configure().toPromise();
-        await (<any>auth).initialAuthCheck();
-      }
-      return startup;
-    }
-  }
+  }/*,
+/* {
+   provide: APP_INITIALIZER,
+   multi: true,
+   deps: [AuthService],
+   useFactory: function () {
+
+   }
+
+   useFactory: (auth: AuthService) => {
+     async function startup() {
+       await (<any>auth).configure().toPromise();
+       await (<any>auth).initialAuthCheck();
+     }
+     return startup;
+   }
+  }*/
 
 ]
 
@@ -77,5 +81,12 @@ export class UserModule {
       providers: PROVIDERS
     }
   }
+
+  constructor(private authService: AuthService) {
+    (<UserAuthService><any>authService).configure()
+      .toPromise()
+      .then(r => (<UserAuthService><any>authService).initialAuthCheck());
+  }
+
 
 }
