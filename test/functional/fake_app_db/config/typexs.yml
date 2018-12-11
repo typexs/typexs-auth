@@ -10,7 +10,7 @@ storage:
 
 
 logging:
-  enable: true
+  enable: false
   level: debug
   transports:
   - console: {}

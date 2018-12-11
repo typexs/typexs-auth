@@ -12,7 +12,7 @@ let bootstrap: Bootstrap = null;
 
 
 const settingsTemplate = {
-  logging: {enable: true, level: 'debug'},
+  logging: {enable: false, level: 'debug'},
   storage: {
     default: TESTDB_SETTING
   }

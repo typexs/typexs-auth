@@ -6,10 +6,8 @@ import {LdapAdapter} from "../../../src/adapters/auth/ldap/LdapAdapter";
 import {expect} from "chai";
 import {TESTDB_SETTING, TestHelper} from "../TestHelper";
 import {AuthDataContainer} from "../../../src/libs/auth/AuthDataContainer";
-import {Auth} from "../../../src/middleware/Auth";
 import {LDAP_CONFIG} from "./ldap_config";
 
-let bootstrap: Bootstrap = null;
 
 process.setMaxListeners(1000);
 const settingsTemplate = {

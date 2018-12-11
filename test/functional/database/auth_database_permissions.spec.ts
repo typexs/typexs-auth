@@ -2,7 +2,7 @@ import {suite, test, timeout} from "mocha-typescript";
 import * as request from 'supertest';
 
 import {K_ROUTE_CONTROLLER, WebServer} from "@typexs/server";
-import {Bootstrap, Config, Container, StorageRef} from "@typexs/base";
+import {Bootstrap, Config, Container} from "@typexs/base";
 
 import {Auth} from "../../../src/middleware/Auth";
 import {DefaultUserSignup} from "../../../src/libs/models/DefaultUserSignup";
@@ -12,7 +12,6 @@ import {IDatabaseAuthOptions} from "../../../src/adapters/auth/db/IDatabaseAuthO
 import {IAuthConfig} from "../../../src/libs/auth/IAuthConfig";
 import {expect} from 'chai';
 import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
-import {User} from "../../../src/entities/User";
 
 let web: WebServer = null;
 
@@ -55,7 +54,7 @@ const OPTIONS = <ITypexsOptions>{
     }
   },
   logging: {
-    enable: true,
+    enable: false,
     level: 'debug',
     transports: [{console: {}}]
   },

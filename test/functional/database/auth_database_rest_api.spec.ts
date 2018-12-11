@@ -29,7 +29,7 @@ const OPTIONS = <ITypexsOptions>{
     }
   },
   logging: {
-    enable: true,
+    enable: false,
     level: 'debug',
     transports: [{console: {}}]
   }
