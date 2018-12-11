@@ -188,13 +188,13 @@ export class AuthHelper {
     }
 
     let rolenames: string[] = [];
-    _.map(users, u => rolenames = rolenames.concat(u.roles));
+    _.map(users, u => u.roles && _.isArray(u.roles) ? rolenames = rolenames.concat(u.roles) : null);
 
     let existing_roles = await c.manager.find(Role, {where: {rolename: In(rolenames)}});
     existing_roles.map(r => _.remove(rolenames, _r => _r == r.rolename));
 
     if (rolenames.length > 0) {
-      throw new Error('Given roles for users didn\'t exist');
+      throw new Error('Given roles for users didn\'t exist. '+JSON.stringify(rolenames));
     }
 
 
@@ -214,7 +214,7 @@ export class AuthHelper {
       let saved = await this.createUserAndMethod(invoker, entityController, adapter, new AuthDataContainer(signup));
       // approve initial user automatically
       saved.user.approved = true;
-      if (user.roles.length > 0) {
+      if (user.roles && user.roles.length > 0) {
         saved.user.roles = existing_roles.filter(r => user.roles.indexOf(r.rolename) !== -1);
       }
       await entityController.save(saved.user);

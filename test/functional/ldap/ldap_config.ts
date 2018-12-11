@@ -6,4 +6,5 @@ export const LDAP_CONFIG: ILdapAuthOptions = <ILdapAuthOptions>{
   bindDN: 'cn=admin,dc=example,dc=org',
   bindCredentials: 'admin',
   searchBase: 'dc=example,dc=org'
+
 };

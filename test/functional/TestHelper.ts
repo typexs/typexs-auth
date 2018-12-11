@@ -103,7 +103,13 @@ export class TestHelper {
     let auth = Container.get(Auth);
     await auth.prepare();
 
-    return {bootstrap: bootstrap, auth: auth, authManager: manager, controller: xsem, invoker: <Invoker>Container.get(Invoker.NAME)}
+    return {
+      bootstrap: bootstrap,
+      auth: auth,
+      authManager: manager,
+      controller: xsem,
+      invoker: <Invoker>Container.get(Invoker.NAME)
+    }
 
 
   }

@@ -26,8 +26,8 @@ const settingsTemplate = {
   }
 };
 
-@suite('functional/auth_ldap_integrated')
-class Auth_ldap_integratedSpec {
+@suite('functional/auth_ldap_lifecycle')
+class Auth_ldap_lifecycleSpec {
 
   static async before() {
     Bootstrap.reset();
@@ -56,6 +56,9 @@ class Auth_ldap_integratedSpec {
     let res = new MockResponse();
     let req = new MockRequest();
 
+    let adapter = auth.getAdapterByIdentifier('default');
+    let options = adapter.getOptions();
+    expect(options.approval.auto).to.be.true;
 
     // user doesn't exists and shouldn't be created if auth failed
     login = auth.getInstanceForLogin('default');
