@@ -6,5 +6,6 @@ export const LDAP_CONFIG: ILdapAuthOptions = <ILdapAuthOptions>{
   bindDN: 'cn=admin,dc=example,dc=org',
   bindCredentials: 'admin',
   searchBase: 'dc=example,dc=org',
-  timeout: 50000
+  timeout: 30000,
+  connectTimeout: 30000
 };
