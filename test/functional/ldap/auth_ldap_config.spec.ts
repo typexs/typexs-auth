@@ -1,6 +1,6 @@
 import {suite, test} from "mocha-typescript";
 import {expect} from 'chai';
-import {Config, Container, FileUtils, PlatformUtils, RuntimeLoader, Storage} from "@typexs/base";
+import {Config, Container, FileUtils, Invoker, PlatformUtils, RuntimeLoader, Storage} from "@typexs/base";
 
 import {Auth} from "../../../src/middleware/Auth";
 import {IAuthConfig} from "../../../src/libs/auth/IAuthConfig";
@@ -43,6 +43,7 @@ class Auth_ldap_configSpec {
     await loader.prepare();
     Container.set("RuntimeLoader", loader);
     Config.set('auth', authCfg);
+    Container.set(Invoker.NAME, new Invoker(loader));
 
 
     await TestHelper.storage();

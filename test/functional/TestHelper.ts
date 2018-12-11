@@ -1,17 +1,19 @@
 import {
   Bootstrap,
+  Container,
   DefaultSchemaHandler,
+  IConfigOptions,
+  Invoker,
+  IStorageOptions,
   SqliteSchemaHandler,
   Storage,
-  StorageRef,
-  Container,
-  IStorageOptions, Invoker
+  StorageRef
 } from "@typexs/base";
 import {PlatformTools} from 'typeorm/platform/PlatformTools';
 import {EntityController, EntityRegistry, FrameworkFactory} from "@typexs/schema";
-import _ = require("lodash");
 import {AuthManager} from "../../src/libs/auth/AuthManager";
 import {Auth} from "../../src/middleware/Auth";
+import _ = require("lodash");
 
 
 export const TESTDB_SETTING: IStorageOptions & { database: string } = process.env.LOG ? {
@@ -42,10 +44,9 @@ export class TestHelper {
     let xsem = new EntityController(name, schemaDef, storageRef, framework);
     await xsem.initialize();
     Container.set('EntityController.' + name, xsem);
-
     return storage;
-
   }
+
 
   static async connect(options: any): Promise<{ ref: StorageRef, controller: EntityController }> {
     let ref = new StorageRef(options);
@@ -66,23 +67,27 @@ export class TestHelper {
   }
 
 
-  static async bootstrap_basic(options: any = {}, config: any = [{type: 'system'}], settings = {startup: true}) {
+  static async bootstrap_basic(options: any = {},
+                               config: IConfigOptions[] = [{type: 'system'}],
+                               settings = {startup: true}) {
     let _options = _.clone(options);
-    let bootstrap = Bootstrap.setConfigSources(config).configure(_options).activateErrorHandling().activateLogger();
+    let bootstrap = Bootstrap
+      .setConfigSources(config)
+      .configure(_options)
+      .activateErrorHandling()
+      .activateLogger();
     await bootstrap.prepareRuntime();
     await bootstrap.activateStorage();
-
     if (settings.startup) {
       await bootstrap.startup();
     }
-
-
     return bootstrap;
   }
 
 
-  static async bootstrap_auth(name: string, options: any = {}) {
-    let bootstrap = await TestHelper.bootstrap_basic(options, [{type: 'system'}], {startup: false});
+  static async bootstrap_auth(name: string, options: any = {},
+                              config: IConfigOptions[] = [{type: 'system'}], settings = {startup: true}) {
+    let bootstrap = await TestHelper.bootstrap_basic(options, config, settings);
     let schemaDef = EntityRegistry.getSchema(name);
     let ref = bootstrap.getStorage().get(name);
     const framework = FrameworkFactory.$().get(ref);

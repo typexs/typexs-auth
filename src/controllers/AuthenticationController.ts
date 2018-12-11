@@ -66,35 +66,4 @@ export class AuthenticationController {
   }
 
 
-  /*
-  @UseBefore((request: any, response: any, next: Function) => {
-15	        console.log("wow middleware");
-16	        next();
-17	    })
-
-  @Get('/auth/:authId/callback')
-  callback(@Param('authId') authId: string, @Req() req: IRequest, @Res() res: IResponse) {
-    Log.info('Controller->callback ');
-    let adapter = this.auth.getAdapterByIdentifier(authId);
-    if (adapter.handleCallback) {
-      return adapter.handleCallback(req, res);
-    } else {
-      return {'error': 404}
-    }
-  }
-
-
-  @Get('/auth/:authId')
-  redirect(@Param('authId') authId: string, @Req() req: IRequest, @Res() res: IResponse) {
-    Log.info('Controller->redirect');
-    let adapter = this.auth.getAdapterByIdentifier(authId);
-    if (adapter.handleRedirect) {
-       let _next = adapter.handleRedirect(req, res);
-       Log.info('',_next);
-       // return _next;
-    } else {
-      return {'error': 404}
-    }
-  }
-*/
 }

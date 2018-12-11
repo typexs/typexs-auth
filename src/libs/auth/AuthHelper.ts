@@ -19,6 +19,27 @@ import {UserAuthApi} from "../../api/UserAuth.api";
 
 export class AuthHelper {
 
+  static checkPermissions(user: User, permissions: string[]) {
+    let p: string[] = [];
+    let hasPermission:string[] = [];
+    if (user && user.roles && user.roles.length > 0) {
+      // todo cache this for roles
+      // TODO Cache.getOrCreate(key,() => {....})
+      _.map(user.roles, (r: Role) => r.permissions.map(_per => {
+        p.push(_per.permission.replace('*', '(\\w|\\d|\\s)*'))
+      }))
+
+      if (p.length > 0) {
+        for (let permission of permissions) {
+          if ((new RegExp('(' + p.join(')|(') + ')')).test(permission)) {
+            hasPermission.push(permission);
+          }
+        }
+      }
+    }
+    return hasPermission;
+  }
+
   static async createMethod(invoker: Invoker, adapter: IAuthAdapter, dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>) {
     let method = new AuthMethod();
     let signup = dataContainer.instance;
@@ -201,7 +222,7 @@ export class AuthHelper {
 
     }
 
-    await c.close();
+    //await c.close();
     return return_users;
 
   }

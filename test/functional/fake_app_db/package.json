@@ -4,4 +4,10 @@
   "typexs": {
     "name": "fake_app_db"
   },
+  "dependencies": {
+    "@typexs/base": "latest",
+    "@typexs/ng": "latest",
+    "@typexs/schema": "latest",
+    "@typexs/server": "latest"
+  }
 }

@@ -1,6 +1,6 @@
 import {suite, test, timeout} from "mocha-typescript";
 import {expect} from 'chai';
-import {Config, Container, FileUtils, PlatformUtils, RuntimeLoader} from "@typexs/base";
+import {Config, Container, FileUtils, Invoker, PlatformUtils, RuntimeLoader} from "@typexs/base";
 
 import {Auth} from "../../src/middleware/Auth";
 
@@ -44,6 +44,10 @@ class AuthConfigSpec {
     await loader.prepare();
     Container.set("RuntimeLoader", loader);
     Config.set('auth', authCfg);
+
+    Container.set(Invoker.NAME, new Invoker(loader));
+
+
 
 
 

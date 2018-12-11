@@ -1,8 +1,15 @@
 import * as _ from 'lodash';
 import * as bcrypt from "bcrypt";
 
-import {ConnectionWrapper, Container, Inject, Invoker, Log, StorageRef} from '@typexs/base';
-import {Action, IApplication, IMiddleware, IRoutingController, K_ROUTE_CONTROLLER} from '@typexs/server';
+import {ConnectionWrapper, Inject, Invoker, Log, StorageRef} from '@typexs/base';
+import {
+  Action,
+  IApplication,
+  IMiddleware,
+  IRoutingController,
+  K_ROUTE_CONTROLLER,
+  RoutePermissionsHelper
+} from '@typexs/server';
 import {AuthLifeCycle} from "../types";
 
 import {AuthSession} from "../entities/AuthSession";
@@ -26,6 +33,8 @@ import {UserAuthApi} from "../api/UserAuth.api";
 import {UserNotApprovedError} from "../libs/exceptions/UserNotApprovedError";
 import {UserDisabledError} from "../libs/exceptions/UserDisabledError";
 import {UserNotFoundError} from "../libs/exceptions/UserNotFoundError";
+import {Role} from "../entities/Role";
+import {RestrictedAccessError} from "../libs/exceptions/RestrictedAccessError";
 
 export class Auth implements IMiddleware {
 
@@ -519,7 +528,7 @@ export class Auth implements IMiddleware {
 
 
   async doLogout(user: User, req: any, res: any): Promise<AuthDataContainer<User>> {
-    if(!user){
+    if (!user) {
       throw new UserNotFoundError(null);
     }
     let container = new AuthDataContainer(user);
@@ -595,7 +604,33 @@ export class Auth implements IMiddleware {
 
 
   async authorizationChecker(action: Action, roles: any[]): Promise<boolean> {
-    return this.isAuthenticated(action.request);
+    let isAuth = await this.isAuthenticated(action.request);
+    if (isAuth) {
+      const permissions = RoutePermissionsHelper.getPermissionsForAction(action);
+      if (permissions.length > 0) {
+        let token = this.getToken(action.request);
+        if (!token) {
+          return false;
+        }
+        let session = await this.getSessionByToken(token);
+        if (!session) {
+          return false;
+        }
+
+        let users = await this.entityController.find(User, {id: session.userId}, {limit: 1});
+        if (users.length == 1) {
+          let user = <User>users.shift();
+
+          let hasPermissions = AuthHelper.checkPermissions(user, permissions);
+          if (hasPermissions.length > 0) {
+            return true;
+          }
+        }
+        throw new RestrictedAccessError();
+        //return false;
+      }
+    }
+    return isAuth;
   }
 
 

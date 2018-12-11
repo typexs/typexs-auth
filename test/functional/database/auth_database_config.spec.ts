@@ -19,6 +19,11 @@ const OPTIONS: ITypexsOptions = <ITypexsOptions>{
 
       }
     }
+  },
+  modules: {
+    paths: [
+      __dirname + '/../../..'
+    ]
   }
 };
 
@@ -44,7 +49,7 @@ class AuthConfigSpec {
     let opts = _.clone(OPTIONS);
     opts.storage = {};
     (<IAuthConfig>(<any>opts).auth).allowSignup = false;
-    let ref = await TestHelper.bootstrap_auth('default',opts);
+    let ref = await TestHelper.bootstrap_auth('default', opts, [{type: 'system'}], {startup: false});
     let auth = ref.auth;
 
     let adapter = auth.getAdapterByIdentifier('default');
@@ -61,7 +66,7 @@ class AuthConfigSpec {
     let opts = _.clone(OPTIONS);
     opts.storage = {};
     (<IAuthConfig>(<any>opts).auth).methods.default.allowSignup = false;
-    let ref = await TestHelper.bootstrap_auth('default',opts);
+    let ref = await TestHelper.bootstrap_auth('default', opts,[{type: 'system'}], {startup: false});
     let auth = ref.auth;
 
     let r = auth.getAdapterByIdentifier('default').canSignup();
@@ -74,7 +79,7 @@ class AuthConfigSpec {
     opts.storage = {};
     (<IAuthConfig>(<any>opts).auth).allowSignup = true;
     //(<IAuthConfig>(<any>opts).auth).methods.default.allowSignup = false;
-    let ref = await TestHelper.bootstrap_auth('default',opts);
+    let ref = await TestHelper.bootstrap_auth('default', opts,[{type: 'system'}], {startup: false});
     let auth = ref.auth;
 
     expect(auth.config().allowSignup).to.be.true;
@@ -96,7 +101,7 @@ class AuthConfigSpec {
     opts.storage = {};
     (<IAuthConfig>(<any>opts).auth).allowSignup = true;
     (<IAuthConfig>(<any>opts).auth).methods.default.allowSignup = true;
-    let ref = await TestHelper.bootstrap_auth('default',opts);
+    let ref = await TestHelper.bootstrap_auth('default', opts,[{type: 'system'}], {startup: false});
     let auth = ref.auth;
 
     expect(auth.config().allowSignup).to.be.true;

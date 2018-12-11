@@ -12,7 +12,7 @@ import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
 import {ITypexsOptions} from "@typexs/base/libs/ITypexsOptions";
 import {TESTDB_SETTING, TestHelper} from "../TestHelper";
 
-let inc = 0;
+
 let bootstrap: Bootstrap = null;
 let web: WebServer = null;
 
@@ -72,6 +72,7 @@ class AuthConfigSpec {
   }
 
 
+ /*
   @test
   async 'signup'() {
     let auth = <Auth>Container.get("Auth");
@@ -91,7 +92,7 @@ class AuthConfigSpec {
     expect(res.body.password).to.be.null;
     expect(res.body.passwordConfirm).to.be.null;
   }
-
+*/
 
   @test
   async 'lifecycle signup -> login -> get user -> logout'() {
@@ -113,6 +114,9 @@ class AuthConfigSpec {
 
     expect(res.body.$state.success).to.be.true;
     expect(res.body.password).to.be.null;
+    expect(res.body.passwordConfirm).to.be.null;
+
+
 
 
     let logIn: DefaultUserLogin = auth.getInstanceForLogin();

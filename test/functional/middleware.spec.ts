@@ -2,7 +2,7 @@ import {suite, test} from "mocha-typescript";
 import {expect} from 'chai';
 
 import {C_DEFAULT, K_ROUTE_CONTROLLER, WebServer} from "@typexs/server";
-import {Bootstrap, Container, PlatformUtils, RuntimeLoader} from "@typexs/base";
+import {Bootstrap, Container, Invoker, PlatformUtils, RuntimeLoader} from "@typexs/base";
 import {AuthManager} from "../../src/libs/auth/AuthManager";
 
 
@@ -37,6 +37,8 @@ class MiddlewareSpec {
 
     await loader.prepare();
     Container.set("RuntimeLoader", loader);
+
+    Container.set(Invoker.NAME, new Invoker(loader));
 
     // Dummy storage entry for auth
     Container.set("storage.default", {connect:function(){}});

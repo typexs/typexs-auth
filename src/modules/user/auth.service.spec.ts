@@ -4,7 +4,7 @@ import {expect} from 'chai';
 import {HttpClientModule} from "@angular/common/http";
 import {Observable} from "rxjs/Observable";
 import {UserAuthService} from "./user-auth.service";
-
+import {MessageService, SystemModule} from "@typexs/ng-base";
 
 
 describe('UserAuthService', () => {
@@ -12,8 +12,8 @@ describe('UserAuthService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports:[HttpClientModule],
-      providers: [UserAuthService]
+      imports: [HttpClientModule, SystemModule],
+      providers: [UserAuthService, MessageService]
     });
   });
 
@@ -27,7 +27,6 @@ describe('UserAuthService', () => {
     service = TestBed.get(UserAuthService);
     expect(service).to.exist;
     expect(service.isInitialized()).to.be.false;
-
 
 
   });

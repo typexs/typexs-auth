@@ -1,5 +1,5 @@
 import {suite, test, timeout} from "mocha-typescript";
-import {Bootstrap, Container, StorageRef} from "@typexs/base";
+import {Bootstrap, Container, Log, StorageRef} from "@typexs/base";
 import {Auth} from "../../../src/middleware/Auth";
 import {DefaultUserSignup} from "../../../src/libs/models/DefaultUserSignup";
 import {expect} from "chai";
@@ -36,7 +36,7 @@ const OPTIONS = <ITypexsOptions>{
   logging: {
     enable: true,
     level: 'debug',
-    transports: [{console: {}}]
+    transports: [{console: {name:'without_autoappr'}}]
   }
 };
 
@@ -45,6 +45,8 @@ class Auth_database_lifecycle_with_autoapproveSpec {
 
 
   static async before() {
+    Log.self = null;
+    Bootstrap.reset();
     bootstrap = await TestHelper.bootstrap_basic(OPTIONS);
     auth = Container.get(Auth);
     await auth.prepare();
@@ -106,8 +108,6 @@ class Auth_database_lifecycle_with_autoapproveSpec {
     }catch (e) {
       expect(e instanceof UserNotFoundError).to.be.true;
     }
-
-
 
     _user.approved = true;
     await c.manager.getRepository(User).save(_user);
