@@ -4,8 +4,8 @@ services:
     image: osixia/openldap
     container_name: openldap
     ports:
-    - localhost:389:389
-    - localhost:689:689
+    - 389:389
+    - 689:689
     volumes:
     - ./ldap/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
     command: --copy-service
