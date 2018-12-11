@@ -5,6 +5,6 @@ export const LDAP_CONFIG: ILdapAuthOptions = <ILdapAuthOptions>{
   url: 'ldap://localhost:389',
   bindDN: 'cn=admin,dc=example,dc=org',
   bindCredentials: 'admin',
-  searchBase: 'dc=example,dc=org'
-
+  searchBase: 'dc=example,dc=org',
+  timeout: 50000
 };
