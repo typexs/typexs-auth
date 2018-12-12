@@ -68,7 +68,9 @@ export class LdapAdapter extends AbstractAuthAdapter {
 
   hasRequirements() {
     try{
-      LdapAdapter.clazz = require('./LdapAuthPromise').LdapAuthPromise;
+      if(!LdapAdapter.clazz){
+        LdapAdapter.clazz = require('./LdapAuthPromise').LdapAuthPromise;
+      }
     }catch(ex){
       return false;
     }

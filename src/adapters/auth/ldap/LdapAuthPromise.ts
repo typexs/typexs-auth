@@ -1,5 +1,5 @@
 import {ILdapAuthOptions} from "./ILdapAuthOptions";
-import LdapAuth = require("ldapauth-fork");
+import * as LdapAuth from "ldapauth-fork";
 
 
 export class LdapAuthPromise {
@@ -33,6 +33,7 @@ export class LdapAuthPromise {
       });
     });
   }
+
 
   async close() {
     return new Promise((resolve, reject) => {
