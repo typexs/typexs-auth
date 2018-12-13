@@ -95,19 +95,8 @@ export class LdapAdapter extends AbstractAuthAdapter implements IQueueProcessor<
     super.prepare(opts);
   }
 
-  /*
-    async disconnect() {
-      console.log('disconnect1')
-      if (this.ldap) {
-        await this.ldap.close();
-        this.ldap = null;
-        console.log('disconnect2')
-      }
-    }
-  */
 
   async authenticate(container: AuthDataContainer<DefaultUserLogin>): Promise<boolean> {
-    console.log('enqueue ' + container.instance.getIdentifier());
     let queueJob = this.queue.push(container);
     try{
       await queueJob.done();
@@ -204,7 +193,7 @@ export class LdapAdapter extends AbstractAuthAdapter implements IQueueProcessor<
 
 
     } finally {
-      await ldap.close();
+      //await ldap.close();
       // if(!_.get(this.options,'reconnect',false)){
       //   await this.ldap;
       // }
@@ -213,13 +202,6 @@ export class LdapAdapter extends AbstractAuthAdapter implements IQueueProcessor<
     return container.isAuthenticated;
   }
 
-
-  onEmpty(): Promise<void> {
-    console.log('empty')
-    //clearTimeout(this.timer);
-    //this.timer = setTimeout(this.disconnect.bind(this), 2000);
-    return null;
-  }
 
 
 }

@@ -25,6 +25,8 @@ export class LdapAuthPromise {
         } else {
           resolve(result)
         }
+
+        this.ldap.close()
       });
     });
   }
@@ -32,6 +34,7 @@ export class LdapAuthPromise {
 
   async close() {
     return new Promise((resolve, reject) => {
+
       this.ldap.close((err: Error) => {
         reject(err);
       })

@@ -126,7 +126,6 @@ class Auth_ldap_lifecycleSpec {
       let req = new MockRequest();
 
       // user doesn't exists and shouldn't be created if auth failed
-      console.log('try '+_r)
       let login: DefaultUserLogin = auth.getInstanceForLogin('default');
       login.username = _r;
       login.password = 'password';
@@ -144,7 +143,6 @@ class Auth_ldap_lifecycleSpec {
 
     }
     await Promise.all(promises);
-    console.log('dome')
 
 
     expect(auths).to.be.eq(7);
