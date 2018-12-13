@@ -20,7 +20,7 @@ const DEFAULTS: ILdapAuthOptions = {
   url: "ldap://localhost:389",
 
 
-  uidAttr: 'uid',
+//  uidAttr: 'uid',
 
   mailAttr: 'mail',
 
@@ -102,14 +102,12 @@ export class LdapAdapter extends AbstractAuthAdapter implements IQueueProcessor<
       await queueJob.done();
     }catch (e) {
       // retry 3
-      let r = _.get(container,'retry',3)
+      let r = _.get(container,'retry',3);
       if(r > 0){
         _.set(container,'retry',--r);
-        return this.authenticate(container)
+        return this.authenticate(container);
       }
-      Log.error('CATCH AUTH',e);
     }
-
     return queueJob.getResult();
   }
 
@@ -131,9 +129,7 @@ export class LdapAdapter extends AbstractAuthAdapter implements IQueueProcessor<
       return false;
     }
 
-
     login.data.mail = mail;
-
     return true;
   }
 

@@ -20,6 +20,6 @@ export interface ILdapAuthOptions extends IAuthOptions, Options {
   /**
    * Attribute name for uid
    */
-  uidAttr: string;
+  // uidAttr: string; is same bindProperty
 
 }
