@@ -37,7 +37,7 @@ export class LdapAuthPromise {
 
       this.ldap.close((err: Error) => {
         reject(err);
-      })
+      });
       resolve();
     });
   }

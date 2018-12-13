@@ -20,7 +20,7 @@ const DEFAULT_AUTH_OPTIONS: IAuthOptions = {
     auto: true,
     notify: []
   },
-}
+};
 
 export abstract class AbstractAuthAdapter implements IAuthAdapter {
 

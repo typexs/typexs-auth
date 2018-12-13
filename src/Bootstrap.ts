@@ -72,13 +72,13 @@ export class Bootstrap implements IBootstrap {
     let controller: EntityController = Container.get('EntityController.default');
 
     if (authConfig.initRoles) {
-      Log.info('init roles')
+      Log.info('init roles');
       await AuthHelper.initRoles(controller, authConfig.initRoles);
     }
 
     if (authConfig.initUsers) {
       // user are dependent by the adapter + roles mapping
-      Log.info('init users')
+      Log.info('init users');
       await AuthHelper.initUsers(this.invoker, controller, this.authManager, authConfig.initUsers);
     }
     /* skip cleanup

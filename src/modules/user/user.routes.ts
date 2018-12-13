@@ -33,4 +33,4 @@ export const APP_ROUTES: Routes = [
   },
   // TODO reset password
 
-]
+];

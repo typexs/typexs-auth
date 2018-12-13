@@ -27,7 +27,7 @@ export class AuthHelper {
       // TODO Cache.getOrCreate(key,() => {....})
       _.map(user.roles, (r: Role) => r.permissions.map(_per => {
         p.push(_per.permission.replace('*', '(\\w|\\d|\\s)*'))
-      }))
+      }));
 
       if (p.length > 0) {
         for (let permission of permissions) {
@@ -134,7 +134,7 @@ export class AuthHelper {
     let c = await entityController.storageRef.connect();
     let existing_permissions = await c.manager.find(Permission, {where: {permission: In(permissions)}});
     let existing_roles = await c.manager.find(Role, {where: {rolename: In(rolenames)}});
-    existing_permissions.map(p => _.remove(permissions, _p => _p == p.permission))
+    existing_permissions.map(p => _.remove(permissions, _p => _p == p.permission));
     existing_roles.map(r => _.remove(roles, _r => _r.role == r.rolename));
 
     if (permissions.length > 0) {
@@ -147,7 +147,7 @@ export class AuthHelper {
         permission.module = 'system';
         permission.disabled = false;
         save_permissions.push(permission);
-      })
+      });
 
       save_permissions = await c.manager.save(save_permissions);
       existing_permissions = _.concat(existing_permissions, save_permissions)
@@ -179,7 +179,7 @@ export class AuthHelper {
     }
     let c = await entityController.storageRef.connect();
 
-    let exists_users = await c.manager.find(User, {where: {username: In(_.map(users, user => user.username))}})
+    let exists_users = await c.manager.find(User, {where: {username: In(_.map(users, user => user.username))}});
     // remove already created users
     exists_users.map(u => _.remove(users, _u => _u.username == u.username));
 

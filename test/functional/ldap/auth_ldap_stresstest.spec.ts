@@ -46,14 +46,14 @@ const settingsTemplate = {
 class Auth_ldap_lifecycleSpec {
 
   static async before() {
-    _.remove(getMetadataArgsStorage().tables,x => x.target == User)
-    _.remove(getMetadataArgsStorage().columns,x => x.target == User)
-    _.remove(getMetadataArgsStorage().tables,x => x.target == Role)
-    _.remove(getMetadataArgsStorage().columns,x => x.target == Role)
-    _.remove(getMetadataArgsStorage().tables,x => x.target == Permission)
-    _.remove(getMetadataArgsStorage().columns,x => x.target == Permission)
-    _.remove(getMetadataArgsStorage().tables,x => x.target == RBelongsTo)
-    _.remove(getMetadataArgsStorage().columns,x => x.target == RBelongsTo)
+    _.remove(getMetadataArgsStorage().tables,x => x.target == User);
+    _.remove(getMetadataArgsStorage().columns,x => x.target == User);
+    _.remove(getMetadataArgsStorage().tables,x => x.target == Role);
+    _.remove(getMetadataArgsStorage().columns,x => x.target == Role);
+    _.remove(getMetadataArgsStorage().tables,x => x.target == Permission);
+    _.remove(getMetadataArgsStorage().columns,x => x.target == Permission);
+    _.remove(getMetadataArgsStorage().tables,x => x.target == RBelongsTo);
+    _.remove(getMetadataArgsStorage().columns,x => x.target == RBelongsTo);
     Bootstrap.reset();
     Config.clear();
   }
@@ -62,13 +62,13 @@ class Auth_ldap_lifecycleSpec {
   static async after() {
     // await web.stop();
     Bootstrap.reset();
-    _.remove(getMetadataArgsStorage().tables,x => x.target == User)
-    _.remove(getMetadataArgsStorage().columns,x => x.target == User)
-    _.remove(getMetadataArgsStorage().tables,x => x.target == Role)
-    _.remove(getMetadataArgsStorage().columns,x => x.target == Role)
-    _.remove(getMetadataArgsStorage().tables,x => x.target == Permission)
-    _.remove(getMetadataArgsStorage().columns,x => x.target == Permission)
-    _.remove(getMetadataArgsStorage().tables,x => x.target == RBelongsTo)
+    _.remove(getMetadataArgsStorage().tables,x => x.target == User);
+    _.remove(getMetadataArgsStorage().columns,x => x.target == User);
+    _.remove(getMetadataArgsStorage().tables,x => x.target == Role);
+    _.remove(getMetadataArgsStorage().columns,x => x.target == Role);
+    _.remove(getMetadataArgsStorage().tables,x => x.target == Permission);
+    _.remove(getMetadataArgsStorage().columns,x => x.target == Permission);
+    _.remove(getMetadataArgsStorage().tables,x => x.target == RBelongsTo);
     _.remove(getMetadataArgsStorage().columns,x => x.target == RBelongsTo)
   }
 

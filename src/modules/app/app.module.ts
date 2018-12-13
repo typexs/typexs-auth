@@ -21,11 +21,11 @@ export class AppModule {
 
     this.navigator.addGroupEntry('user/.*', {label: 'User'});
 
-    let demoEntries = this.navigator.getEntry('demo')
+    let demoEntries = this.navigator.getEntry('demo');
     let entries = this.navigator.getEntriesByPathPattern(/^user\//);
     entries.forEach(e => {
       e.setParent(demoEntries);
-    })
+    });
     let routes = this.navigator.getRebuildRoutes();
 
     router.resetConfig(routes);

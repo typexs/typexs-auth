@@ -105,7 +105,7 @@ class Auth_ldap_lifecycleSpec {
 
     let sessionList = await c.manager.find(AuthSession);
     expect(sessionList).to.have.length(1);
-    expect(_.first(sessionList)).to.deep.include({authId: 'database'})
+    expect(_.first(sessionList)).to.deep.include({authId: 'database'});
 
     req = res;
     let doLogout = await auth.doLogout(doingLogin.user, req, res);

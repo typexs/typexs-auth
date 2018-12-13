@@ -53,7 +53,7 @@ const PROVIDERS = [
    }
   }*/
 
-]
+];
 
 @NgModule({
   declarations: [

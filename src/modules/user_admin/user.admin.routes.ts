@@ -9,4 +9,4 @@ export const USER_ADMIN_ROUTES: Routes = [
     canActivate: [AuthGuardService],
     data: {label: 'Permissions', isAuthenticated: true, group: 'admin'}
   }
-]
+];
