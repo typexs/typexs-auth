@@ -42,7 +42,7 @@ const settingsTemplate = {
   logging: LOGGING
 };
 
-@suite('functional/auth_ldap_stresstest') @timeout(60000)
+@suite('functional/auth_ldap_stresstest').skip() @timeout(60000)
 class Auth_ldap_lifecycleSpec {
 
   static async before() {
@@ -73,7 +73,7 @@ class Auth_ldap_lifecycleSpec {
   }
 
 
-  @test
+  @test.skip()
   async 'do 10 logins after an other'() {
     let settings = _.clone(settingsTemplate);
     //settings.logging.enable = true;
@@ -111,7 +111,7 @@ class Auth_ldap_lifecycleSpec {
 
   }
 
-  @test
+  @test.skip()
   async 'do parallel logins'() {
     let settings = _.clone(settingsTemplate);
     //settings.logging.enable = true;
