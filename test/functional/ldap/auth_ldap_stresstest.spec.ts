@@ -29,7 +29,9 @@ const settingsTemplate = {
       synchronize: true,
       type: 'postgres',
       database: 'auth',
-      username: 'auth'
+      username: 'auth',
+      port: 5234
+
     }
   },
   auth: {
