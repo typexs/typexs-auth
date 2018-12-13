@@ -3,7 +3,7 @@ import {Component, ViewEncapsulation} from '@angular/core';
 import {AuthService, MessageService} from "@typexs/ng-base";
 import {BehaviorSubject} from "rxjs/BehaviorSubject";
 import {Observable} from "rxjs/Observable";
-import {UserAuthMessage} from "../../user/user-auth.service";
+import {UserAuthMessage} from "../../user/UserAuthMessage";
 
 
 @Component({

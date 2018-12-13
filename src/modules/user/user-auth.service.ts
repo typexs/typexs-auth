@@ -13,13 +13,8 @@ import {Observable} from "rxjs/Observable";
 import {IAuthServiceProvider} from "@typexs/ng-base/modules/system/api/auth/IAuthServiceProvider";
 import {User} from "../../entities/User";
 import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
-import {IMessage, MessageChannel, MessageService, MessageType} from "@typexs/ng-base";
-
-export class UserAuthMessage implements IMessage {
-  content: any;
-  topic: any;
-  type: MessageType;
-}
+import {MessageChannel, MessageService, MessageType} from "@typexs/ng-base";
+import {UserAuthMessage} from "./UserAuthMessage";
 
 
 @Injectable()

@@ -4,7 +4,7 @@ import {Observable} from 'rxjs/Observable';
 import {BehaviorSubject} from 'rxjs/BehaviorSubject';
 import {Injectable} from "@angular/core";
 import * as _ from 'lodash';
-import {UserAuthMessage} from "./user-auth.service";
+import {UserAuthMessage} from "./UserAuthMessage";
 
 @Injectable()
 export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard {
