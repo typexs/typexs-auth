@@ -5,9 +5,13 @@
   </div>
 
   <div class="card-body">
-    <xform formName="user-login-form" [instance]="user" (ngSubmit)="onSubmit($event)"></xform>
+    <div *ngIf="isAuthenticated()">
+      Can't login because you're already authenticated.
+    </div>
+    <div *ngIf="!isAuthenticated()">
+      <xform formName="user-login-form" [instance]="user" (ngSubmit)="onSubmit($event)"></xform>
+    </div>
   </div>
-
   <div class="card-footer">
     <p class="meta"></p>
   </div>

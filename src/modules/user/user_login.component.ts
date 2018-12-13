@@ -1,4 +1,5 @@
-import {Component, OnInit} from '@angular/core';
+import * as _ from 'lodash';
+import {Input, Component, OnInit} from '@angular/core';
 
 import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
 import {Router} from "@angular/router";
@@ -12,12 +13,13 @@ import {AuthService, NavigatorService} from "@typexs/ng-base";
 })
 export class UserLoginComponent implements OnInit {
 
-  auth_token: string;
-
   user: DefaultUserLogin;
 
+  @Input()
+  successUrl: string | any[] = 'user/profile';
 
-  constructor(private authService: AuthService, private router: Router,private navigatorService: NavigatorService) {
+
+  constructor(private authService: AuthService, private router: Router, private navigatorService: NavigatorService) {
 
   }
 
@@ -33,26 +35,38 @@ export class UserLoginComponent implements OnInit {
   }
 
 
+  isAuthenticated() {
+    return  this.getUserAuthService().isLoggedIn();
+  }
+
   async onSubmit($event: any) {
 
-    if($event.data.isSuccessValidated){
+    if ($event.data.isSuccessValidated) {
 
-      try{
+      try {
         let user = await this.getUserAuthService().authenticate(this.user);
         if (user.$state.isAuthenticated) {
           // is login successfull
-          let nav = this.navigatorService.entries.find(e => e.path.includes('user/profile'));
-          await this.router.navigate([nav.getFullPath()]);
+          if (_.isString(this.successUrl)) {
+            let nav = this.navigatorService.entries.find(e => e.path.includes(<string>this.successUrl));
+            if (nav) {
+              await this.router.navigate([nav.getFullPath()]);
+            } else {
+              await this.router.navigate([this.successUrl]);
+            }
+          } else if (_.isArray(this.successUrl)) {
+            await this.router.navigate(this.successUrl);
+          }
         } else {
           // TODO pass errors to form
           console.error(user.$state)
         }
         // TODO navigate to the preferred startup state
-      }catch(e){
+      } catch (e) {
         console.error(e);
       }
 
-    }else{
+    } else {
       console.error($event);
     }
   }

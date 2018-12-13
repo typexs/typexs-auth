@@ -1,9 +1,10 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit,Input} from '@angular/core';
 
 import {DefaultUserSignup} from "../../libs/models/DefaultUserSignup";
 import {Router} from "@angular/router";
 import {UserAuthService} from "./user-auth.service";
 import {AuthService, NavigatorService} from "@typexs/ng-base";
+import * as _ from "lodash";
 
 
 @Component({
@@ -16,6 +17,8 @@ export class UserSignupComponent implements OnInit {
 
 
 
+  @Input()
+  successUrl: string | any[] = 'user/login';
 
 
   constructor(private authService: AuthService, private navigatorService: NavigatorService,private router:Router) {
@@ -43,9 +46,18 @@ export class UserSignupComponent implements OnInit {
 
       try{
         let data = await this.getUserAuthService().signup($event.data.instance);
-        // TODO navigate to the preferred startup state
-        let nav = this.navigatorService.entries.find(e => e.path.includes('user/login'));
-        await this.router.navigateByUrl(nav.getFullPath());
+
+        if (_.isString(this.successUrl)) {
+          let nav = this.navigatorService.entries.find(e => e.path.includes(<string>this.successUrl));
+          if (nav) {
+            await this.router.navigate([nav.getFullPath()]);
+          } else {
+            await this.router.navigate([this.successUrl]);
+          }
+        } else if (_.isArray(this.successUrl)) {
+          await this.router.navigate(this.successUrl);
+        }
+
       }catch(e){
         console.error(e);
       }
