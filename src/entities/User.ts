@@ -5,7 +5,7 @@ import {Property} from "@typexs/schema/libs/decorators/Property";
 import {And, Asc, Eq, From, Join, Key, To, Value} from "@typexs/schema";
 import {RBelongsTo} from "./RBelongsTo";
 import {Role} from "./Role";
-import {FormReadonly} from "@typexs/ng";
+import {FormReadonly} from "@typexs/ng/libs/forms/decorators/FormReadonly";
 
 
 @Entity()
@@ -58,6 +58,8 @@ export class User implements IAuthUser {
         }else if(this.approved === "1" || this.approved === 'true'){
           this.approved = true;
         }
+      }else{
+        this.approved = this.approved ? true : false
       }
     }
     return this.approved;
@@ -71,6 +73,8 @@ export class User implements IAuthUser {
         }else if(this.disabled === "1" || this.disabled === 'true'){
           this.disabled = true;
         }
+      }else{
+        this.disabled = this.disabled ? true : false
       }
     }
     return this.disabled;

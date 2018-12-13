@@ -70,6 +70,8 @@ export class TestHelper {
   static async bootstrap_basic(options: any = {},
                                config: IConfigOptions[] = [{type: 'system'}],
                                settings = {startup: true}) {
+    //TestHelper.resetTypeorm();
+
     let _options = _.clone(options);
     let bootstrap = Bootstrap
       .setConfigSources(config)

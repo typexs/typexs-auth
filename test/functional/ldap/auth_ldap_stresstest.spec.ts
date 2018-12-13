@@ -1,6 +1,8 @@
-import {suite, test} from "mocha-typescript";
+import {suite, test,timeout} from "mocha-typescript";
 import {Bootstrap, Config, Container, StorageRef} from "@typexs/base";
 import * as _ from "lodash";
+import {PlatformTools} from 'typeorm/platform/PlatformTools';
+import {getMetadataArgsStorage} from 'typeorm';
 import {expect} from "chai";
 import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
 import {MockResponse} from "../../helper/MockResponse";
@@ -13,6 +15,10 @@ import {TESTDB_SETTING, TestHelper} from "../TestHelper";
 import {LDAP_CONFIG} from "./ldap_config";
 import {ITypexsOptions} from "@typexs/base/libs/ITypexsOptions";
 import {LOGGING} from "../config";
+import {Helper} from "@typexs/server";
+import {Role} from "../../../src/entities/Role";
+import {Permission} from "../../../src/entities/Permission";
+import {RBelongsTo} from "../../../src/entities/RBelongsTo";
 
 let inc = 0;
 
@@ -34,10 +40,18 @@ const settingsTemplate = {
   logging: LOGGING
 };
 
-@suite('functional/auth_ldap_stresstest')
+@suite('functional/auth_ldap_stresstest') @timeout(60000)
 class Auth_ldap_lifecycleSpec {
 
   static async before() {
+    _.remove(getMetadataArgsStorage().tables,x => x.target == User)
+    _.remove(getMetadataArgsStorage().columns,x => x.target == User)
+    _.remove(getMetadataArgsStorage().tables,x => x.target == Role)
+    _.remove(getMetadataArgsStorage().columns,x => x.target == Role)
+    _.remove(getMetadataArgsStorage().tables,x => x.target == Permission)
+    _.remove(getMetadataArgsStorage().columns,x => x.target == Permission)
+    _.remove(getMetadataArgsStorage().tables,x => x.target == RBelongsTo)
+    _.remove(getMetadataArgsStorage().columns,x => x.target == RBelongsTo)
     Bootstrap.reset();
     Config.clear();
   }
@@ -53,7 +67,8 @@ class Auth_ldap_lifecycleSpec {
   async 'do 50 logins after an other'() {
     let settings = _.clone(settingsTemplate);
     settings.logging.enable = true;
-    settings.auth.methods.default.idleTimeout = 2000;
+    //settings.auth.methods.default.timeout = 5000;
+    //settings.auth.methods.default.idleTimeout = 50;
     let refs = await TestHelper.bootstrap_auth('default', settings);
     let auth = refs.auth;
 

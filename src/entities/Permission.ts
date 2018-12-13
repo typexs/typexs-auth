@@ -3,8 +3,7 @@ import {Property} from "@typexs/schema/libs/decorators/Property";
 import {And, Asc, Eq, From, Join, Key, To, Value} from "@typexs/schema";
 import {RBelongsTo} from "./RBelongsTo";
 import {Role} from "./Role";
-import {FormReadonly} from "@typexs/ng";
-
+import {FormReadonly} from "@typexs/ng/libs/forms/decorators/FormReadonly";
 
 @Entity()
 export class Permission {

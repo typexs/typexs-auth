@@ -108,7 +108,7 @@ export class LdapAdapter extends AbstractAuthAdapter implements IQueueProcessor<
 
   async authenticate(container: AuthDataContainer<DefaultUserLogin>): Promise<boolean> {
     console.log('enqueue ' + container.instance.getIdentifier());
-    let queueJob = await this.queue.push(container);
+    let queueJob = this.queue.push(container);
     try{
       await queueJob.done();
     }catch (e) {

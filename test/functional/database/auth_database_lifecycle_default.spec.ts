@@ -127,11 +127,11 @@ class Auth_database_lifecycle_defaultSpec {
     let user = users.shift();
     expect(user).to.deep.include({
       username: signUp.getIdentifier(),
-      mail: signUp.getMail(),
-      disabled:"0",
-      approved:"1"
+      mail: signUp.getMail()
     });
 
+    expect(user.isDisabled()).to.be.false;
+    expect(user.isApproved()).to.be.true;
 
 
 

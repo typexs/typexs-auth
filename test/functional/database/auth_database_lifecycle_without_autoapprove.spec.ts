@@ -85,9 +85,11 @@ class Auth_database_lifecycle_with_autoapproveSpec {
     expect(_user).to.deep.include({
       username: signUp.getIdentifier(),
       mail: signUp.getMail(),
-      disabled: "0",
-      approved: "0"
     });
+
+    expect(_user.isDisabled()).to.be.false;
+    expect(_user.isApproved()).to.be.false;
+
 
 
     let login = auth.getInstanceForLogin<DefaultUserLogin>('default');
