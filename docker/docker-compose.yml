@@ -10,7 +10,7 @@ services:
       LDAP_NOFILE: 10000
     volumes:
     - ./ldap/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
-    command: --copy-service
+    command: --copy-service --loglevel debug
 
   postgres:
     container_name: postgres
