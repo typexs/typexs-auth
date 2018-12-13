@@ -13,13 +13,13 @@ export class DefaultUserLogin extends AbstractUserLogin {
 
   @FormText()
   @Property({type: 'string'})
-  @MinLength(4, {message: 'Username should be longer then 4 chars'})
+  @MinLength(3, {message: 'Username should be longer then 4 chars'})
   @AllowedString(ALLOWED_USER_PASSWORD_REGEX, {message: 'username contains wrongs chars'})
   username: string;
 
   @FormType({form:'password'})
   @Property({type: 'string'})
-  @MinLength(4, {message: 'Password should be longer then 4 chars'})
+  @MinLength(3, {message: 'Password should be longer then 4 chars'})
   @AllowedString(ALLOWED_USER_PASSWORD_REGEX, {message: 'password contains wrongs chars'})
   password: string;
 
