@@ -6,7 +6,7 @@ import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
 
 import {ILdapAuthOptions} from "./ILdapAuthOptions";
 
-import {Log, NestedException} from "@typexs/base";
+import {AsyncWorkerQueue, IQueueProcessor, IQueueWorkload, Log, NestedException} from "@typexs/base";
 import {User} from "../../../entities/User";
 import {AuthDataContainer} from "../../../libs/auth/AuthDataContainer";
 
@@ -50,15 +50,17 @@ const DEFAULTS: ILdapAuthOptions = {
 
   reconnect: true,
 
-  timeout: 5000,
+//  timeout: 1000,
 
+//  idleTimeout: 100
 //  connectTimeout: 5000,
 
 
 };
 
 
-export class LdapAdapter extends AbstractAuthAdapter {
+
+export class LdapAdapter extends AbstractAuthAdapter implements IQueueProcessor<AuthDataContainer<DefaultUserLogin>> {
 
   static clazz: Function;
 
@@ -66,12 +68,21 @@ export class LdapAdapter extends AbstractAuthAdapter {
 
   options: ILdapAuthOptions;
 
+  //ldap: any;
+
+  idle: number = 2000;
+
+  timer: NodeJS.Timer;
+
+  queue: AsyncWorkerQueue<AuthDataContainer<DefaultUserLogin>>;
+
+
   hasRequirements() {
-    try{
-      if(!LdapAdapter.clazz){
+    try {
+      if (!LdapAdapter.clazz) {
         LdapAdapter.clazz = require('./LdapAuthPromise').LdapAuthPromise;
       }
-    }catch(ex){
+    } catch (ex) {
       return false;
     }
     return true;
@@ -80,64 +91,37 @@ export class LdapAdapter extends AbstractAuthAdapter {
 
   async prepare(opts: ILdapAuthOptions) {
     _.defaults(opts, DEFAULTS);
+    this.queue = new AsyncWorkerQueue<AuthDataContainer<DefaultUserLogin>>(this, {name: 'ldap', concurrent: 5});
     super.prepare(opts);
   }
 
+  /*
+    async disconnect() {
+      console.log('disconnect1')
+      if (this.ldap) {
+        await this.ldap.close();
+        this.ldap = null;
+        console.log('disconnect2')
+      }
+    }
+  */
 
   async authenticate(container: AuthDataContainer<DefaultUserLogin>): Promise<boolean> {
-    let ldap = Reflect.construct(LdapAdapter.clazz,[this.options]);
-    try {
-      let login = container.instance;
-      container.isAuthenticated = await ldap.authenticate(login.username, login.password);
-      if (container.isAuthenticated) {
-        container.data = ldap.user;
-        container.success = container.isAuthenticated;
-      } else {
-        Log.info('EERR', ldap.error);
+    console.log('enqueue ' + container.instance.getIdentifier());
+    let queueJob = await this.queue.push(container);
+    try{
+      await queueJob.done();
+    }catch (e) {
+      // retry 3
+      let r = _.get(container,'retry',3)
+      if(r > 0){
+        _.set(container,'retry',--r);
+        return this.authenticate(container)
       }
-    } catch (err) {
-      Log.error(ldap.error);
-      if (_.isString(ldap.error)) {
-        if (/no such user/.test(ldap.error)) {
-          // TODO handle error messages in error classes and not here
-          // TODO ISSUE
-          container.addError({
-            property: "username", // Object's property that haven't pass validation.
-            value: "username", // Value that haven't pass a validation.
-            constraints: { // Constraints that failed validation with error messages.
-              exists: "username not found"
-            }
-          })
-        } else {
-          throw new NestedException(new Error(), "UNKNOWN");
-        }
-      } else if (ldap.error instanceof Error) {
-
-        if (/Invalid Credentials/.test(ldap.error.lde_message)) {
-          // TODO handle error messages in error classes and not here
-          container.addError({
-            property: "password", // Object's property that haven't pass validation.
-            value: "password", // Value that haven't pass a validation.
-            constraints: { // Constraints that failed validation with error messages.
-              exists: "username or password is wrong."
-            }
-          });
-
-        } else {
-          throw new NestedException(ldap.error, "UNKNOWN");
-        }
-
-      } else {
-        throw new NestedException(err, "UNKNOWN");
-      }
-
-
-    } finally {
-      //if(!_.get(this.options,'reconnect',false)){
-        await ldap.close();
-      //}
+      Log.error('CATCH AUTH',e);
     }
-    return container.isAuthenticated;
+
+    return queueJob.getResult();
   }
 
 
@@ -162,6 +146,79 @@ export class LdapAdapter extends AbstractAuthAdapter {
     login.data.mail = mail;
 
     return true;
+  }
+
+
+  async do(container: AuthDataContainer<DefaultUserLogin>, queue?: AsyncWorkerQueue<any>): Promise<boolean> {
+    //clearTimeout(this.timer);
+
+    //if (!this.ldap) {
+    let ldap = Reflect.construct(LdapAdapter.clazz, [this.options]);
+
+
+    container.isAuthenticated = false;
+    container.success = container.isAuthenticated;
+
+    try {
+      let login = container.instance;
+      let user = await ldap.authenticate(login.getIdentifier(), login.getSecret());
+      if (user) {
+        container.data = user;
+        container.isAuthenticated = true;
+        container.success = container.isAuthenticated;
+      }
+    } catch (err) {
+      if (_.isString(err)) {
+        if (/no such user/.test(err)) {
+          // TODO handle error messages in error classes and not here
+          // TODO ISSUE
+          container.addError({
+            property: "username", // Object's property that haven't pass validation.
+            value: "username", // Value that haven't pass a validation.
+            constraints: { // Constraints that failed validation with error messages.
+              exists: "username not found"
+            }
+          })
+        } else {
+          throw new NestedException(new Error(), "UNKNOWN");
+        }
+      } else if (err instanceof Error) {
+
+        if (/Invalid Credentials/.test((<any>err).lde_message)) {
+          // TODO handle error messages in error classes and not here
+          container.addError({
+            property: "password", // Object's property that haven't pass validation.
+            value: "password", // Value that haven't pass a validation.
+            constraints: { // Constraints that failed validation with error messages.
+              exists: "username or password is wrong."
+            }
+          });
+
+        } else {
+          throw new NestedException(err, "UNKNOWN");
+        }
+
+      } else {
+        throw new NestedException(err, "UNKNOWN");
+      }
+
+
+    } finally {
+      await ldap.close();
+      // if(!_.get(this.options,'reconnect',false)){
+      //   await this.ldap;
+      // }
+      // this.timer = setTimeout(this.disconnect.bind(this), this.idle);
+    }
+    return container.isAuthenticated;
+  }
+
+
+  onEmpty(): Promise<void> {
+    console.log('empty')
+    //clearTimeout(this.timer);
+    //this.timer = setTimeout(this.disconnect.bind(this), 2000);
+    return null;
   }
 
 

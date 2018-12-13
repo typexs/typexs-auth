@@ -441,7 +441,7 @@ export class Auth implements IMiddleware {
       }
     }
 
-    if (user.isApproved() && !user.isDisabled()) {
+    if (user && user.isApproved() && !user.isDisabled()) {
       try {
 
         let remoteAddress = this.getRemoteAddress(req);

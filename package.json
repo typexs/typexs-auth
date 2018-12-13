@@ -98,6 +98,8 @@
     "passport": "^0.4.0",
     "passport-oauth": "^1.0.0",
     "passport-oauth2": "^1.4.0",
+    "pg": "^7.7.1",
+    "pg-native": "^3.0.0",
     "popper.js": "^1.14.4",
     "protractor": "~5.4.1",
     "sinon": "^6.3.4",

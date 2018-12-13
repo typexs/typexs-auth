@@ -14,6 +14,7 @@ import {ITypexsOptions} from "@typexs/base/libs/ITypexsOptions";
 import {User} from "../../../src/entities/User";
 import {TESTDB_SETTING, TestHelper} from "../TestHelper";
 import {AuthDataContainer} from "../../../src/libs/auth/AuthDataContainer";
+import {LOGGING} from "../config";
 
 let bootstrap: Bootstrap = null;
 let auth: Auth = null;
@@ -31,11 +32,7 @@ const OPTIONS = <ITypexsOptions>{
       }
     }
   },
-  logging: {
-    enable: false,
-    level: 'debug',
-    transports: [{console: {}}]
-  }
+  logging: LOGGING
 };
 
 @suite('functional/auth_database_lifecycle_default') @timeout(20000)

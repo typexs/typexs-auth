@@ -1,14 +1,29 @@
 version: '3'
 services:
   ldap:
-    image: osixia/openldap
+    image: osixia/openldap:1.2.2
     container_name: openldap
     ports:
     - 389:389
     - 689:689
+    environment:
+      LDAP_NOFILE: 10000
     volumes:
     - ./ldap/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
     command: --copy-service
+
+  postgres:
+    container_name: postgres
+    image: postgres:9.6.2
+#    volumes:
+#      - "./postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d"
+    environment:
+      POSTGRES_DATABASES: auth
+      POSTGRES_USER: auth
+      POSTGRES_PASSWORD:
+    ports:
+      - 5432:5432
+#    command: postgres -c 'shared_buffers=256MB' -c 'max_connections=200'
 
 
 # https://hub.docker.com/r/unicon/shibboleth-idp/

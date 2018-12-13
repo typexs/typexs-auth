@@ -1,34 +1,29 @@
 import {ILdapAuthOptions} from "./ILdapAuthOptions";
 import * as LdapAuth from "ldapauth-fork";
+import {Log} from "@typexs/base";
 
 
 export class LdapAuthPromise {
 
   ldap: LdapAuth;
 
-  user: any = {};
-
-  success: boolean = false;
-
-  error: Error | string = null;
-
-  abort: number = 2000;
-
   constructor(options: ILdapAuthOptions) {
     this.ldap = new LdapAuth(options);
+    this.ldap.on('error', this.onError.bind(this));
+  }
+
+  onError(err:any){
+    Log.error('LDAP ERROR',err);
   }
 
 
-  async authenticate(username: string, password: string): Promise<boolean> {
+  async authenticate(username: string, password: string): Promise<any> {
     return new Promise<boolean>((resolve, reject) => {
       this.ldap.authenticate(username, password, (error: Error | string, result?: any) => {
         if (error) {
-          this.error = error;
-          reject(false)
+          reject(error)
         } else {
-          this.user = result;
-          this.success = true;
-          resolve(true)
+          resolve(result)
         }
       });
     });
