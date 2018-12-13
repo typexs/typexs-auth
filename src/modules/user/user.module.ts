@@ -71,7 +71,12 @@ const PROVIDERS = [
     SystemModule,
     NavigatorModule
   ],
-  exports: [],
+  exports: [
+    UserProfileComponent,
+    UserSignupComponent,
+    UserLoginComponent,
+    UserLogoutComponent
+  ],
   providers: PROVIDERS
 })
 export class UserModule {
