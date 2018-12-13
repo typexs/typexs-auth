@@ -42,7 +42,7 @@ const settingsTemplate = {
   logging: LOGGING
 };
 
-@suite('functional/auth_ldap_stresstest').skip() @timeout(60000)
+@suite('functional/auth_ldap_stresstest') @timeout(60000)
 class Auth_ldap_lifecycleSpec {
 
   static async before() {
