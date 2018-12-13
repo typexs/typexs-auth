@@ -6,15 +6,19 @@ import {ISelectOption} from "@typexs/ng-base/modules/forms/libs/ISelectOption";
 import {EntityService, FormGrid, IMessage, MessageChannel, MessageService, MessageType} from "@typexs/ng-base";
 import {Role} from "../../entities/Role";
 import {Permission} from "../../entities/Permission";
+import {FormLabel} from "@typexs/ng/libs/forms/decorators/FormLabel";
+import {FormCheckbox} from "@typexs/ng/libs/forms/decorators/FormCheckbox";
 
 
 @Entity({storeable: false})
 export class PermissionData {
 
-  @Property({type: 'string', form: 'label'})
+  @FormLabel()
+  @Property({type: 'string'})
   permission: string;
 
-  @Property({type: 'string', form: 'checkbox', enum: 'roleNames', cardinality: 0})
+  @FormCheckbox()
+  @Property({type: 'string',  enum: 'roleNames', cardinality: 0})
   roles: string[];
 
   roleNames: ISelectOption[] = [];

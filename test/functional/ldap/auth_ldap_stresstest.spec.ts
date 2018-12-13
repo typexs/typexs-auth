@@ -66,9 +66,9 @@ class Auth_ldap_lifecycleSpec {
 
 
   @test
-  async 'do 50 logins after an other'() {
+  async 'do 10 logins after an other'() {
     let settings = _.clone(settingsTemplate);
-    settings.logging.enable = true;
+    //settings.logging.enable = true;
     //settings.auth.methods.default.timeout = 5000;
     //settings.auth.methods.default.idleTimeout = 50;
     let refs = await TestHelper.bootstrap_auth('default', settings);
@@ -79,7 +79,7 @@ class Auth_ldap_lifecycleSpec {
 
     let doingLogin = null;
     let login: DefaultUserLogin = null;
-    let r = _.range(0, 50);
+    let r = _.range(0, 10);
     let auths = 0;
     for (let _r of r) {
       let res = new MockResponse();
@@ -98,7 +98,7 @@ class Auth_ldap_lifecycleSpec {
       await auth.doLogout(doingLogin.user, req, res);
 
     }
-    expect(auths).to.be.eq(50);
+    expect(auths).to.be.eq(10);
 
 
   }
@@ -106,9 +106,9 @@ class Auth_ldap_lifecycleSpec {
   @test
   async 'do parallel logins'() {
     let settings = _.clone(settingsTemplate);
-    settings.logging.enable = true;
+    //settings.logging.enable = true;
     //settings.auth.methods.default.idleTimeout = 50;
-    settings.auth.methods.default.timeout = 5000;
+    //settings.auth.methods.default.timeout = 5000;
 
     let refs = await TestHelper.bootstrap_auth('default', settings);
     let auth = refs.auth;
