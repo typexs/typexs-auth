@@ -49,7 +49,7 @@ class Auth_ldap_adapterSpec {
     let adapter = Container.get(LdapAdapter);
     await adapter.prepare(Config.get('auth.methods.default'));
 
-    Log.info('adapter ready');
+    //Log.info('adapter ready');
 
     // success  login
     let login = new DefaultUserLogin();
@@ -58,7 +58,7 @@ class Auth_ldap_adapterSpec {
     let container = new AuthDataContainer(login);
 
     let success = await adapter.authenticate(container);
-    Log.info(success, container);
+    //Log.info(success, container);
     expect(success).to.be.true;
 
 
@@ -69,7 +69,7 @@ class Auth_ldap_adapterSpec {
     container = new AuthDataContainer(login);
 
     success = await adapter.authenticate(container);
-    Log.info(success, container);
+    //Log.info(success, container);
     expect(success).to.be.false;
 
     // failed  login
@@ -79,8 +79,11 @@ class Auth_ldap_adapterSpec {
     container = new AuthDataContainer(login);
 
     success = await adapter.authenticate(container);
-    Log.info(success, container);
+    //Log.info(success, container);
     expect(success).to.be.false;
+
+
+    //await adapter.queue.await()
 
   }
 

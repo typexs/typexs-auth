@@ -9,6 +9,7 @@ import {ILdapAuthOptions} from "./ILdapAuthOptions";
 import {AsyncWorkerQueue, IQueueProcessor, IQueueWorkload, Log, NestedException} from "@typexs/base";
 import {User} from "../../../entities/User";
 import {AuthDataContainer} from "../../../libs/auth/AuthDataContainer";
+import {UserNotFoundError} from "../../../libs/exceptions/UserNotFoundError";
 
 export const K_AUTH_LDAP = 'ldap';
 
@@ -48,12 +49,12 @@ const DEFAULTS: ILdapAuthOptions = {
   allowSignup: false,
 
 
-  reconnect: true,
+  //reconnect: false,
 
 //  timeout: 1000,
 
 //  idleTimeout: 100
-//  connectTimeout: 5000,
+  // connectTimeout: 5000,
 
 
 };
@@ -153,20 +154,15 @@ export class LdapAdapter extends AbstractAuthAdapter implements IQueueProcessor<
         container.success = container.isAuthenticated;
       }
     } catch (err) {
-      if (_.isString(err)) {
-        if (/no such user/.test(err)) {
-          // TODO handle error messages in error classes and not here
-          // TODO ISSUE
-          container.addError({
-            property: "username", // Object's property that haven't pass validation.
-            value: "username", // Value that haven't pass a validation.
-            constraints: { // Constraints that failed validation with error messages.
-              exists: "username not found"
-            }
-          })
-        } else {
-          throw new NestedException(new Error(), "UNKNOWN");
-        }
+
+      if(err instanceof UserNotFoundError){
+        container.addError({
+          property: "username", // Object's property that haven't pass validation.
+          value: "username", // Value that haven't pass a validation.
+          constraints: { // Constraints that failed validation with error messages.
+            exists: "username not found"
+          }
+        })
       } else if (err instanceof Error) {
 
         if (/Invalid Credentials/.test((<any>err).lde_message)) {

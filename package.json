@@ -90,7 +90,7 @@
     "karma-phantomjs-launcher": "^1.0.4",
     "karma-sinon": "^1.0.5",
     "karma-sinon-chai": "^2.0.2",
-    "ldapauth-fork": "^4.1.0",
+    "ldapjs": "^1.0.2",
     "mocha": "^5.2.0",
     "mocha-typescript": "^1.1.17",
     "ng-packagr": "^3.0.6",

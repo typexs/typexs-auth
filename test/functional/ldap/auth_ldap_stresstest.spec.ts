@@ -1,21 +1,15 @@
-import {suite, test,timeout} from "mocha-typescript";
+import {suite, test, timeout} from "mocha-typescript";
 import {Bootstrap, Config, Container, StorageRef} from "@typexs/base";
 import * as _ from "lodash";
-import {PlatformTools} from 'typeorm/platform/PlatformTools';
 import {getMetadataArgsStorage} from 'typeorm';
 import {expect} from "chai";
 import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
 import {MockResponse} from "../../helper/MockResponse";
 import {MockRequest} from "../../helper/MockRequest";
-
-import {AuthMethod} from "../../../src/entities/AuthMethod";
-import {AuthSession} from "../../../src/entities/AuthSession";
 import {User} from "../../../src/entities/User";
-import {TESTDB_SETTING, TestHelper} from "../TestHelper";
+import {TestHelper} from "../TestHelper";
 import {LDAP_CONFIG} from "./ldap_config";
-import {ITypexsOptions} from "@typexs/base/libs/ITypexsOptions";
 import {LOGGING} from "../config";
-import {Helper} from "@typexs/server";
 import {Role} from "../../../src/entities/Role";
 import {Permission} from "../../../src/entities/Permission";
 import {RBelongsTo} from "../../../src/entities/RBelongsTo";
@@ -73,7 +67,7 @@ class Auth_ldap_lifecycleSpec {
   }
 
 
-  @test.skip()
+  @test
   async 'do 10 logins after an other'() {
     let settings = _.clone(settingsTemplate);
     //settings.logging.enable = true;
@@ -111,7 +105,7 @@ class Auth_ldap_lifecycleSpec {
 
   }
 
-  @test.skip()
+  @test
   async 'do parallel logins'() {
     let settings = _.clone(settingsTemplate);
     //settings.logging.enable = true;
