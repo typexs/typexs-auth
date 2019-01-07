@@ -31,7 +31,7 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
   - cd docker/testing
   - docker-compose up &
-  - cd ..
+  - cd ../..
   - sleep 60
 
 
