@@ -21,14 +21,18 @@ server:
       context: api
       routePrefix: api
 
+
 storage:
   default:
+    type: postgres
+    database: auth
+    username: auth
+    port: 5432
     synchronize: true
-    type: sqlite
     # database: ':memory:'
-    database: 'tmp/db_${app.name}.db'
-    #logger: simple-console
-    #logging: all
+    # database: 'tmp/db_${app.name}.db'
+    logger: simple-console
+    logging: all
 
 
 

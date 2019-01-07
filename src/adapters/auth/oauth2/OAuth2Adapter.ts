@@ -53,7 +53,6 @@ export class OAuth2Adapter extends AbstractAuthAdapter {
       OAuth2Adapter.passport = require('passport');
       OAuth2Adapter.OAuth2Strategy = require('passport-oauth2');
     } catch (e) {
-      Log.error(e);
       return false;
     }
     return true;
