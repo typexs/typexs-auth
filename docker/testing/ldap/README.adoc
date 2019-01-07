@@ -1,0 +1,17 @@
+== LDAP
+
+
+```
+# Startup
+docker run -p 389:389 -p 689:689 --name my-openldap-container --detach osixia/openldap:1.2.2
+
+# Request
+docker exec my-openldap-container ldapsearch -x -H ldap://localhost -b dc=example,dc=org -D "cn=admin,dc=example,dc=org" -w admin
+
+# Add User
+docker exec my-openldap-container ldapadd -x -D "cn=admin,dc=example,dc=org" -w admin -f /container/service/slapd/assets/test/new-user.ldif -H ldap://localhost -ZZ
+
+# Change Billy's password
+docker exec my-openldap-container ldappasswd -H ldap://localhost -x -D "cn=admin,dc=example,dc=org" -w admin -S "uid=billy,dc=example,dc=org"
+
+```

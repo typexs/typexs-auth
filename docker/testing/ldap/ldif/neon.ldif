@@ -1,0 +1,14 @@
+dn: uid=neon,dc=example,dc=org
+uid: neon
+cn: neon
+sn: 3
+objectClass: top
+objectClass: posixAccount
+objectClass: inetOrgPerson
+loginShell: /bin/bash
+homeDirectory: /home/neon
+uidNumber: 14583102
+gidNumber: 14564100
+userPassword: {SSHA}AlZloWQj4eK/BiQXLlcL03cS3tat3fjZ
+mail: neon@example.org
+gecos: neon User
