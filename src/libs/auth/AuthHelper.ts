@@ -130,6 +130,8 @@ export class AuthHelper {
     // TODO check if autocreation is enabled
     let permissions: string[] = [];
     let existing_permissions: Permission[] = [];
+    let existing_roles: Role[] = [];
+
     _.map(roles, role => permissions = permissions.concat(role.permissions));
     let rolenames = _.map(roles, role => role.role);
     let c = await entityController.storageRef.connect();
@@ -145,11 +147,23 @@ export class AuthHelper {
         q.orWhere('p.permission = :'+k,d);
       }
       existing_permissions = await q.getMany();
+      existing_permissions.map(p => _.remove(permissions, _p => _p == p.permission));
     }
 
-    let existing_roles = await c.manager.find(Role, {where: {rolename: In(rolenames)}});
-    existing_permissions.map(p => _.remove(permissions, _p => _p == p.permission));
-    existing_roles.map(r => _.remove(roles, _r => _r.role == r.rolename));
+    if(rolenames.length > 0){
+      let repo = c.manager.getRepository(Role);
+      let q = repo.createQueryBuilder('r');
+      let inc = 0;
+      for(let rn of rolenames){
+        let d = {};
+        let k = 'r'+(inc++);
+        d[k] = rn;
+        q.orWhere('r.rolename = :'+k,d);
+      }
+      existing_roles = await q.getMany();
+      existing_roles.map(r => _.remove(roles, _r => _r.role == r.rolename));
+    }
+
 
     if (permissions.length > 0) {
 
