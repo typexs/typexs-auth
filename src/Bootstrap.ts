@@ -55,7 +55,7 @@ export class Bootstrap implements IBootstrap {
           } else {
             permission.permission = p;
             permission.disabled = false;
-            permission.type = 'single';
+            permission.type = /\*/.test(p) ? 'pattern' : 'single';
             permission.module = _module;
             storePermission.push(permission);
           }
@@ -68,9 +68,7 @@ export class Bootstrap implements IBootstrap {
     }
 
     let authConfig = this.authManager.getConfig();
-
     let controller: EntityController = Container.get('EntityController.default');
-
     if (authConfig.initRoles) {
       Log.info('init roles');
       await AuthHelper.initRoles(controller, authConfig.initRoles);

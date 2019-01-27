@@ -129,10 +129,24 @@ export class AuthHelper {
   static async initRoles(entityController: EntityController, roles: IConfigRole[]): Promise<Role[]> {
     // TODO check if autocreation is enabled
     let permissions: string[] = [];
+    let existing_permissions: Permission[] = [];
     _.map(roles, role => permissions = permissions.concat(role.permissions));
     let rolenames = _.map(roles, role => role.role);
     let c = await entityController.storageRef.connect();
-    let existing_permissions = await c.manager.find(Permission, {where: {permission: In(permissions)}});
+
+    if(permissions.length > 0){
+      let repo = c.manager.getRepository(Permission);
+      let q = repo.createQueryBuilder('p');
+      let inc = 0;
+      for(let perm of permissions){
+        let d = {};
+        let k = 'p'+(inc++);
+        d[k] = perm;
+        q.orWhere('p.permission = :'+k,d);
+      }
+      existing_permissions = await q.getMany();
+    }
+
     let existing_roles = await c.manager.find(Role, {where: {rolename: In(rolenames)}});
     existing_permissions.map(p => _.remove(permissions, _p => _p == p.permission));
     existing_roles.map(r => _.remove(roles, _r => _r.role == r.rolename));

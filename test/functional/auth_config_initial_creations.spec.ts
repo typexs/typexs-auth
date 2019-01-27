@@ -1,5 +1,5 @@
 import {suite, test, timeout} from "mocha-typescript";
-import {Bootstrap, Config, Container} from "@typexs/base";
+import {Bootstrap, Config} from "@typexs/base";
 import * as _ from 'lodash';
 import {expect} from 'chai';
 import {IAuthConfig} from "../../src/libs/auth/IAuthConfig";
@@ -7,9 +7,10 @@ import {User} from "../../src/entities/User";
 import {TESTDB_SETTING, TestHelper} from "./TestHelper";
 import {ITypexsOptions} from "@typexs/base/libs/ITypexsOptions";
 import {AuthHelper} from "../../src/libs/auth/AuthHelper";
-import {EntityController, EntityRegistry, FrameworkFactory} from "@typexs/schema";
-import {AuthManager} from "../../src/libs/auth/AuthManager";
+import {Permission} from "../../src";
+import {Bootstrap as BootstrapAuth} from './../../src/Bootstrap';
 
+//process.env['LOG'] = 'asd';
 
 const OPTIONS: ITypexsOptions = <ITypexsOptions>{
   storage: {
@@ -62,6 +63,37 @@ class AuthConfigSpec {
     roles = await AuthHelper.initRoles(xsem, opts.auth.initRoles);
     expect(roles).to.have.length(0);
 
+
+  }
+
+  @test
+  async 'init roles on already present data'() {
+
+    let opts = <any>_.clone(OPTIONS);
+    (<IAuthConfig>opts.auth).initRoles = [
+      {role: 'admin', displayName: 'Admin', permissions: ['*']},
+      {role: 'user', displayName: 'User', permissions: ['allow see profile', 'allow edit profile']},
+    ];
+
+    let name = 'default';
+
+    let ref = await TestHelper.bootstrap_auth(name, opts);
+    let auth = ref.auth;
+    let manager = ref.authManager;
+    let xsem = ref.controller;
+
+    let c = await xsem.storageRef.connect();
+    let p = new Permission();
+    p.permission = "*";
+    p.module = '@typexs/auth';
+    p.type = 'single';
+    await c.manager.getRepository(Permission).save(p);
+
+    let b = Bootstrap.getContainer().get(BootstrapAuth);
+    await b.bootstrap();
+
+    let roles = await AuthHelper.initRoles(xsem, opts.auth.initRoles);
+    expect(roles).to.have.length(0);
 
   }
 
