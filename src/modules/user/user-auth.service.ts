@@ -14,12 +14,14 @@ import {IAuthServiceProvider} from "@typexs/ng-base/modules/system/api/auth/IAut
 import {User} from "../../entities/User";
 import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
 import {MessageChannel, MessageService, MessageType, AuthMessage} from "@typexs/ng-base";
-
+import {BehaviorSubject} from 'rxjs';
 
 @Injectable()
 export class UserAuthService implements IAuthServiceProvider {
 
-  private _initialized: boolean = false;
+  private _configured: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+
+  private _initialized: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   private _config: any = {
     authKey: "txs-auth"
@@ -47,7 +49,7 @@ export class UserAuthService implements IAuthServiceProvider {
 
 
   public isInitialized() {
-    return this._initialized;
+    return this._initialized.asObservable();
   }
 
 
@@ -55,7 +57,8 @@ export class UserAuthService implements IAuthServiceProvider {
     let config = this.http.get('/api/user/_config');
     config.subscribe(obj => {
       _.assign(this._config, obj);
-      this._initialized = true;
+      this._configured.next(true);
+      this._configured.complete();
     });
     return config;
   }
@@ -128,7 +131,7 @@ export class UserAuthService implements IAuthServiceProvider {
           resolve(user);
         },
         (error: Error) => {
-          console.error(error);
+          console.error('getUser: ' + error.message);
           this.resetUser();
           this.loading = false;
           reject(error);
@@ -179,6 +182,12 @@ export class UserAuthService implements IAuthServiceProvider {
       } else {
         resolve();
       }
+    }).then(() => {
+      this._initialized.next(true);
+      this._initialized.complete();
+    }).catch(() => {
+      this._initialized.next(true);
+      this._initialized.complete();
     })
   }
 

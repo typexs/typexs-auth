@@ -4,3 +4,12 @@
 [![codecov](https://codecov.io/gh/typexs/typexs-auth/branch/master/graph/badge.svg)](https://codecov.io/gh/typexs/typexs-auth)
 [![Dependency Status](https://david-dm.org/typexs/typexs-auth.svg)](https://david-dm.org/typexs/typexs-auth)
 
+## Develop demo start
+
+
+```
+$ npm install
+$ docker-compose -f docker/develop/docker-compose.yml up
+$ node_modules/.bin/typexs server
+$ ng serve --proxy proxy.conf.json 
+```

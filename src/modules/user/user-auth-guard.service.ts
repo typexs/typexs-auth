@@ -2,8 +2,10 @@ import {AuthMessage, AuthService, IAuthGuardProvider, IMenuLinkGuard, NavEntry} 
 import {ActivatedRouteSnapshot, RouterStateSnapshot} from "@angular/router";
 import {Observable} from 'rxjs/Observable';
 import {BehaviorSubject} from 'rxjs/BehaviorSubject';
+import {Subject} from 'rxjs/Subject';
 import {Injectable} from "@angular/core";
 import * as _ from 'lodash';
+import {Helper} from "../../libs/Helper";
 
 
 @Injectable()
@@ -17,17 +19,19 @@ export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard 
 
   constructor(private authService: AuthService) {
     authService.getChannel().subscribe(this.onMessage.bind(this));
-    this._update();
+    let init = authService.isInitialized();
+    Helper.after(init,() => {
+      this._update();
+    });
   }
 
-  private _update(){
+  private _update() {
     const auth = this.authService.isLoggedIn();
     this.isAuthenticated.next(auth == false);
     this.isNotAuthenticated.next(auth == true);
   }
 
   async onMessage(m: any) {
-
     if (m instanceof AuthMessage) {
       this._update();
     }
@@ -38,7 +42,6 @@ export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard 
   }
 
   isDisabled(entry: NavEntry): Observable<boolean> {
-
     const isAuth = _.get(entry, 'route.data.isAuthenticated', null);
     if (_.isBoolean(isAuth)) {
       if (isAuth) {

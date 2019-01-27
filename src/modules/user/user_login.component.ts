@@ -5,6 +5,7 @@ import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
 import {Router} from "@angular/router";
 import {UserAuthService} from "./user-auth.service";
 import {AuthService, NavigatorService} from "@typexs/ng-base";
+import {Helper} from "../../libs/Helper";
 
 
 @Component({
@@ -32,11 +33,32 @@ export class UserLoginComponent implements OnInit {
   ngOnInit() {
     // TODO must we wait here
     this.user = this.getUserAuthService().newUserLogin();
+    let init = this.authService.isInitialized();
+    Helper.after(init,(x) => {
+      if(x){
+        if(this.isAuthenticated()){
+          this.redirectOnSuccess();
+        }
+      }
+    });
   }
 
 
   isAuthenticated() {
-    return  this.getUserAuthService().isLoggedIn();
+    return this.getUserAuthService().isLoggedIn();
+  }
+
+  async redirectOnSuccess() {
+    if (_.isString(this.successUrl)) {
+      let nav = this.navigatorService.entries.find(e => e.path && e.path.includes(<string>this.successUrl));
+      if (nav) {
+        await this.router.navigate([nav.getFullPath()]);
+      } else {
+        await this.router.navigate([this.successUrl]);
+      }
+    } else if (_.isArray(this.successUrl)) {
+      await this.router.navigate(this.successUrl);
+    }
   }
 
   async onSubmit($event: any) {
@@ -47,16 +69,7 @@ export class UserLoginComponent implements OnInit {
         let user = await this.getUserAuthService().authenticate(this.user);
         if (user.$state.isAuthenticated) {
           // is login successfull
-          if (_.isString(this.successUrl)) {
-            let nav = this.navigatorService.entries.find(e => e.path && e.path.includes(<string>this.successUrl));
-            if (nav) {
-              await this.router.navigate([nav.getFullPath()]);
-            } else {
-              await this.router.navigate([this.successUrl]);
-            }
-          } else if (_.isArray(this.successUrl)) {
-            await this.router.navigate(this.successUrl);
-          }
+          await this.redirectOnSuccess()
         } else {
           // TODO pass errors to form
           console.error(user.$state)
