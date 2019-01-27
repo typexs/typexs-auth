@@ -7,7 +7,7 @@ import * as _ from "lodash";
 import {User} from "../../entities/User";
 import {EntityManager, In} from 'typeorm';
 import {EntityController} from "@typexs/schema";
-import {ConnectionWrapper, Invoker, StorageRef} from "@typexs/base";
+import {ClassType, ConnectionWrapper, Invoker, StorageRef} from "@typexs/base";
 import {IConfigUser} from "../models/IConfigUser";
 import {DefaultUserSignup} from "../models/DefaultUserSignup";
 import {Role} from "../../entities/Role";
@@ -21,7 +21,7 @@ export class AuthHelper {
 
   static checkPermissions(user: User, permissions: string[]) {
     let p: string[] = [];
-    let hasPermission:string[] = [];
+    let hasPermission: string[] = [];
     if (user && user.roles && user.roles.length > 0) {
       // todo cache this for roles
       // TODO Cache.getOrCreate(key,() => {....})
@@ -125,6 +125,19 @@ export class AuthHelper {
     });
   }
 
+  private static async buildOrWhere<T>(c: ConnectionWrapper, type: ClassType<T>, list: string[], key: string) {
+    let repo = c.manager.getRepository(type);
+    let q = repo.createQueryBuilder('p');
+    let inc = 0;
+    for (let perm of list) {
+      let d = {};
+      let k = 'p' + (inc++);
+      d[k] = perm;
+      q.orWhere('p.' + key + ' = :' + k, d);
+    }
+    return await q.getMany();
+  }
+
 
   static async initRoles(entityController: EntityController, roles: IConfigRole[]): Promise<Role[]> {
     // TODO check if autocreation is enabled
@@ -136,31 +149,13 @@ export class AuthHelper {
     let rolenames = _.map(roles, role => role.role);
     let c = await entityController.storageRef.connect();
 
-    if(permissions.length > 0){
-      let repo = c.manager.getRepository(Permission);
-      let q = repo.createQueryBuilder('p');
-      let inc = 0;
-      for(let perm of permissions){
-        let d = {};
-        let k = 'p'+(inc++);
-        d[k] = perm;
-        q.orWhere('p.permission = :'+k,d);
-      }
-      existing_permissions = await q.getMany();
+    if (permissions.length > 0) {
+      existing_permissions = await this.buildOrWhere(c, Permission, permissions, 'permission');
       existing_permissions.map(p => _.remove(permissions, _p => _p == p.permission));
     }
 
-    if(rolenames.length > 0){
-      let repo = c.manager.getRepository(Role);
-      let q = repo.createQueryBuilder('r');
-      let inc = 0;
-      for(let rn of rolenames){
-        let d = {};
-        let k = 'r'+(inc++);
-        d[k] = rn;
-        q.orWhere('r.rolename = :'+k,d);
-      }
-      existing_roles = await q.getMany();
+    if (rolenames.length > 0) {
+      existing_roles = await this.buildOrWhere(c, Role, rolenames, 'rolename');
       existing_roles.map(r => _.remove(roles, _r => _r.role == r.rolename));
     }
 
@@ -206,8 +201,9 @@ export class AuthHelper {
       return [];
     }
     let c = await entityController.storageRef.connect();
+    let exists_users = await this.buildOrWhere(c,User,_.map(users, user => user.username),'username');
 
-    let exists_users = await c.manager.find(User, {where: {username: In(_.map(users, user => user.username))}});
+
     // remove already created users
     exists_users.map(u => _.remove(users, _u => _u.username == u.username));
 
@@ -218,11 +214,16 @@ export class AuthHelper {
     let rolenames: string[] = [];
     _.map(users, u => u.roles && _.isArray(u.roles) ? rolenames = rolenames.concat(u.roles) : null);
 
-    let existing_roles = await c.manager.find(Role, {where: {rolename: In(rolenames)}});
-    existing_roles.map(r => _.remove(rolenames, _r => _r == r.rolename));
+    let existing_roles: Role[] = [];
+    if (rolenames.length > 0) {
+      existing_roles = await this.buildOrWhere(c, Role, rolenames, 'rolename');
+      existing_roles.map(r => _.remove(rolenames, _r => _r == r.rolename));
+    }
+    //let existing_roles = await c.manager.find(Role, {where: {rolename: In(rolenames)}});
+
 
     if (rolenames.length > 0) {
-      throw new Error('Given roles for users didn\'t exist. '+JSON.stringify(rolenames));
+      throw new Error('Given roles for users didn\'t exist. ' + JSON.stringify(rolenames));
     }
 
 
