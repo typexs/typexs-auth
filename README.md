@@ -6,10 +6,8 @@
 
 ## Develop demo start
 
-
 ```
 $ npm install
-$ docker-compose -f docker/develop/docker-compose.yml up
-$ node_modules/.bin/typexs server
-$ ng serve --proxy proxy.conf.json 
+$ docker-compose -f docker/develop/docker-compose.yml up -d
+$ npm start 
 ```
