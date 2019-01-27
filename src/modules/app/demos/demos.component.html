@@ -1,18 +1,9 @@
-<div class="container">
-  <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
-    <a class="navbar-brand" href="#">Welcome to {{ title }} Demo!</a>
-
-    <div class="collapse navbar-collapse">
-      <ul class="mr-auto"></ul>
-      <span class="navbar-text" *ngIf="(isAdmin | async)">
-        <a routerLink="/admin" class="btn btn-outline-success">Admin</a>
-      </span>
-    </div>
-  </nav>
-
-  <menu base="demo"></menu>
-
+<bat-admin-layout
+  [baseRouterLink]="'/demo'"
+  [menuOptions]="{
+      base: 'demo'
+    }"
+  [title]="'TypeXs-Auth'"
+>
   <router-outlet></router-outlet>
-</div>
-
-
+</bat-admin-layout>

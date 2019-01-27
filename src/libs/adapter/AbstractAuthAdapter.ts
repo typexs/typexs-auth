@@ -1,5 +1,5 @@
 import {IAuthAdapter} from "./IAuthAdapter";
-import {AuthLifeCycle} from "../../types";
+import {AuthLifeCycle} from "../Constants";
 import {DefaultUserLogin} from "../models/DefaultUserLogin";
 import {DefaultUserSignup} from "../models/DefaultUserSignup";
 import {IAuthOptions} from "../auth/IAuthOptions";

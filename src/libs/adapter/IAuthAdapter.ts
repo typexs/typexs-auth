@@ -1,5 +1,5 @@
 import {IAuthOptions} from "../auth/IAuthOptions";
-import {AuthLifeCycle} from "../../types";
+import {AuthLifeCycle} from "../Constants";
 import {AuthMethod} from "../../entities/AuthMethod";
 
 import {AbstractUserSignup} from "../models/AbstractUserSignup";

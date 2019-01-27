@@ -1,19 +1,8 @@
-<div class="card">
-
-  <div class="card-header">
-    <h2>Signup</h2>
+<div class="user-signup-wrapper">
+  <div *ngIf="isAuthenticated()">
+    Can't signup because you're already authenticated.
   </div>
-
-  <div class="card-body">
-    <div *ngIf="isAuthenticated()">
-      Can't signup because you're already authenticated.
-    </div>
-    <div *ngIf="!isAuthenticated()">
-      <xform formName="user-signup-form" [instance]="signup" (ngSubmit)="onSubmit($event)"></xform>
-    </div>
-  </div>
-
-  <div class="card-footer">
-    <p class="meta"></p>
+  <div *ngIf="!isAuthenticated()">
+    <xform formName="user-signup-form" [instance]="signup" (ngSubmit)="onSubmit($event)"></xform>
   </div>
 </div>

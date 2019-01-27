@@ -3,14 +3,14 @@ import * as bcrypt from "bcrypt";
 
 import {ConnectionWrapper, Inject, Invoker, Log, StorageRef} from '@typexs/base';
 import {
-  Action,
   IApplication,
   IMiddleware,
   IRoutingController,
   K_ROUTE_CONTROLLER,
   RoutePermissionsHelper
 } from '@typexs/server';
-import {AuthLifeCycle} from "../types";
+import {Action} from "routing-controllers";
+import {AuthLifeCycle} from "../libs/Constants";
 
 import {AuthSession} from "../entities/AuthSession";
 import {AuthMethod} from "../entities/AuthMethod";

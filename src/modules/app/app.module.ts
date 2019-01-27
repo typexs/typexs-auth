@@ -4,12 +4,18 @@ import {AppComponent} from './app.component';
 import {APP_MODULES} from "./app.used.modules";
 import {DemosComponent} from "./demos/demos.component";
 import {NavigatorService} from "@typexs/ng-base";
+import {BatAuthProfileComponent} from "./demos/bat-auth-profile/bat-auth-profile.component";
+import {BatAuthSignupComponent} from "./demos/bat-auth-signup/bat-auth-signup.component";
+import {BatAuthLoginComponent} from "./demos/bat-auth-login/bat-auth-login.component";
 
 
 @NgModule({
   declarations: [
     AppComponent,
-    DemosComponent
+    DemosComponent,
+    BatAuthProfileComponent,
+    BatAuthSignupComponent,
+    BatAuthLoginComponent
   ],
   imports: APP_MODULES,
   providers: [],
@@ -19,6 +25,7 @@ export class AppModule {
 
   constructor(private navigator: NavigatorService, private router: Router) {
 
+    /*
     this.navigator.addGroupEntry('user/.*', {label: 'User'});
 
     let demoEntries = this.navigator.getEntry('demo');
@@ -30,6 +37,7 @@ export class AppModule {
 
     router.resetConfig(routes);
     this.navigator.read(router.config);
+    */
   }
 
 

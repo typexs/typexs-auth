@@ -1,0 +1,14 @@
+/* You can add global styles to this file, and also import other style files */
+@import "~bootstrap/dist/css/bootstrap.css";
+@import "~animate.css/animate.css";
+@import "~perfect-scrollbar/css/perfect-scrollbar.css";
+@import "icons-pct.css";
+
+$fa-font-path: '/assets/fonts/';
+@import "~@fortawesome/fontawesome-free/scss/fontawesome.scss";
+@import "~@fortawesome/fontawesome-free/scss/solid.scss";
+
+/**  =====================
+     Google Font
+==========================  **/
+@import url("https://fonts.googleapis.com/css?family=Open+Sans:300,400,600");

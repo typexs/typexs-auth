@@ -27,12 +27,12 @@ storage:
     type: postgres
     database: auth
     username: auth
-    port: 5432
+    port: 5234
     synchronize: true
     # database: ':memory:'
     # database: 'tmp/db_${app.name}.db'
-    logger: simple-console
-    logging: all
+    # logger: simple-console
+    # logging: all
 
 
 

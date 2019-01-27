@@ -1,27 +1,16 @@
-<div class="card">
+<div class="user-profile-wrapper">
 
-  <div class="card-header">
-    <h2>Profile</h2>
-  </div>
+  <div *ngIf="isAuthenticated() && user">
+    User {{ user.username }} is authenicated.
 
-  <div class="card-body">
-
-    <div *ngIf="isAuthenticated() && user">
-      User {{ user.username }} is authenicated.
-
-      <pre>
+    <pre>
         {{user|json}}
       </pre>
 
-    </div>
-    <div *ngIf="!isAuthenticated()">
-      User is not authenicated.
-    </div>
-
   </div>
 
-  <div class="card-footer">
-    <p class="meta"></p>
+  <div *ngIf="!isAuthenticated()">
+    User is not authenicated.
   </div>
 
 </div>

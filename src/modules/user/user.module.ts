@@ -90,7 +90,7 @@ export class UserModule {
   constructor(private authService: AuthService) {
     (<UserAuthService><any>authService).configure()
       .toPromise()
-      .then(r => (<UserAuthService><any>authService).initialAuthCheck());
+      .then(r => (<UserAuthService><any>authService).init());
   }
 
 

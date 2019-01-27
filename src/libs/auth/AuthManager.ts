@@ -1,6 +1,6 @@
 import {RuntimeLoader, Inject, Container, CryptUtils, Config, Log, ClassesLoader} from "@typexs/base";
 
-import {K_LIB_AUTH_ADAPTERS, K_LIB_AUTH_CONFIGURATIONS} from "../../types";
+import {K_LIB_AUTH_ADAPTERS} from "../Constants";
 import {IAuthConfiguration} from "../adapter/IAuthConfiguration";
 import * as _ from "lodash";
 import {IAuthConfigurationDef} from "./IAuthConfigurationDef";
@@ -8,6 +8,7 @@ import {IAuthConfig} from "./IAuthConfig";
 import {User} from "../../entities/User";
 import {IAuthAdapter} from "../adapter/IAuthAdapter";
 import {IAdapterDef} from "../adapter/IAdapterDef";
+import {K_LIB_AUTH_CONFIGURATIONS} from "../Constants";
 
 
 const DEFAULT_CONFIG_OPTIONS: IAuthConfig = {

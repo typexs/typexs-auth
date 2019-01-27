@@ -21,11 +21,13 @@ export const TESTDB_SETTING: IStorageOptions & { database: string } = process.en
   type: 'sqlite',
   database: ':memory:',
   logger: 'simple-console',
-  logging: 'all'
+  logging: 'all',
+  connectOnStartup:true
 } : {
   synchronize: true,
   type: 'sqlite',
-  database: ':memory:'
+  database: ':memory:',
+  connectOnStartup:true
 };
 
 

@@ -1,10 +1,10 @@
-import {AuthService, IAuthGuardProvider, IMenuLinkGuard, MessageService, NavEntry} from "@typexs/ng-base";
+import {AuthMessage, AuthService, IAuthGuardProvider, IMenuLinkGuard, NavEntry} from "@typexs/ng-base";
 import {ActivatedRouteSnapshot, RouterStateSnapshot} from "@angular/router";
 import {Observable} from 'rxjs/Observable';
 import {BehaviorSubject} from 'rxjs/BehaviorSubject';
 import {Injectable} from "@angular/core";
 import * as _ from 'lodash';
-import {UserAuthMessage} from "./UserAuthMessage";
+
 
 @Injectable()
 export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard {
@@ -15,8 +15,8 @@ export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard 
   isNotAuthenticated: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
 
-  constructor(private authService: AuthService, private messageService: MessageService) {
-    messageService.get('UserAuthService').subscribe(this.onMessage.bind(this));
+  constructor(private authService: AuthService) {
+    authService.getChannel().subscribe(this.onMessage.bind(this));
     this._update();
   }
 
@@ -28,7 +28,7 @@ export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard 
 
   async onMessage(m: any) {
 
-    if (m instanceof UserAuthMessage) {
+    if (m instanceof AuthMessage) {
       this._update();
     }
   }

@@ -4,5 +4,5 @@ export * from './modules/user_admin/user.admin.module';
 
 export * from './modules/user/user-auth.service';
 export * from './modules/user/user-auth-guard.service';
-export * from './modules/user/UserAuthMessage';
+
 

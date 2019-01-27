@@ -13,8 +13,7 @@ import {Observable} from "rxjs/Observable";
 import {IAuthServiceProvider} from "@typexs/ng-base/modules/system/api/auth/IAuthServiceProvider";
 import {User} from "../../entities/User";
 import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
-import {MessageChannel, MessageService, MessageType} from "@typexs/ng-base";
-import {UserAuthMessage} from "./UserAuthMessage";
+import {MessageChannel, MessageService, MessageType, AuthMessage} from "@typexs/ng-base";
 
 
 @Injectable()
@@ -26,7 +25,7 @@ export class UserAuthService implements IAuthServiceProvider {
     authKey: "txs-auth"
   };
 
-  private channel: MessageChannel<any>;
+  private channel: MessageChannel<AuthMessage>;
 
   private token: string;
 
@@ -37,7 +36,13 @@ export class UserAuthService implements IAuthServiceProvider {
   private loading: boolean = false;
 
   constructor(private http: HttpClient, private messageService: MessageService) {
-    this.channel = messageService.get('UserAuthService');
+  }
+
+  getChannel(): MessageChannel<AuthMessage> {
+    if (!this.channel) {
+      this.channel = <MessageChannel<AuthMessage>>this.messageService.get('AuthService');
+    }
+    return this.channel;
   }
 
 
@@ -79,11 +84,11 @@ export class UserAuthService implements IAuthServiceProvider {
 
 
   setUser(user: User) {
-    if(this.cacheUser && this.cacheUser.id == user.id){
+    if (this.cacheUser && this.cacheUser.id == user.id) {
       this.cacheUser = user;
-    }else{
+    } else {
       this.cacheUser = user;
-      let msg = new UserAuthMessage();
+      let msg = new AuthMessage();
       msg.type = MessageType.Success;
       msg.topic = 'set user';
       this.channel.publish(msg);
@@ -92,9 +97,9 @@ export class UserAuthService implements IAuthServiceProvider {
   }
 
   resetUser() {
-    if(this.cacheUser){
+    if (this.cacheUser) {
       this.cacheUser = null;
-      let msg = new UserAuthMessage();
+      let msg = new AuthMessage();
       msg.type = MessageType.Success;
       msg.topic = 'unset user';
       this.channel.publish(msg);
@@ -144,7 +149,7 @@ export class UserAuthService implements IAuthServiceProvider {
   /**
    * startup method to check if an existing token is still active
    */
-  initialAuthCheck() {
+  init() {
     return new Promise((resolve, reject) => {
       let token = this.getStoredToken();
       // console.log('auth check ', token)
@@ -158,7 +163,7 @@ export class UserAuthService implements IAuthServiceProvider {
 
             if (!res) {
               this.clearStoredToken();
-            }else{
+            } else {
               this.getUser()
             }
             resolve();
@@ -303,7 +308,7 @@ export class UserAuthService implements IAuthServiceProvider {
 
   }
 
-  hasRole(role: string):  boolean {
+  hasRole(role: string): boolean {
     return !!this.getRoles().find(roles => roles.indexOf(role) !== -1);
   }
 

@@ -1,0 +1,74 @@
+$fa-css-prefix: 'bat-icons';
+@import "~@fortawesome/fontawesome-free/scss/mixins";
+@import "~@fortawesome/fontawesome-free/scss/core";
+@import "~@fortawesome/fontawesome-free/scss/variables";
+// @import "~@fortawesome/fontawesome-free/scss/solid";
+
+
+
+.fas {
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+}
+
+.icon {
+  @extend %fa-icon;
+  @extend .fas;
+
+  vertical-align: 0;
+
+  // Menu
+  &:before {
+    margin-right: .3rem;
+    content: fa-content($fa-var-cubes);
+  }
+
+  &.icon-user-plus {
+    &:before {
+      content: fa-content($fa-var-user-plus);
+    }
+  }
+
+  &.icon-unlock {
+    &:before {
+      content: fa-content($fa-var-unlock);
+    }
+  }
+
+  &.icon-logo {
+    &:before {
+      margin-right: 0;
+      content: fa-content($fa-var-lock) !important;
+    }
+  }
+
+
+  &.icon-demo-user-login {
+    &:before {
+      margin-right: 0;
+      content: fa-content($fa-var-unlock);
+    }
+  }
+
+
+  &.icon-demo-user-signup {
+    &:before {
+      margin-right: 0;
+      content: fa-content($fa-var-user-plus);
+    }
+  }
+
+  &.icon-demo-user-profile {
+    &:before {
+      margin-right: 0;
+      content: fa-content($fa-var-user);
+    }
+  }
+
+  &.icon-demo-user-logout {
+    &:before {
+      margin-right: 0;
+      content: fa-content($fa-var-lock);
+    }
+  }
+}

@@ -48,7 +48,7 @@ export class UserSignupComponent implements OnInit {
         let data = await this.getUserAuthService().signup($event.data.instance);
 
         if (_.isString(this.successUrl)) {
-          let nav = this.navigatorService.entries.find(e => e.path.includes(<string>this.successUrl));
+          let nav = this.navigatorService.entries.find(e => e.path && e.path.includes(<string>this.successUrl));
           if (nav) {
             await this.router.navigate([nav.getFullPath()]);
           } else {

@@ -3,7 +3,7 @@ services:
 
   ldap:
     image: osixia/openldap:1.2.2
-    container_name: openldap
+    container_name: typexs_auth_openldap
     ports:
     - 389:389
     - 689:689

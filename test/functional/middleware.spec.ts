@@ -37,8 +37,10 @@ class MiddlewareSpec {
 
     await loader.prepare();
     Container.set("RuntimeLoader", loader);
+    let invoker = new Invoker();
+    Bootstrap.prepareInvoker(invoker, loader);
 
-    Container.set(Invoker.NAME, new Invoker(loader));
+    Container.set(Invoker.NAME, invoker);
 
     // Dummy storage entry for auth
     Container.set("storage.default", {connect:function(){}});
