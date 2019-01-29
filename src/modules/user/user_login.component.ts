@@ -29,7 +29,7 @@ export class UserLoginComponent implements OnInit, OnDestroy {
 
   private logChannel: MessageChannel<LogMessage>;
 
-  private formMessage: MessageChannel<IMessage>;
+  formMessage: MessageChannel<IMessage>;
 
 
   constructor(private authService: AuthService,

@@ -30,7 +30,7 @@ export class UserSignupComponent implements OnInit, OnDestroy {
 
   private logChannel: MessageChannel<LogMessage>;
 
-  private formMessage: MessageChannel<IMessage>;
+  formMessage: MessageChannel<IMessage>;
 
 
 
