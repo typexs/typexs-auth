@@ -3,6 +3,6 @@
     Can't signup because you're already authenticated.
   </div>
   <div *ngIf="!isAuthenticated()">
-    <xform formName="user-signup-form" [instance]="signup" (ngSubmit)="onSubmit($event)"></xform>
+    <xform formName="user-signup-form" [instance]="signup" [channel]="formMessage" (ngSubmit)="onSubmit($event)"></xform>
   </div>
 </div>

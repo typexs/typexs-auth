@@ -1,9 +1,17 @@
-import {Component, OnInit, Input} from '@angular/core';
+import {Component, OnInit, Input, OnDestroy} from '@angular/core';
 
 import {DefaultUserSignup} from "../../libs/models/DefaultUserSignup";
 import {Router} from "@angular/router";
 import {UserAuthService} from "./user-auth.service";
-import {AuthService, NavigatorService} from "@typexs/ng-base";
+import {
+  AuthService,
+  IMessage,
+  LogMessage,
+  MessageChannel,
+  MessageService,
+  MessageType,
+  NavigatorService
+} from "@typexs/ng-base";
 import * as _ from "lodash";
 import {Helper} from "../../libs/Helper";
 
@@ -12,7 +20,7 @@ import {Helper} from "../../libs/Helper";
   selector: 'user-signup',
   templateUrl: './user_signup.component.html',
 })
-export class UserSignupComponent implements OnInit {
+export class UserSignupComponent implements OnInit, OnDestroy {
 
   signup: DefaultUserSignup;
 
@@ -20,8 +28,14 @@ export class UserSignupComponent implements OnInit {
   @Input()
   successUrl: string | any[] = 'user/login';
 
+  private logChannel: MessageChannel<LogMessage>;
 
-  constructor(private authService: AuthService, private navigatorService: NavigatorService, private router: Router) {
+  private formMessage: MessageChannel<IMessage>;
+
+
+
+  constructor(private authService: AuthService, private navigatorService: NavigatorService, private router: Router,
+              private messageService: MessageService) {
   }
 
 
@@ -33,6 +47,8 @@ export class UserSignupComponent implements OnInit {
   ngOnInit() {
     // TODO check if signup supported
     // TODO must we wait here
+    this.logChannel = this.messageService.getLogService();
+    this.formMessage = this.messageService.get('form.user-signup-form');
     this.signup = this.getUserAuthService().newUserSignup();
     let init = this.authService.isInitialized();
     Helper.after(init, (x) => {
@@ -42,6 +58,11 @@ export class UserSignupComponent implements OnInit {
         }
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.formMessage.finish();
+
   }
 
 
@@ -68,13 +89,23 @@ export class UserSignupComponent implements OnInit {
 
       try {
         let data = await this.getUserAuthService().signup($event.data.instance);
-        await this.redirectOnSuccess();
-      } catch (e) {
-        console.error(e);
-      }
+        if (data.$state.success) {
+          await this.redirectOnSuccess();
+        } else {
+          for (let error of data.$state.errors) {
+            _.keys(error.constraints).forEach(k => {
+              this.formMessage.publish({
+                type: <any>MessageType[error.type.toUpperCase()],
+                content: error.constraints[k],
+                topic: null
+              })
+            });
+          }
+        }
 
-    } else {
-      console.error($event);
+      } catch (e) {
+        this.logChannel.publish(LogMessage.error(e, this, 'onSubmit'));
+      }
     }
 
   }

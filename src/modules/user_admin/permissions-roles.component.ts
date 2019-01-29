@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit,OnDestroy} from '@angular/core';
 import {Entity} from "@typexs/schema/libs/decorators/Entity";
 import {Property} from "@typexs/schema/libs/decorators/Property";
 import {ISelectOption} from "@typexs/ng-base/modules/forms/libs/ISelectOption";
@@ -39,7 +39,7 @@ export class PermissionMatrix {
   selector: 'permissions-rights-overview',
   templateUrl: './permissions-roles.component.html',
 })
-export class PermissionsRolesComponent implements OnInit {
+export class PermissionsRolesComponent implements OnInit, OnDestroy{
 
   permissionsMatrix: PermissionMatrix;
 
@@ -55,7 +55,7 @@ export class PermissionsRolesComponent implements OnInit {
 
   constructor(private entityService: EntityService,
               private messageService: MessageService) {
-    this.channel = messageService.get('form.permissions-roles');
+
   }
 
   isReady() {
@@ -87,7 +87,12 @@ export class PermissionsRolesComponent implements OnInit {
 
 
   ngOnInit(): void {
+    this.channel = this.messageService.get('form.permissions-roles');
     this.entityService.isReady(this.isReady.bind(this));
+  }
+
+  ngOnDestroy(): void {
+    this.channel.finish();
   }
 
 
@@ -107,21 +112,21 @@ export class PermissionsRolesComponent implements OnInit {
         if (v) {
           // TODO saved in form user
           this.channel.publish({
-            type:MessageType.Success,
+            type:MessageType.SUCCESS,
             content: 'Permissions successful saved.'
           });
         }
       }, (error: Error) => {
         console.error(error);
         this.channel.publish({
-          type:MessageType.Error,
+          type:MessageType.SUCCESS,
           content: error.message
         });
       })
 
     } else {
       this.channel.publish({
-        type:MessageType.Error,
+        type:MessageType.ERROR,
         content: 'Validation failed.'
       });
     }

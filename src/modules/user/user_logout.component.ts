@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Input, Component, OnInit} from '@angular/core';
 
 import {Router} from "@angular/router";
 import {UserAuthService} from "./user-auth.service";
@@ -10,9 +10,10 @@ import {AuthService} from "@typexs/ng-base";
 })
 export class UserLogoutComponent implements OnInit {
 
+  @Input()
+  successUrl: string = '/';
 
   constructor(private authService: AuthService, private router: Router) {
-
   }
 
 
@@ -25,8 +26,8 @@ export class UserLogoutComponent implements OnInit {
     logout = <any>await this.getUserAuthService().logout(logout);
 
     if (logout.$state.success) {
-      // TODO logout
-      await this.router.navigateByUrl('/');
+      // TODO logout redirect
+      await this.router.navigateByUrl(this.successUrl);
     } else {
       // TODO how to handle errors
       /*

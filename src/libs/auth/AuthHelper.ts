@@ -114,8 +114,9 @@ export class AuthHelper {
                                    dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>) {
     let c = await controller.storageRef.connect();
     let user = await AuthHelper.createUser(c, invoker, adapter, dataContainer);
-    user = await controller.save(user);
+    //user = await controller.save(user);
     return c.manager.transaction(async em => {
+      user = await em.save(user)
       let method = await AuthHelper.createMethod(invoker, adapter, dataContainer);
       method.standard = true;
       method.userId = user.id;
@@ -201,7 +202,7 @@ export class AuthHelper {
       return [];
     }
     let c = await entityController.storageRef.connect();
-    let exists_users = await this.buildOrWhere(c,User,_.map(users, user => user.username),'username');
+    let exists_users = await this.buildOrWhere(c, User, _.map(users, user => user.username), 'username');
 
 
     // remove already created users
@@ -226,29 +227,36 @@ export class AuthHelper {
       throw new Error('Given roles for users didn\'t exist. ' + JSON.stringify(rolenames));
     }
 
-
     let return_users: User[] = [];
-    for (let user of users) {
-      // TODO check if user exists
+    try {
 
-      let adapter = authManager.getAdapter(user.adapter);
+      for (let user of users) {
+        // TODO check if user exists
 
-      if (!user.mail) {
-        user.mail = user.username + '@local.local';
+        let adapter = authManager.getAdapter(user.adapter);
+
+        if (!user.mail) {
+          user.mail = user.username + '@local.local';
+        }
+
+        let signup: DefaultUserSignup = Reflect.construct(adapter.getModelFor("signup"), []);
+        _.assign(signup, user);
+        signup.passwordConfirm = signup.password;
+
+        let saved = await this.createUserAndMethod(invoker, entityController, adapter, new AuthDataContainer(signup));
+        // approve initial user automatically
+        saved.user.approved = true;
+        if (user.roles && user.roles.length > 0) {
+          saved.user.roles = existing_roles.filter(r => user.roles.indexOf(r.rolename) !== -1);
+        }
+        await entityController.save(saved.user);
+        return_users.push(saved.user);
+
+
       }
-
-      let signup: DefaultUserSignup = Reflect.construct(adapter.getModelFor("signup"), []);
-      _.assign(signup, user);
-      signup.passwordConfirm = signup.password;
-      let saved = await this.createUserAndMethod(invoker, entityController, adapter, new AuthDataContainer(signup));
-      // approve initial user automatically
-      saved.user.approved = true;
-      if (user.roles && user.roles.length > 0) {
-        saved.user.roles = existing_roles.filter(r => user.roles.indexOf(r.rolename) !== -1);
-      }
-      await entityController.save(saved.user);
-      return_users.push(saved.user);
-
+    } catch (e) {
+      // TODO create bootstrap error
+      throw new Error('can\'t create users, check table user, auth_method');
     }
 
     //await c.close();

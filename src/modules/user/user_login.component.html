@@ -5,7 +5,7 @@
   </div>
 
   <div *ngIf="!isAuthenticated()">
-    <xform formName="user-login-form" [instance]="user" (ngSubmit)="onSubmit($event)"></xform>
+    <xform formName="user-login-form" [instance]="user" [channel]="formMessage" (ngSubmit)="onSubmit($event)"></xform>
   </div>
 
 </div>

@@ -1,10 +1,18 @@
 import * as _ from 'lodash';
-import {Input, Component, OnInit} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 
 import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
 import {Router} from "@angular/router";
 import {UserAuthService} from "./user-auth.service";
-import {AuthService, NavigatorService} from "@typexs/ng-base";
+import {
+  AuthService,
+  IMessage,
+  LogMessage,
+  MessageChannel,
+  MessageService,
+  MessageType,
+  NavigatorService
+} from "@typexs/ng-base";
 import {Helper} from "../../libs/Helper";
 
 
@@ -12,15 +20,22 @@ import {Helper} from "../../libs/Helper";
   selector: 'user-login',
   templateUrl: './user_login.component.html',
 })
-export class UserLoginComponent implements OnInit {
+export class UserLoginComponent implements OnInit, OnDestroy {
 
   user: DefaultUserLogin;
 
   @Input()
   successUrl: string | any[] = 'user/profile';
 
+  private logChannel: MessageChannel<LogMessage>;
 
-  constructor(private authService: AuthService, private router: Router, private navigatorService: NavigatorService) {
+  private formMessage: MessageChannel<IMessage>;
+
+
+  constructor(private authService: AuthService,
+              private router: Router,
+              private navigatorService: NavigatorService,
+              private messageService: MessageService) {
 
   }
 
@@ -32,15 +47,23 @@ export class UserLoginComponent implements OnInit {
 
   ngOnInit() {
     // TODO must we wait here
+    this.logChannel = this.messageService.getLogService();
+    this.formMessage = this.messageService.get('form.user-login-form');
     this.user = this.getUserAuthService().newUserLogin();
     let init = this.authService.isInitialized();
-    Helper.after(init,(x) => {
-      if(x){
-        if(this.isAuthenticated()){
+    Helper.after(init, (x) => {
+      if (x) {
+        if (this.isAuthenticated()) {
           this.redirectOnSuccess();
         }
       }
     });
+
+  }
+
+  ngOnDestroy(): void {
+    this.formMessage.finish();
+    //this.logChannel.finish();
   }
 
 
@@ -71,16 +94,20 @@ export class UserLoginComponent implements OnInit {
           // is login successfull
           await this.redirectOnSuccess()
         } else {
-          // TODO pass errors to form
-          console.error(user.$state)
+          for (let error of user.$state.errors) {
+            _.keys(error.constraints).forEach(k => {
+              this.formMessage.publish({
+                type: <any>MessageType[error.type.toUpperCase()],
+                content: error.constraints[k],
+                topic: null
+              })
+            });
+          }
         }
         // TODO navigate to the preferred startup state
       } catch (e) {
-        console.error(e);
+        this.logChannel.publish(LogMessage.error(e, this, 'onSubmit'));
       }
-
-    } else {
-      console.error($event);
     }
   }
 

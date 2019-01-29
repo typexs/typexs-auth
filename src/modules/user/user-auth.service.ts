@@ -13,7 +13,7 @@ import {Observable} from "rxjs/Observable";
 import {IAuthServiceProvider} from "@typexs/ng-base/modules/system/api/auth/IAuthServiceProvider";
 import {User} from "../../entities/User";
 import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
-import {MessageChannel, MessageService, MessageType, AuthMessage} from "@typexs/ng-base";
+import {MessageChannel, MessageService, MessageType, AuthMessage, LogMessage} from "@typexs/ng-base";
 import {BehaviorSubject} from 'rxjs';
 
 @Injectable()
@@ -29,6 +29,8 @@ export class UserAuthService implements IAuthServiceProvider {
 
   private channel: MessageChannel<AuthMessage>;
 
+  private logChannel: MessageChannel<LogMessage>;
+
   private token: string;
 
   private cacheUser: User;
@@ -38,6 +40,7 @@ export class UserAuthService implements IAuthServiceProvider {
   private loading: boolean = false;
 
   constructor(private http: HttpClient, private messageService: MessageService) {
+    this.logChannel = this.messageService.getLogService();
   }
 
   getChannel(): MessageChannel<AuthMessage> {
@@ -92,7 +95,7 @@ export class UserAuthService implements IAuthServiceProvider {
     } else {
       this.cacheUser = user;
       let msg = new AuthMessage();
-      msg.type = MessageType.Success;
+      msg.type = MessageType.SUCCESS;
       msg.topic = 'set user';
       this.channel.publish(msg);
     }
@@ -103,7 +106,7 @@ export class UserAuthService implements IAuthServiceProvider {
     if (this.cacheUser) {
       this.cacheUser = null;
       let msg = new AuthMessage();
-      msg.type = MessageType.Success;
+      msg.type = MessageType.SUCCESS;
       msg.topic = 'unset user';
       this.channel.publish(msg);
     }
@@ -172,7 +175,7 @@ export class UserAuthService implements IAuthServiceProvider {
             resolve();
           },
           (error: Error) => {
-            console.error(error);
+            this.logChannel.publish(LogMessage.error(error,this,'init'));
             this.loading = false;
             this.clearStoredToken();
             this.resetUser();
@@ -208,7 +211,6 @@ export class UserAuthService implements IAuthServiceProvider {
           this.connected = false;
           //signup.addError({property: 'error', value: error.message, error: error});
           signup.resetSecret();
-          console.error(error);
           //resolve(signup);
           reject(error);
         }
@@ -236,8 +238,6 @@ export class UserAuthService implements IAuthServiceProvider {
           // login.addError({property: 'error', value: error.message, error: error});
           login.resetSecret();
           this.clearStoredToken();
-
-          console.error(error);
           reject(error);
         }
       );
@@ -258,7 +258,6 @@ export class UserAuthService implements IAuthServiceProvider {
           resolve(user);
         },
         (error: Error) => {
-          console.error(error);
           this.loading = false;
           this.clearStoredToken();
           this.resetUser();
