@@ -5,7 +5,7 @@ import {BehaviorSubject} from 'rxjs/BehaviorSubject';
 import {Subject} from 'rxjs/Subject';
 import {Injectable} from "@angular/core";
 import * as _ from 'lodash';
-import {Helper} from "../../libs/Helper";
+import {Helper} from "@typexs/ng/browser";
 
 
 @Injectable()

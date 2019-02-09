@@ -1,5 +1,5 @@
 import {suite, test, timeout} from "mocha-typescript";
-import {Bootstrap, Config, Container, Log, StorageRef} from "@typexs/base";
+import {Bootstrap, Config, Container, Log, StorageRef, TypeOrmEntityRegistry} from "@typexs/base";
 import * as _ from "lodash";
 import {expect} from "chai";
 import {TESTDB_SETTING, TestHelper} from "./TestHelper";
@@ -7,8 +7,7 @@ import {Permission} from "../../src/entities/Permission";
 import {EntityController} from "@typexs/schema";
 import {Role} from "../../src/entities/Role";
 import {User} from "../../src/entities/User";
-
-let bootstrap: Bootstrap = null;
+import {LookupRegistry} from "commons-schema-api";
 
 
 const settingsTemplate = {
@@ -18,16 +17,22 @@ const settingsTemplate = {
   }
 };
 
+let bootstrap:Bootstrap;
 
 @suite('functional/entity_schema') @timeout(20000)
 class Entity_schemaSpec {
 
   static async before() {
+    let settings = _.clone(settingsTemplate);
+    bootstrap = await TestHelper.bootstrap_basic(settings);
 
   }
 
 
   static async after() {
+    if(bootstrap){
+      bootstrap.shutdown();
+    }
     // await web.stop();
     Bootstrap.reset();
   }
@@ -35,9 +40,6 @@ class Entity_schemaSpec {
 
   @test
   async 'create schema'() {
-    let settings = _.clone(settingsTemplate);
-
-    await TestHelper.bootstrap_basic(settings);
     let ref: StorageRef = Container.get('storage.default');
     let controller: EntityController = Container.get('EntityController.default');
     let c = await ref.connect();
@@ -86,7 +88,14 @@ class Entity_schemaSpec {
 
     let results: any[] = await c.connection.query('SELECT * FROM r_belongsto;');
     expect(results).to.have.length(2);
+
   }
 
+  @test
+  async 'check schema data'() {
+    let entity = TypeOrmEntityRegistry.$().getEntityRefFor('RBelongsTo');
+    let props = entity.getPropertyRefs();
+    expect(props).to.have.length(7);
+  }
 
 }

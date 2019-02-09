@@ -1,5 +1,6 @@
-import {DataContainer, STATE_KEY} from "@typexs/schema/libs/DataContainer";
 import * as _ from 'lodash'
+import {DataContainer, STATE_KEY} from "@typexs/base/browser";
+import {EntityRegistry} from "@typexs/schema";
 
 export class AuthDataContainer<T> extends DataContainer<T> {
 
@@ -17,12 +18,10 @@ export class AuthDataContainer<T> extends DataContainer<T> {
 
   data?: any;
 
-
   constructor(instance: T) {
-    //sdf
-
-    super(instance);
+    super(instance, EntityRegistry.$());
   }
+
 
   applyState(): void {
     super.applyState();

@@ -80,4 +80,7 @@ import 'zone.js/dist/zone';  // Included with Angular CLI.
 
 import 'bootstrap/dist/js/bootstrap';
 import 'perfect-scrollbar/dist/perfect-scrollbar';
+import 'prismjs/prism'
+
+
 

@@ -30,7 +30,7 @@ export * from "./entities/Role";
 export * from "./entities/User";
 
 export * from "./libs/adapter/AbstractAuthAdapter";
-export * from "./libs/adapter/AuthConfigurationFactory";
+
 export * from "./libs/adapter/IAdapterDef";
 export * from "./libs/adapter/IAuthAdapter";
 export * from "./libs/adapter/IAuthConfiguration";

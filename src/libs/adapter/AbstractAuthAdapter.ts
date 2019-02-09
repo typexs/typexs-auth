@@ -3,13 +3,8 @@ import {AuthLifeCycle} from "../Constants";
 import {DefaultUserLogin} from "../models/DefaultUserLogin";
 import {DefaultUserSignup} from "../models/DefaultUserSignup";
 import {IAuthOptions} from "../auth/IAuthOptions";
-import {AuthMethod} from "../../entities/AuthMethod";
-
 import * as _ from "lodash";
-
-
 import {DefaultUserLogout} from "../models/DefaultUserLogout";
-import {User} from "../../entities/User";
 import {AuthDataContainer} from "../auth/AuthDataContainer";
 import {AbstractUserLogin} from "../models/AbstractUserLogin";
 

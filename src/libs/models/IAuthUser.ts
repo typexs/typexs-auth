@@ -1,4 +1,4 @@
-import {IUser} from "@typexs/ng-base/libs/api/auth/IUser";
+import {IUser} from "@typexs/ng/browser";
 
 export interface IAuthUser extends IUser {
 

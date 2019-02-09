@@ -46,24 +46,24 @@ export class Bootstrap implements IBootstrap {
         let modul_permissions = await ipermissions.permissions();
 
         modul_permissions.forEach(p => {
-          let _permissions = _.remove(foundPermissions, fp => fp.permission == p && fp.module == _module);
-          let permission = new Permission();
-          if (_permissions.length == 1) {
-            permission = _permissions.shift();
-          } else if (_permissions.length > 1) {
-            throw new Error('to many permissions ' + JSON.stringify(p));
-          } else {
-            permission.permission = p;
-            permission.disabled = false;
-            permission.type = /\*/.test(p) ? 'pattern' : 'single';
-            permission.module = _module;
-            storePermission.push(permission);
+          let _permissions = _.find(foundPermissions, fp => fp.permission == p);
+          if (!_permissions) {
+            let alreadyInList = _.find(storePermission,_p => _p.permission === p);
+            if(!alreadyInList){
+              let permission = new Permission();
+              permission.permission = p;
+              permission.disabled = false;
+              permission.type = /\*/.test(p) ? 'pattern' : 'single';
+              permission.module = _module;
+              storePermission.push(permission);
+            }
           }
         })
       }
     }
 
     if (storePermission.length > 0) {
+      storePermission = _.uniq(storePermission);
       await backend.manager.save(storePermission);
     }
 

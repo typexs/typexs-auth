@@ -5,9 +5,9 @@ import {AbstractUserLogin} from "../models/AbstractUserLogin";
 import {AuthMethod} from "../../entities/AuthMethod";
 import * as _ from "lodash";
 import {User} from "../../entities/User";
-import {EntityManager, In} from 'typeorm';
+
 import {EntityController} from "@typexs/schema";
-import {ClassType, ConnectionWrapper, Invoker, StorageRef} from "@typexs/base";
+import {ConnectionWrapper, Invoker} from "@typexs/base";
 import {IConfigUser} from "../models/IConfigUser";
 import {DefaultUserSignup} from "../models/DefaultUserSignup";
 import {Role} from "../../entities/Role";
@@ -15,6 +15,7 @@ import {IConfigRole} from "../models/IConfigRole";
 import {Permission} from "../../entities/Permission";
 import {AuthManager} from "./AuthManager";
 import {UserAuthApi} from "../../api/UserAuth.api";
+import {ClassType} from "commons-schema-api";
 
 
 export class AuthHelper {

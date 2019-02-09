@@ -12,7 +12,7 @@ import {DefaultUserLogout} from "../../libs/models/DefaultUserLogout";
 import {Observable} from "rxjs/Observable";
 import {IAuthServiceProvider} from "@typexs/ng-base/modules/system/api/auth/IAuthServiceProvider";
 import {User} from "../../entities/User";
-import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
+import {NotYetImplementedError} from "commons-base/browser";
 import {MessageChannel, MessageService, MessageType, AuthMessage, LogMessage} from "@typexs/ng-base";
 import {BehaviorSubject} from 'rxjs';
 
@@ -52,6 +52,9 @@ export class UserAuthService implements IAuthServiceProvider {
 
 
   public isInitialized() {
+    if(this._initialized.value){
+      return this._initialized.getValue();
+    }
     return this._initialized.asObservable();
   }
 

@@ -13,7 +13,7 @@ import {
   MessageType,
   NavigatorService
 } from "@typexs/ng-base";
-import {Helper} from "../../libs/Helper";
+import {Helper} from "@typexs/ng/browser";
 
 
 @Component({

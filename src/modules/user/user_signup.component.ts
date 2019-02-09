@@ -13,7 +13,7 @@ import {
   NavigatorService
 } from "@typexs/ng-base";
 import * as _ from "lodash";
-import {Helper} from "../../libs/Helper";
+import {Helper} from "@typexs/ng/browser";
 
 
 @Component({

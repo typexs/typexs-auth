@@ -1,9 +1,9 @@
-import {Entity} from "@typexs/schema/libs/decorators/Entity";
-import {Property} from "@typexs/schema/libs/decorators/Property";
-import {And, Asc, Eq, From, Join, Key, To, Value} from "@typexs/schema";
+import {Asc, Entity, From, Join, Property, To} from "@typexs/schema/browser";
+
+import {And,  Eq, Key,  Value} from "commons-expressions/browser";
 import {RBelongsTo} from "./RBelongsTo";
 import {Role} from "./Role";
-import {FormReadonly} from "@typexs/ng/libs/forms/decorators/FormReadonly";
+import {FormReadonly} from "@typexs/ng/browser";
 
 @Entity()
 export class Permission {

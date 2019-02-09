@@ -119,7 +119,7 @@ export class Gulpfile {
   packageNgCompile() {
     return gulp.src('bundles/package.json', {read: false})
       .pipe(shell([
-        'ng-packagr -p bundles/package.json'
+        './node_modules/.bin/ng-packagr -p bundles/package.json'
       ]));
   }
 
