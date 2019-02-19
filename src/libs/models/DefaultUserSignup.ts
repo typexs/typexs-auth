@@ -16,7 +16,7 @@ export class DefaultUserSignup extends AbstractUserSignup {
   @FormText()
   @MinLength(8, {message: "username is too short"})
   @MaxLength(32, {message: "username is too long"})
-  @AllowedString(ALLOWED_USER_PASSWORD_REGEX, {message: 'username contains wrongs chars'})
+  @AllowedString(ALLOWED_USER_PASSWORD_REGEX, {message: 'username contains wrong character'})
   @Property({type: 'string'})
   username: string;
 
@@ -24,7 +24,7 @@ export class DefaultUserSignup extends AbstractUserSignup {
   @FormType({form:'password'})
   @MinLength(8, {message: "password is too short"})
   @MaxLength(64, {message: "password is a little too long"})
-  @AllowedString(ALLOWED_USER_PASSWORD_REGEX, {message: 'password contains wrongs chars'})
+  //@AllowedString(ALLOWED_USER_PASSWORD_REGEX, {message: 'password contains wrong character'})
   @Property({type: 'string'})
   password: string;
 

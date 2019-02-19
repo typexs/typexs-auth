@@ -9,13 +9,12 @@ import {
   K_ROUTE_CONTROLLER,
   RoutePermissionsHelper
 } from '@typexs/server';
-import {Action} from "routing-controllers";
+import {Action, BadRequestError} from "routing-controllers";
 import {AuthLifeCycle} from "../libs/Constants";
 
 import {AuthSession} from "../entities/AuthSession";
 import {AuthMethod} from "../entities/AuthMethod";
 import {EmptyHttpRequestError} from "../libs/exceptions/EmptyHttpRequestError";
-import {BadRequestError} from "routing-controllers";
 import {IAuthConfig} from "../libs/auth/IAuthConfig";
 import {IAuthAdapter} from "../libs/adapter/IAuthAdapter";
 import {IAuthOptions} from "../libs/auth/IAuthOptions";
@@ -33,7 +32,6 @@ import {UserAuthApi} from "../api/UserAuth.api";
 import {UserNotApprovedError} from "../libs/exceptions/UserNotApprovedError";
 import {UserDisabledError} from "../libs/exceptions/UserDisabledError";
 import {UserNotFoundError} from "../libs/exceptions/UserNotFoundError";
-import {Role} from "../entities/Role";
 import {RestrictedAccessError} from "../libs/exceptions/RestrictedAccessError";
 
 export class Auth implements IMiddleware {
