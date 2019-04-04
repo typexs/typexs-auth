@@ -25,6 +25,7 @@ const settingsTemplate = {
 };
 
 
+let bootstrap: Bootstrap = null;
 @suite('functional/ldap/auth_ldap_adapter') @timeout(20000)
 class Auth_ldap_adapterSpec {
 
@@ -35,6 +36,9 @@ class Auth_ldap_adapterSpec {
 
   static async after() {
     // await web.stop();
+    if(bootstrap){
+      await bootstrap.shutdown();
+    }
     Bootstrap.reset();
   }
 
@@ -44,7 +48,8 @@ class Auth_ldap_adapterSpec {
     let settings = _.clone(settingsTemplate);
     settings.auth.methods.default = _.clone(LDAP_CONFIG);
 
-    await TestHelper.bootstrap_auth('default',settings);
+    let ref = await TestHelper.bootstrap_auth('default',settings);
+    bootstrap = ref.bootstrap;
 
     let adapter = Container.get(LdapAdapter);
     await adapter.prepare(Config.get('auth.methods.default'));

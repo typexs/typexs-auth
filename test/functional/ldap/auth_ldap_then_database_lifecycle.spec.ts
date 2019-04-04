@@ -48,7 +48,7 @@ const settingsTemplate = {
     transports: [{console: {name: 'ldap_then_database'}}]
   }
 };
-
+let bootstrap: Bootstrap = null;
 @suite('functional/auth_ldap_then_database_lifecycle')
 class Auth_ldap_lifecycleSpec {
 
@@ -64,11 +64,20 @@ class Auth_ldap_lifecycleSpec {
   }
 
 
+  async after() {
+    // await web.stop();
+    if(bootstrap){
+      await bootstrap.shutdown();
+    }
+    Bootstrap.reset();
+  }
+
+
   @test
   async 'do login by user search through admin bind'() {
     let settings = _.clone(settingsTemplate);
 
-    await TestHelper.bootstrap_basic(settings);
+    bootstrap = await TestHelper.bootstrap_basic(settings);
     let auth = <Auth>Container.get(Auth.NAME);
     await auth.prepare(settings.auth);
 

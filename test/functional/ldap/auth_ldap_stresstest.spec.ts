@@ -35,7 +35,7 @@ const settingsTemplate = {
   },
   logging: LOGGING
 };
-
+let bootstrap: Bootstrap = null;
 @suite('functional/auth_ldap_stresstest') @timeout(60000)
 class Auth_ldap_lifecycleSpec {
 
@@ -67,6 +67,15 @@ class Auth_ldap_lifecycleSpec {
   }
 
 
+ async after() {
+    // await web.stop();
+    if(bootstrap){
+      await bootstrap.shutdown();
+    }
+    Bootstrap.reset();
+  }
+
+
   @test
   async 'do 10 logins after an other'() {
     let settings = _.clone(settingsTemplate);
@@ -74,6 +83,7 @@ class Auth_ldap_lifecycleSpec {
     //settings.auth.methods.default.timeout = 5000;
     //settings.auth.methods.default.idleTimeout = 50;
     let refs = await TestHelper.bootstrap_auth('default', settings);
+    bootstrap = refs.bootstrap;
     let auth = refs.auth;
 
     let ref: StorageRef = Container.get('storage.default');
@@ -114,6 +124,8 @@ class Auth_ldap_lifecycleSpec {
 
     let refs = await TestHelper.bootstrap_auth('default', settings);
     let auth = refs.auth;
+    bootstrap = refs.bootstrap;
+
 
     let ref: StorageRef = Container.get('storage.default');
     let c = await ref.connect();

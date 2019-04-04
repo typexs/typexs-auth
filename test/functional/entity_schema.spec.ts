@@ -31,7 +31,7 @@ class Entity_schemaSpec {
 
   static async after() {
     if(bootstrap){
-      bootstrap.shutdown();
+     await bootstrap.shutdown();
     }
     // await web.stop();
     Bootstrap.reset();

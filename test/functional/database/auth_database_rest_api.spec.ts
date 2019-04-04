@@ -36,7 +36,7 @@ const OPTIONS = <ITypexsOptions>{
 };
 
 
-@suite('functional/auth_database_rest_api') @timeout(20000)
+@suite('functional/database/auth_database_rest_api') @timeout(20000)
 class AuthConfigSpec {
 
   static async before() {
@@ -66,6 +66,9 @@ class AuthConfigSpec {
   static async after() {
     if(web){
       await web.stop();
+    }
+    if(bootstrap){
+      await bootstrap.shutdown();
     }
     Bootstrap.reset();
 

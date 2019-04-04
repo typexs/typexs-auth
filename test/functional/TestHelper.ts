@@ -63,11 +63,11 @@ export class TestHelper {
     return {ref: ref, controller: xsem}
   }
 
-
+/*
   static resetTypeorm() {
     PlatformTools.getGlobalVariable().typeormMetadataArgsStorage = null;
   }
-
+*/
 
   static async bootstrap_basic(options: any = {},
                                config: IConfigOptions[] = [{type: 'system'}],

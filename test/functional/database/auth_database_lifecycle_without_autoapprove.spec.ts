@@ -40,7 +40,7 @@ const OPTIONS = <ITypexsOptions>{
   }
 };
 
-@suite('functional/auth_database_lifecycle_without_autoapproval') @timeout(20000)
+@suite('functional/database/auth_database_lifecycle_without_autoapproval') @timeout(20000)
 class Auth_database_lifecycle_with_autoapproveSpec {
 
 
@@ -55,6 +55,9 @@ class Auth_database_lifecycle_with_autoapproveSpec {
 
   static async after() {
     // await web.stop();
+    if(bootstrap){
+      await bootstrap.shutdown();
+    }
     Bootstrap.reset();
     Container.reset();
   }

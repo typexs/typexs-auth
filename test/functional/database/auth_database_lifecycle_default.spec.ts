@@ -35,7 +35,7 @@ const OPTIONS = <ITypexsOptions>{
   logging: LOGGING
 };
 
-@suite('functional/auth_database_lifecycle_default') @timeout(20000)
+@suite('functional/database/auth_database_lifecycle_default') @timeout(20000)
 class Auth_database_lifecycle_defaultSpec {
 
 
@@ -48,6 +48,9 @@ class Auth_database_lifecycle_defaultSpec {
 
   static async after() {
     // await web.stop();
+    if(bootstrap){
+      await bootstrap.shutdown();
+    }
     Bootstrap.reset();
     Container.reset();
   }
@@ -91,9 +94,9 @@ class Auth_database_lifecycle_defaultSpec {
     signUp.password = 'paSsw ord';
     doingSignup = await auth.doSignup(signUp, req, res);
     expect(doingSignup.success).to.be.false;
-    expect(doingSignup.errors).to.have.length(2);
-    expect(_.get(doingSignup.errors, '0.constraints.allowedString')).to.exist;
-    expect(_.get(doingSignup.errors, '1.constraints.equalWith')).to.exist;
+    expect(doingSignup.errors).to.have.length(1);
+    //expect(_.get(doingSignup.errors, '0.constraints.allowedString')).to.exist;
+    expect(_.get(doingSignup.errors, '0.constraints.equalWith')).to.exist;
 
     // signup per db
     signUp = auth.getInstanceForSignup('default');
@@ -172,9 +175,9 @@ class Auth_database_lifecycle_defaultSpec {
     doingLogin = await auth.doLogin(login, req, res);
     expect(doingLogin.success).to.be.false;
     expect(doingLogin.isAuthenticated).to.be.false;
-    expect(doingLogin.errors).to.have.length(2);
+    expect(doingLogin.errors).to.have.length(1);
     expect(_.get(doingLogin.errors, '0.constraints.allowedString')).to.exist;
-    expect(_.get(doingLogin.errors, '1.constraints.allowedString')).to.exist;
+    //expect(_.get(doingLogin.errors, '1.constraints.allowedString')).to.exist;
 
 
     // user exists but password wrong

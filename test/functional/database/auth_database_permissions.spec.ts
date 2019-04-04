@@ -72,7 +72,9 @@ const OPTIONS = <ITypexsOptions>{
 };
 
 
-@suite('functional/auth_database_permissions') @timeout(20000)
+let bootstrap: Bootstrap = null;
+
+@suite('functional/database/auth_database_permissions') @timeout(20000)
 class Auth_database_permissionsSpec {
 
   static async before() {
@@ -80,11 +82,10 @@ class Auth_database_permissionsSpec {
     Container.reset();
 
     let ref = await TestHelper.bootstrap_basic(
-
       OPTIONS,
       [{type: 'system'}]
     );
-
+    bootstrap = ref;
 
     web = Container.get('server.default');
 
@@ -98,6 +99,9 @@ class Auth_database_permissionsSpec {
   static async after() {
     if (web) {
       await web.stop();
+    }
+    if (bootstrap) {
+      await bootstrap.shutdown();
     }
     Bootstrap.reset();
 
@@ -128,8 +132,6 @@ class Auth_database_permissionsSpec {
     expect(res.body.$state.success).to.be.true;
     expect(res.body.password).to.be.null;
     expect(res.body.passwordConfirm).to.be.null;
-
-
 
 
     let logIn: DefaultUserLogin = auth.getInstanceForLogin();
@@ -163,7 +165,6 @@ class Auth_database_permissionsSpec {
     console.log(res.body);
 
 
-
     // login as user with permissions
     logIn = auth.getInstanceForLogin();
     logIn.username = 'testuser';
@@ -188,7 +189,7 @@ class Auth_database_permissionsSpec {
       .set(auth.getHttpAuthKey(), token)
       .expect(200);
     message = res.body;
-    expect(message).to.deep.eq({test:'welt'});
+    expect(message).to.deep.eq({test: 'welt'});
 
 
   }

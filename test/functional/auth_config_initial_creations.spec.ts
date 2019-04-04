@@ -26,18 +26,26 @@ const OPTIONS: ITypexsOptions = <ITypexsOptions>{
   }
 };
 
+
+let bootstrap: Bootstrap = null;
+
 @suite('functional/auth_config_initial_creations') @timeout(20000)
 class AuthConfigSpec {
 
 
   before() {
+    Bootstrap.reset();
     Config.clear();
   }
 
 
-  after() {
+  async after() {
+    if (bootstrap) {
+      await bootstrap.shutdown();
+    }
     Bootstrap.reset();
     Config.clear();
+
   }
 
 
@@ -52,8 +60,7 @@ class AuthConfigSpec {
     let name = 'default';
 
     let ref = await TestHelper.bootstrap_auth(name, opts);
-    let auth = ref.auth;
-    let manager = ref.authManager;
+    bootstrap = ref.bootstrap;
     let xsem = ref.controller;
 
     let roles = await AuthHelper.initRoles(xsem, opts.auth.initRoles);
@@ -78,8 +85,8 @@ class AuthConfigSpec {
     let name = 'default';
 
     let ref = await TestHelper.bootstrap_auth(name, opts);
-    let auth = ref.auth;
-    let manager = ref.authManager;
+    bootstrap = ref.bootstrap;
+
     let xsem = ref.controller;
 
     let c = await xsem.storageRef.connect();
@@ -118,6 +125,7 @@ class AuthConfigSpec {
     let name = 'default';
 
     let ref = await TestHelper.bootstrap_auth(name, opts);
+    bootstrap = ref.bootstrap;
     ///let auth = ref.auth;
     let manager = ref.authManager;
     let xsem = ref.controller;

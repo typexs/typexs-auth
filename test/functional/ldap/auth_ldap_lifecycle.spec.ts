@@ -14,7 +14,7 @@ import {LDAP_CONFIG} from "./ldap_config";
 
 let inc = 0;
 
-
+let bootstrap: Bootstrap = null;
 const settingsTemplate = {
   storage: {
     default: TESTDB_SETTING
@@ -37,6 +37,9 @@ class Auth_ldap_lifecycleSpec {
 
   static async after() {
     // await web.stop();
+    if(bootstrap){
+      await bootstrap.shutdown();
+    }
     Bootstrap.reset();
   }
 
@@ -46,6 +49,7 @@ class Auth_ldap_lifecycleSpec {
     let settings = _.clone(settingsTemplate);
 
     let refs = await TestHelper.bootstrap_auth('default', settings);
+    bootstrap = refs.bootstrap;
     let auth = refs.auth;
 
     let ref: StorageRef = Container.get('storage.default');
