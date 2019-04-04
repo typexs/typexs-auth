@@ -1,6 +1,6 @@
 {
   "name": "@typexs/auth",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Auth module for typexs",
   "main": "index.js",
   "directories": {
@@ -118,13 +118,13 @@
     "typescript-require": "^0.2.10"
   },
   "dependencies": {
-    "@typexs/base": "latest",
-    "@typexs/ng": "latest",
-    "@typexs/ng-base": "latest",
-    "@typexs/schema": "latest",
-    "@typexs/server": "latest",
-    "commons-schema-api": "latest",
-    "commons-expressions": "latest",
+    "@typexs/base": "^0.8.12",
+    "@typexs/ng": "^0.6.10",
+    "@typexs/ng-base": "^0.6.10",
+    "@typexs/schema": "^0.6.7",
+    "@typexs/server": "^0.4.1",
+    "commons-schema-api": "^1.1.2",
+    "commons-expressions": "^1.0.3",
     "bcrypt": "^3.0.3",
     "jsonwebtoken": "^8.4.0"
   },
