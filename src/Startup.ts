@@ -1,5 +1,4 @@
 import {
-  Bootstrap as CoreBootrap,
   ClassesLoader,
   Container,
   IBootstrap,
@@ -8,6 +7,8 @@ import {
   IPermissions, Log,
   StorageRef
 } from "@typexs/base";
+
+import {Bootstrap} from "@typexs/base/Bootstrap";
 import {Permission} from "./entities/Permission";
 import * as _ from 'lodash'
 import {AuthHelper} from "./libs/auth/AuthHelper";
@@ -16,7 +17,7 @@ import {EntityController} from "@typexs/schema";
 import {AuthManager} from "./libs/auth/AuthManager";
 
 
-export class Bootstrap implements IBootstrap {
+export class Startup implements IBootstrap {
 
   @Inject('storage.default')
   private storageRef: StorageRef;
@@ -29,8 +30,9 @@ export class Bootstrap implements IBootstrap {
 
 
   async bootstrap() {
+
     await this.authManager.prepare();
-    const activators = CoreBootrap._().getActivators();
+    const activators = Bootstrap._().getActivators();
 
     // collect permissions
     let backend = await this.storageRef.connect();
@@ -48,8 +50,8 @@ export class Bootstrap implements IBootstrap {
         modul_permissions.forEach(p => {
           let _permissions = _.find(foundPermissions, fp => fp.permission == p);
           if (!_permissions) {
-            let alreadyInList = _.find(storePermission,_p => _p.permission === p);
-            if(!alreadyInList){
+            let alreadyInList = _.find(storePermission, _p => _p.permission === p);
+            if (!alreadyInList) {
               let permission = new Permission();
               permission.permission = p;
               permission.disabled = false;
