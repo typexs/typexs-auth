@@ -8,7 +8,7 @@ import {TESTDB_SETTING, TestHelper} from "./TestHelper";
 import {ITypexsOptions} from "@typexs/base/libs/ITypexsOptions";
 import {AuthHelper} from "../../src/libs/auth/AuthHelper";
 import {Permission} from "../../src";
-import {Startup as BootstrapAuth} from './../../src/Bootstrap';
+import {Startup as BootstrapAuth} from './../../src/Startup';
 
 //process.env['LOG'] = 'asd';
 
