@@ -15,11 +15,14 @@ class AuthConfigSpec {
 
   before() {
     Config.clear();
+    Container.reset();
   }
 
 
   after() {
     Config.clear();
+    Container.reset();
+
   }
 
 

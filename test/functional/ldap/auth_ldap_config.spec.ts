@@ -15,11 +15,14 @@ class Auth_ldap_configSpec {
 
   before() {
     Config.clear();
+    Container.reset();
   }
 
 
   after() {
     Config.clear();
+    Container.reset();
+
   }
 
   @test
