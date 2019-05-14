@@ -33,6 +33,7 @@ import {UserNotApprovedError} from "../libs/exceptions/UserNotApprovedError";
 import {UserDisabledError} from "../libs/exceptions/UserDisabledError";
 import {UserNotFoundError} from "../libs/exceptions/UserNotFoundError";
 import {RestrictedAccessError} from "../libs/exceptions/RestrictedAccessError";
+import {IEntityRef, IPropertyRef} from "commons-schema-api";
 
 export class Auth implements IMiddleware {
 
@@ -615,7 +616,13 @@ export class Auth implements IMiddleware {
           return false;
         }
 
-        let users = await this.entityController.find(User, {id: session.userId}, {limit: 1});
+        let users = await this.entityController.find(User, {id: session.userId}, {
+          limit: 1, hooks: {
+            abortCondition: (entityRef: IEntityRef, propertyDef: IPropertyRef, results: any, op: any) => {
+              return op.entityDepth > 1; // get permissions!
+            }
+          }
+        });
         if (users.length == 1) {
           let user = <User>users.shift();
 
