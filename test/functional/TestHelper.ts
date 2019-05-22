@@ -39,7 +39,7 @@ export class TestHelper {
     storage['schemaHandler']['__default__'] = DefaultSchemaHandler;
     storage['schemaHandler']['sqlite'] = SqliteSchemaHandler;
     let storageRef = storage.register(name, options);
-    await storageRef.prepare();
+    // await storageRef.prepare();
     Container.set('storage.' + name, storageRef);
     let schemaDef = EntityRegistry.getSchema(name);
     const framework = FrameworkFactory.$().get(storageRef);

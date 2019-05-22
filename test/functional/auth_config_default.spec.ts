@@ -47,13 +47,13 @@ class AuthConfigSpec {
     await loader.prepare();
     Container.set("RuntimeLoader", loader);
     Config.set('auth', authCfg);
+
     let invoker = new Invoker();
     Bootstrap.prepareInvoker(invoker, loader);
     Container.set(Invoker.NAME, invoker);
 
 
-    const options = {name: 'default'};
-    let ref = await TestHelper.storage();
+    let storage = await TestHelper.storage();
 
     let manager = Container.get(AuthManager);
     Container.set(AuthManager.NAME, manager);
@@ -69,6 +69,7 @@ class AuthConfigSpec {
     expect(adapters.map(x => x.className)).to.contains('DatabaseAdapter');
     expect(authMethods.map(x => x.authId)).to.deep.eq(['default']);
 
+    storage.getNames().map(x => storage.get(x).shutdown());
   }
 }
 

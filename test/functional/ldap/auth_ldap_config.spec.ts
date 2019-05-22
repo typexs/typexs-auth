@@ -52,7 +52,7 @@ class Auth_ldap_configSpec {
     Container.set(Invoker.NAME, invoker);
 
 
-    await TestHelper.storage();
+    let storage = await TestHelper.storage();
 
 
     let manager = Container.get(AuthManager);
@@ -72,6 +72,7 @@ class Auth_ldap_configSpec {
     expect(authMethods.map(x => x.authId)).to.deep.eq(['default']);
     expect(authMethodsInfo.map(x => x.label)).to.deep.eq(['Default']);
 
+    storage.getNames().map(x => storage.get(x).shutdown());
   }
 }
 
