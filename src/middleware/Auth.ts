@@ -664,7 +664,14 @@ export class Auth implements IMiddleware {
     } else {
       cond['id'] = id_or_username;
     }
-    return this.entityController.find<User>(User, cond, {limit: 1}).then(u => u.shift());
+    return this.entityController.find<User>(User, cond, {
+      limit: 1,
+      hooks: {
+        abortCondition: (entityRef: IEntityRef, propertyDef: IPropertyRef, results: any, op: any) => {
+          return op.entityDepth > 1;
+        }
+      }
+    }).then(u => u.shift());
   }
 
 

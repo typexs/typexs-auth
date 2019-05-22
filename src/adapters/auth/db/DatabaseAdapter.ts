@@ -19,6 +19,7 @@ import {AuthDataContainer} from "../../../libs/auth/AuthDataContainer";
 import {AbstractUserSignup} from "../../../libs/models/AbstractUserSignup";
 import {UserAuthApi} from "../../../api/UserAuth.api";
 import {DatabaseUserAuthExtenstion} from "./DatabaseUserAuthExtenstion";
+import {IEntityRef, IPropertyRef} from "commons-schema-api";
 
 
 export const K_AUTH_DATABASE = 'database';
@@ -76,11 +77,18 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
   async authenticate(container: AuthDataContainer<DefaultUserLogin>) {
 
     try {
-      let login:DefaultUserLogin = container.instance;
+      let login: DefaultUserLogin = container.instance;
       let authMethod = await this.getAuth(<any>login);
       if (authMethod) {
         container.success = true;
-        container.user = await this.entityController.find(User, {id: authMethod.userId}, {limit: 1});
+        container.user = await this.entityController.find(User, {id: authMethod.userId}, {
+          limit: 1,
+          hooks: {
+            abortCondition: (entityRef: IEntityRef, propertyDef: IPropertyRef, results: any, op: any) => {
+              return op.entityDepth > 1;
+            }
+          }
+        });
         return true;
       }
     } catch (err) {
@@ -114,7 +122,7 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
   }
 
 
-  async signup(signup: AuthDataContainer<AbstractUserSignup>): Promise<boolean>{
+  async signup(signup: AuthDataContainer<AbstractUserSignup>): Promise<boolean> {
     // TODO impl method
     return true;
   }
