@@ -1,9 +1,8 @@
 version: '3'
 services:
 
-  ldap:
+  txs_auth_testing_ldap:
     image: osixia/openldap:1.2.2
-    container_name: typexs_auth_test_ldap
     ports:
     - 389:389
     - 689:689
@@ -13,8 +12,7 @@ services:
     - ./ldap/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
     command: --copy-service --loglevel debug
 
-  postgres:
-    container_name: typexs_auth_test_pg
+  txs_auth_testing_postgres:
     image: postgres
     environment:
       POSTGRES_DATABASES: auth
