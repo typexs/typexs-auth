@@ -1,6 +1,5 @@
 import * as _ from 'lodash';
 import * as bcrypt from "bcrypt";
-
 import {ConnectionWrapper, Inject, Invoker, Log, StorageRef} from '@typexs/base';
 import {
   IApplication,
@@ -11,7 +10,6 @@ import {
 } from '@typexs/server';
 import {Action, BadRequestError} from "routing-controllers";
 import {AuthLifeCycle} from "../libs/Constants";
-
 import {AuthSession} from "../entities/AuthSession";
 import {AuthMethod} from "../entities/AuthMethod";
 import {EmptyHttpRequestError} from "../libs/exceptions/EmptyHttpRequestError";
@@ -21,7 +19,6 @@ import {IAuthOptions} from "../libs/auth/IAuthOptions";
 import {AbstractUserSignup} from "../libs/models/AbstractUserSignup";
 import {AbstractUserLogin} from "../libs/models/AbstractUserLogin";
 import {IAuthMethodInfo} from "../libs/auth/IAuthMethodInfo";
-
 import {User} from "../entities/User";
 import {EntityController} from "@typexs/schema";
 import {AbstractUserLogout} from "../libs/models/AbstractUserLogout";
@@ -34,6 +31,7 @@ import {UserDisabledError} from "../libs/exceptions/UserDisabledError";
 import {UserNotFoundError} from "../libs/exceptions/UserNotFoundError";
 import {RestrictedAccessError} from "../libs/exceptions/RestrictedAccessError";
 import {IEntityRef, IPropertyRef} from "commons-schema-api";
+
 
 export class Auth implements IMiddleware {
 
@@ -68,21 +66,21 @@ export class Auth implements IMiddleware {
 
 
   async prepare(options: any = {}) {
-
-
     if (this.isEnabled()) {
       this.connection = await this.storage.connect();
-
     }
   }
+
 
   getManager() {
     return this.authManager;
   }
 
+
   private getAuthConfig() {
     return this.authManager.getConfig();
   }
+
 
   getConfig() {
     return this.config();

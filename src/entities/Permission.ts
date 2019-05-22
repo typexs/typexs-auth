@@ -1,6 +1,5 @@
 import {Asc, Entity, From, Join, Property, To} from "@typexs/schema/browser";
-
-import {And,  Eq, Key,  Value} from "commons-expressions/browser";
+import {And, Eq, Key, Value} from "commons-expressions/browser";
 import {RBelongsTo} from "./RBelongsTo";
 import {Role} from "./Role";
 import {FormReadonly} from "@typexs/ng/browser";
@@ -44,7 +43,6 @@ export class Permission {
   @FormReadonly()
   @Property({type: 'date:updated'})
   updated_at: Date;
-
 
 
   label() {
