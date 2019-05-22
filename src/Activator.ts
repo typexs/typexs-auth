@@ -1,6 +1,6 @@
-import {IActivator, IPermissions, Container} from "@typexs/base";
-import {AuthManager} from "./libs/auth/AuthManager";
-import {Auth} from "./middleware/Auth";
+import {IActivator, IPermissions, Container} from '@typexs/base';
+import {AuthManager} from './libs/auth/AuthManager';
+import {Auth} from './middleware/Auth';
 
 export class Activator implements IActivator, IPermissions {
 
