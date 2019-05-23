@@ -6,11 +6,11 @@ export class Activator implements IActivator, IPermissions {
 
 
   async startup(): Promise<void> {
-    let manager = Container.get(AuthManager);
+    const manager = Container.get(AuthManager);
     Container.set(AuthManager.NAME, manager);
     Container.set(AuthManager, manager);
 
-    let auth = Container.get(Auth);
+    const auth = Container.get(Auth);
     Container.set(Auth.NAME, auth);
     Container.set(Auth, auth);
 

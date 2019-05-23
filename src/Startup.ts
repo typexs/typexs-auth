@@ -6,15 +6,14 @@ import {
   Invoker,
   IPermissions, Log,
   StorageRef
-} from "@typexs/base";
+} from '@typexs/base';
 
-import {Bootstrap} from "@typexs/base/Bootstrap";
-import {Permission} from "./entities/Permission";
-import * as _ from 'lodash'
-import {AuthHelper} from "./libs/auth/AuthHelper";
-
-import {EntityController} from "@typexs/schema";
-import {AuthManager} from "./libs/auth/AuthManager";
+import {Bootstrap} from '@typexs/base/Bootstrap';
+import {Permission} from './entities/Permission';
+import * as _ from 'lodash';
+import {AuthHelper} from './libs/auth/AuthHelper';
+import {EntityController} from '@typexs/schema';
+import {AuthManager} from './libs/auth/AuthManager';
 
 
 export class Startup implements IBootstrap {
@@ -35,24 +34,24 @@ export class Startup implements IBootstrap {
     const activators = Bootstrap._().getActivators();
 
     // collect permissions
-    let backend = await this.storageRef.connect();
-    let foundPermissions = await backend.manager.find(Permission);
+    const backend = await this.storageRef.connect();
+    const foundPermissions = await backend.manager.find(Permission);
     let storePermission: Permission[] = [];
 
-    for (let activator of activators) {
+    for (const activator of activators) {
       const ipermissions: IPermissions = (<IPermissions>(<any>activator));
       if (ipermissions.permissions) {
         // if methods
 
-        let _module = ClassesLoader.getModulName((<any>ipermissions).__proto__.constructor);
-        let modul_permissions = await ipermissions.permissions();
+        const _module = ClassesLoader.getModulName((<any>ipermissions).__proto__.constructor);
+        const modul_permissions = await ipermissions.permissions();
 
         modul_permissions.forEach(p => {
-          let _permissions = _.find(foundPermissions, fp => fp.permission == p);
+          const _permissions = _.find(foundPermissions, fp => fp.permission === p);
           if (!_permissions) {
-            let alreadyInList = _.find(storePermission, _p => _p.permission === p);
+            const alreadyInList = _.find(storePermission, _p => _p.permission === p);
             if (!alreadyInList) {
-              let permission = new Permission();
+              const permission = new Permission();
               permission.permission = p;
               permission.disabled = false;
               permission.type = /\*/.test(p) ? 'pattern' : 'single';
@@ -60,7 +59,7 @@ export class Startup implements IBootstrap {
               storePermission.push(permission);
             }
           }
-        })
+        });
       }
     }
 
@@ -69,8 +68,8 @@ export class Startup implements IBootstrap {
       await backend.manager.save(storePermission);
     }
 
-    let authConfig = this.authManager.getConfig();
-    let controller: EntityController = Container.get('EntityController.default');
+    const authConfig = this.authManager.getConfig();
+    const controller: EntityController = Container.get('EntityController.default');
     if (authConfig.initRoles) {
       Log.info('init roles');
       await AuthHelper.initRoles(controller, authConfig.initRoles);
