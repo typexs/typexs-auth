@@ -101,8 +101,8 @@ export class Gulpfile {
       '!./src/modules/*/!(api|entities)/**/*.ts',
       './src/modules/*/+(api|entities)/*.ts',
       './src/modules/*/+(api|entities)/**/*.ts',
-      '!./src/modules/app/**/*.ts',
-      './node_modules/@types/**/*.ts'])
+      '!./src/modules/app/**/*.ts'
+    ])
       .pipe(sourcemaps.init())
       .pipe(tsProject());
 
