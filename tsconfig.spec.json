@@ -2,16 +2,21 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "build/out-tsc/spec",
-
     "target": "es5",
     "moduleResolution": "node",
     "types": [
       "mocha",
       "node"
-    ]
+    ],
+    "paths": {
+      "core-js/es7/reflect": [
+        "node_modules/core-js/proposals/reflect-metadata"
+      ]
+    }
   },
   "files": [
-    "src/app/test.ts"
+    "src/app/test.ts",
+    "polyfills.ts"
   ],
   "include": [
     "src/app/**/*.spec.ts",
@@ -19,4 +24,3 @@
     "src/modules/**/*.d.ts"
   ]
 }
-

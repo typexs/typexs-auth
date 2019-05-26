@@ -5,7 +5,12 @@
     "target": "es5",
     "types": [
       "node"
-    ]
+    ],
+    "paths": {
+      "core-js/es7/reflect": [
+        "node_modules/core-js/proposals/reflect-metadata"
+      ]
+    }
   },
   "include": [
     "src/app/**/*.ts",

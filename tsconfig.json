@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "importHelpers": true,
     "lib": [
       "dom",
       "es5",
@@ -23,9 +24,9 @@
     "suppressImplicitAnyIndexErrors": true,
     "typeRoots": [
       "./node_modules/@types"
-    ]
+    ],
+    "baseUrl": "./"
   },
-
   "exclude": [
     "archive",
     "build",
