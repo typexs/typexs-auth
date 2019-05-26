@@ -15,7 +15,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "mocha": "mocha --opts test/mocha.all.opts",
-    "karma": "ng test typexs-ng --code-coverage=true --watch=false",
+    "karma": "ng test typexs-auth --code-coverage=true --watch=false",
     "build:lib": "ng-packagr -p bundles/package.json"
   },
   "repository": {
