@@ -1,13 +1,13 @@
 {
   "name": "@typexs/auth",
-  "version": "0.2.10",
+  "version": "0.3.0",
   "description": "Auth module for typexs",
   "main": "index.js",
   "directories": {
     "doc": "docs/de"
   },
   "scripts": {
-    "test": "nyc mocha --opts test/mocha.all.opts && ng test typexs-ng --code-coverage=true --watch=false",
+    "test": "nyc mocha --opts test/mocha.all.opts && ng test typexs-auth --code-coverage=true --watch=false",
     "posttest": "nyc report --reporter=json && codecov -f coverage/backend/*.json && codecov -f coverage/karma/*.json",
     "ng": "ng",
     "start": "./node_modules/.bin/concurrently \"./node_modules/.bin/ng serve -pc proxy.conf.json --open\" \"./node_modules/.bin/typexs server --nodeId server\"",
@@ -90,6 +90,7 @@
     "karma-sinon": "^1.0.5",
     "karma-sinon-chai": "^2.0.2",
     "ldapjs": "^1.0.2",
+    "merge-stream": "^2.0.0",
     "mocha": "^6.1.4",
     "mocha-typescript": "^1.1.17",
     "ng-packagr": "^5.2.0",
