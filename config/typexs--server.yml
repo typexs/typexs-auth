@@ -1,0 +1,40 @@
+
+
+
+auth:
+  allowSignup: true
+  initRoles:
+    - role: admin
+      displayName: Admin
+      permissions:
+        - '*'
+    - role: user
+      displayName: User
+      permissions:
+        - allow view profile
+        - allow edit profile
+  initUsers:
+    - username: admin
+      password: admin123
+      displayName: Admin
+      adapter: default
+      mail: admin@local.txs
+      roles:
+        - admin
+  methods:
+    default:
+      type: database
+      approval:
+        auto: true
+    onedrive:
+      type: oauth2
+      label: OneDrive - Login
+      serverside: true
+      configuration: microsoft
+      clientID: ${onedrive.demoapp.id}
+      clientSecret: ${onedrive.demoapp.secret}
+      callbackURL: http://localhost:4500/api/auth/onedrive/callback
+      scope:
+      - User.Read
+      # - onedrive.read
+
