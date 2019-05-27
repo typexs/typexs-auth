@@ -1,6 +1,5 @@
 import {NgModule} from '@angular/core';
 import {RouterModule} from '@angular/router';
-import {Provider} from '@angular/compiler/src/core';
 import {USER_ADMIN_ROUTES} from './user.admin.routes';
 import {
   AdminModule,
@@ -14,6 +13,7 @@ import {
 import {PermissionsRolesComponent} from './permissions-roles.component';
 import {BrowserModule} from '@angular/platform-browser';
 import {UserModule} from '../user/user.module';
+import {Provider} from '@angular/compiler/src/core';
 
 export const PROVIDERS: Provider[] = [];
 

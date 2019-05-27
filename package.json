@@ -37,7 +37,6 @@
     "@angular-devkit/core": "^7.3.9",
     "@angular-devkit/schematics": "^7.3.9",
     "@angular/cli": "^7.3.9",
-    "@angular/compiler": "^7.2.15",
     "@angular/compiler-cli": "^7.2.15",
     "@angular/language-service": "^7.2.15",
     "@fortawesome/fontawesome-free": "^5.8.2",
@@ -115,6 +114,7 @@
     "typescript-require": "^0.2.10"
   },
   "dependencies": {
+    "@angular/compiler": "^7.2.15",
     "@typexs/base": "^0.9.6",
     "@typexs/ng": "^0.7.0",
     "@typexs/ng-base": "^0.7.0",
