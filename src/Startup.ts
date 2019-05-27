@@ -30,6 +30,7 @@ export class Startup implements IBootstrap {
 
   async bootstrap() {
 
+
     await this.authManager.prepare();
     const activators = Bootstrap._().getActivators();
 

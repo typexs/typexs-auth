@@ -1,18 +1,18 @@
-import {RuntimeLoader, Inject, Container, CryptUtils, Config, Log, ClassesLoader} from "@typexs/base";
+import {RuntimeLoader, Inject, Container, CryptUtils, Config, Log, ClassesLoader} from '@typexs/base';
 
-import {K_LIB_AUTH_ADAPTERS} from "../Constants";
-import {IAuthConfiguration} from "../adapter/IAuthConfiguration";
-import * as _ from "lodash";
-import {IAuthConfigurationDef} from "./IAuthConfigurationDef";
-import {IAuthConfig} from "./IAuthConfig";
-import {User} from "../../entities/User";
-import {IAuthAdapter} from "../adapter/IAuthAdapter";
-import {IAdapterDef} from "../adapter/IAdapterDef";
-import {K_LIB_AUTH_CONFIGURATIONS} from "../Constants";
+import {K_LIB_AUTH_ADAPTERS} from '../Constants';
+import {IAuthConfiguration} from '../adapter/IAuthConfiguration';
+import * as _ from 'lodash';
+import {IAuthConfigurationDef} from './IAuthConfigurationDef';
+import {IAuthConfig} from './IAuthConfig';
+import {User} from '../../entities/User';
+import {IAuthAdapter} from '../adapter/IAuthAdapter';
+import {IAdapterDef} from '../adapter/IAdapterDef';
+import {K_LIB_AUTH_CONFIGURATIONS} from '../Constants';
 
 
 const DEFAULT_CONFIG_OPTIONS: IAuthConfig = {
-  //backend: 'default',
+  // backend: 'default',
   httpAuthKey: 'txs-auth',
   allowSignup: true,
   saltRounds: 5,
@@ -42,11 +42,11 @@ export class AuthManager {
 
   private adapters: IAuthAdapter[] = [];
 
-  private enabled: boolean = false;
+  private enabled = false;
 
   async prepare() {
-    Container.set("AuthManager", this);
-    let x = Config.get("auth", {});
+    Container.set('AuthManager', this);
+    const x = Config.get('auth', {});
     this.authConfig = <IAuthConfig>x;
     _.defaultsDeep(this.authConfig, DEFAULT_CONFIG_OPTIONS);
 
@@ -61,11 +61,11 @@ export class AuthManager {
 
   private initConfigurations() {
 
-    let classes = this.loader.getClasses(K_LIB_AUTH_CONFIGURATIONS);
+    const classes = this.loader.getClasses(K_LIB_AUTH_CONFIGURATIONS);
 
-    for (let cls of classes) {
-      let adapterInstance = <IAuthConfiguration>Container.get(cls);
-      let cfg: IAuthConfigurationDef = {
+    for (const cls of classes) {
+      const adapterInstance = <IAuthConfiguration>Container.get(cls);
+      const cfg: IAuthConfigurationDef = {
         id: adapterInstance.id,
         cls: cls
       };
@@ -75,10 +75,10 @@ export class AuthManager {
 
   private async initAdapter() {
 
-    let classes = this.loader.getClasses(K_LIB_AUTH_ADAPTERS);
+    const classes = this.loader.getClasses(K_LIB_AUTH_ADAPTERS);
 
-    for (let cls of classes) {
-      let authAdapter = <IAuthAdapter>Reflect.construct(cls, []);
+    for (const cls of classes) {
+      const authAdapter = <IAuthAdapter>Reflect.construct(cls, []);
 
       if (!authAdapter.hasRequirements()) {
         Log.error('Can\'t load adapter ' + authAdapter.type + '! Skipping ... ');
@@ -86,7 +86,7 @@ export class AuthManager {
       }
 
       if (authAdapter.type) {
-        let def: IAdapterDef = {
+        const def: IAdapterDef = {
           className: cls.name,
           filepath: ClassesLoader.getSource(cls),
           moduleName: ClassesLoader.getModulName(cls),
@@ -94,20 +94,22 @@ export class AuthManager {
         };
 
         if (!_.isEmpty(this.authConfig) && !_.isEmpty(this.authConfig.methods)) {
-          for (let authId in this.authConfig.methods) {
-            let methodOptions = this.authConfig.methods[authId];
-            methodOptions.authId = authId;
-            if (methodOptions.type === authAdapter.type) {
-              methodOptions.clazz = cls;
+          for (const authId in this.authConfig.methods) {
+            if (this.authConfig.methods.hasOwnProperty(authId)) {
+              const methodOptions = this.authConfig.methods[authId];
+              methodOptions.authId = authId;
+              if (methodOptions.type === authAdapter.type) {
+                methodOptions.clazz = cls;
 
-              if (authAdapter.updateOptions) {
-                authAdapter.updateOptions(methodOptions);
+                if (authAdapter.updateOptions) {
+                  authAdapter.updateOptions(methodOptions);
+                }
+
+                const adapterInstance = <IAuthAdapter>Container.get(cls);
+                adapterInstance.authId = authId;
+                this.adapters.push(adapterInstance);
+                await adapterInstance.prepare(methodOptions);
               }
-
-              let adapterInstance = <IAuthAdapter>Container.get(cls);
-              adapterInstance.authId = authId;
-              this.adapters.push(adapterInstance);
-              await adapterInstance.prepare(methodOptions);
             }
           }
         }
@@ -119,7 +121,7 @@ export class AuthManager {
 
 
   getAdapter(authId: string) {
-    return _.find(this.adapters, a => a.authId == authId);
+    return _.find(this.adapters, a => a.authId === authId);
   }
 
   getAdapters() {
@@ -133,7 +135,7 @@ export class AuthManager {
 
 
   getConfiguration(id: string) {
-    let cfg = _.find(this.configurations, {id: id});
+    const cfg = _.find(this.configurations, {id: id});
     if (cfg) {
       return <IAuthConfiguration>Container.get(cfg.cls);
     }

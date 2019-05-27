@@ -1,20 +1,21 @@
-import * as _ from "lodash";
-import {Injectable} from "@angular/core";
-import {ActivatedRouteSnapshot, RouterStateSnapshot} from "@angular/router";
-import {HttpClient} from "@angular/common/http";
-import {AbstractUserSignup} from "../../libs/models/AbstractUserSignup";
-import "rxjs/add/operator/publish";
-import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
-import {DefaultUserSignup} from "../../libs/models/DefaultUserSignup";
-import {AbstractUserLogin} from "../../libs/models/AbstractUserLogin";
-import {AbstractUserLogout} from "../../libs/models/AbstractUserLogout";
-import {DefaultUserLogout} from "../../libs/models/DefaultUserLogout";
-import {Observable} from "rxjs/Observable";
-import {IAuthServiceProvider} from "@typexs/ng-base/modules/system/api/auth/IAuthServiceProvider";
-import {User} from "../../entities/User";
-import {NotYetImplementedError} from "commons-base/browser";
-import {MessageChannel, MessageService, MessageType, AuthMessage, LogMessage} from "@typexs/ng-base";
+import * as _ from 'lodash';
+import {Injectable} from '@angular/core';
+import {ActivatedRouteSnapshot, RouterStateSnapshot} from '@angular/router';
+import {HttpClient} from '@angular/common/http';
+import {AbstractUserSignup} from '../../libs/models/AbstractUserSignup';
+import 'rxjs/add/operator/publish';
+import {DefaultUserLogin} from '../../libs/models/DefaultUserLogin';
+import {DefaultUserSignup} from '../../libs/models/DefaultUserSignup';
+import {AbstractUserLogin} from '../../libs/models/AbstractUserLogin';
+import {AbstractUserLogout} from '../../libs/models/AbstractUserLogout';
+import {DefaultUserLogout} from '../../libs/models/DefaultUserLogout';
+import {Observable} from 'rxjs/Observable';
+import {IAuthServiceProvider} from '@typexs/ng-base/modules/system/api/auth/IAuthServiceProvider';
+import {User} from '../../entities/User';
+import {NotYetImplementedError} from 'commons-base/browser';
+import {MessageChannel, MessageService, MessageType, AuthMessage, LogMessage} from '@typexs/ng-base';
 import {BehaviorSubject} from 'rxjs';
+import {IAuthSettings} from '../../libs/auth/IAuthSettings';
 
 @Injectable()
 export class UserAuthService implements IAuthServiceProvider {
@@ -23,8 +24,10 @@ export class UserAuthService implements IAuthServiceProvider {
 
   private _initialized: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
-  private _config: any = {
-    authKey: "txs-auth"
+  private _config: IAuthSettings = {
+    authKey: 'txs-auth',
+    enabled: false,
+    methods: []
   };
 
   private channel: MessageChannel<AuthMessage>;
@@ -35,9 +38,9 @@ export class UserAuthService implements IAuthServiceProvider {
 
   private cacheUser: User;
 
-  private connected: boolean = false;
+  private connected = false;
 
-  private loading: boolean = false;
+  private loading = false;
 
   constructor(private http: HttpClient, private messageService: MessageService) {
     this.logChannel = this.messageService.getLogService();
@@ -52,7 +55,7 @@ export class UserAuthService implements IAuthServiceProvider {
 
 
   public isInitialized() {
-    if(this._initialized.value){
+    if (this._initialized.value) {
       return this._initialized.getValue();
     }
     return this._initialized.asObservable();
@@ -60,7 +63,7 @@ export class UserAuthService implements IAuthServiceProvider {
 
 
   configure(): Observable<any> {
-    let config = this.http.get('/api/user/_config');
+    const config = this.http.get('/api/user/_config');
     config.subscribe(obj => {
       _.assign(this._config, obj);
       this._configured.next(true);
@@ -71,12 +74,12 @@ export class UserAuthService implements IAuthServiceProvider {
 
 
   public getTokenKey() {
-    return this._config.authKey;
+    return _.get(this._config, 'authKey', null);
   }
 
 
   public getStoredToken(): string {
-    let token = localStorage.getItem('token.' + this.getTokenKey());
+    const token = localStorage.getItem('token.' + this.getTokenKey());
     return _.isUndefined(token) ? null : token;
   }
 
@@ -93,11 +96,11 @@ export class UserAuthService implements IAuthServiceProvider {
 
 
   setUser(user: User) {
-    if (this.cacheUser && this.cacheUser.id == user.id) {
+    if (this.cacheUser && this.cacheUser.id === user.id) {
       this.cacheUser = user;
     } else {
       this.cacheUser = user;
-      let msg = new AuthMessage();
+      const msg = new AuthMessage();
       msg.type = MessageType.SUCCESS;
       msg.topic = 'set user';
       this.channel.publish(msg);
@@ -108,7 +111,7 @@ export class UserAuthService implements IAuthServiceProvider {
   resetUser() {
     if (this.cacheUser) {
       this.cacheUser = null;
-      let msg = new AuthMessage();
+      const msg = new AuthMessage();
       msg.type = MessageType.SUCCESS;
       msg.topic = 'unset user';
       this.channel.publish(msg);
@@ -128,7 +131,7 @@ export class UserAuthService implements IAuthServiceProvider {
       return this.cacheUser;
     }
     this.loading = true;
-    let req = this.http.get('/api/user');
+    const req = this.http.get('/api/user');
     return new Promise<User>((resolve, reject) => {
       req.subscribe(
         (user: User) => {
@@ -149,42 +152,49 @@ export class UserAuthService implements IAuthServiceProvider {
 
   isAuthenticated() /*:Observable<boolean>*/ {
     // TODO check if token is expired
-    let token = this.getStoredToken();
+    const token = this.getStoredToken();
     const isAuth = this.connected && token != null && token === this.token;
     return isAuth;
   }
 
+  isEnabled() {
+    return _.get(this._config, 'enabled', false);
+  }
 
   /**
    * startup method to check if an existing token is still active
    */
   init() {
     return new Promise((resolve, reject) => {
-      let token = this.getStoredToken();
-      // console.log('auth check ', token)
-      if (token) {
+      if (this.isEnabled()) {
+        const token = this.getStoredToken();
+        // console.log('auth check ', token)
+        if (token) {
 
-        let req = this.http.get('/api/user/isAuthenticated');
-        this.connected = false;
-        req.subscribe(
-          (res: boolean) => {
-            this.connected = res;
+          const req = this.http.get('/api/user/isAuthenticated');
+          this.connected = false;
+          req.subscribe(
+            (res: boolean) => {
+              this.connected = res;
 
-            if (!res) {
+              if (!res) {
+                this.clearStoredToken();
+              } else {
+                this.getUser();
+              }
+              resolve();
+            },
+            (error: Error) => {
+              this.logChannel.publish(LogMessage.error(error, this, 'init'));
+              this.loading = false;
               this.clearStoredToken();
-            } else {
-              this.getUser()
+              this.resetUser();
+              resolve();
             }
-            resolve();
-          },
-          (error: Error) => {
-            this.logChannel.publish(LogMessage.error(error,this,'init'));
-            this.loading = false;
-            this.clearStoredToken();
-            this.resetUser();
-            resolve();
-          }
-        );
+          );
+        } else {
+          resolve();
+        }
       } else {
         resolve();
       }
@@ -194,13 +204,14 @@ export class UserAuthService implements IAuthServiceProvider {
     }).catch(() => {
       this._initialized.next(true);
       this._initialized.complete();
-    })
+    });
+
   }
 
 
   signup(signup: AbstractUserSignup): Promise<AbstractUserSignup> {
     this.loading = true;
-    let signupReq = this.http.post('/api/user/signup', signup);
+    const signupReq = this.http.post('/api/user/signup', signup);
     return new Promise((resolve, reject) => {
       signupReq.subscribe(
         (user: AbstractUserSignup) => {
@@ -212,9 +223,9 @@ export class UserAuthService implements IAuthServiceProvider {
         (error: Error) => {
           this.loading = false;
           this.connected = false;
-          //signup.addError({property: 'error', value: error.message, error: error});
+          // signup.addError({property: 'error', value: error.message, error: error});
           signup.resetSecret();
-          //resolve(signup);
+          // resolve(signup);
           reject(error);
         }
       );
@@ -224,7 +235,7 @@ export class UserAuthService implements IAuthServiceProvider {
 
   authenticate(login: AbstractUserLogin): Promise<AbstractUserLogin> {
     this.loading = true;
-    let loginReq = this.http.post('/api/user/login', login);
+    const loginReq = this.http.post('/api/user/login', login);
 
     return new Promise((resolve, reject) => {
       loginReq.subscribe(
@@ -244,13 +255,13 @@ export class UserAuthService implements IAuthServiceProvider {
           reject(error);
         }
       );
-    })
+    });
   }
 
 
   logout(logout: AbstractUserLogout): Promise<AbstractUserLogout> {
     this.loading = true;
-    let req = this.http.get('/api/user/logout');
+    const req = this.http.get('/api/user/logout');
 
     return new Promise((resolve, reject) => {
       req.subscribe(
@@ -268,7 +279,7 @@ export class UserAuthService implements IAuthServiceProvider {
         }
       );
 
-    })
+    });
 
   }
 
@@ -298,30 +309,34 @@ export class UserAuthService implements IAuthServiceProvider {
   }
 
   isLoggedIn(): boolean {
-    return this.isAuthenticated();
+    return this.isAuthenticated() || !this.isEnabled();
   }
 
   hasPermission(right: string, params?: any): Promise<boolean> | boolean {
-    throw new NotYetImplementedError()
+    throw new NotYetImplementedError();
   }
 
   hasPermissionsFor(object: any): Promise<boolean> | boolean {
-    throw new NotYetImplementedError()
+    throw new NotYetImplementedError();
   }
 
-  //getPermissions()?: Promise<string[]> | string[];
 
   getRoles(): string[] {
     if (this.cacheUser) {
       return _.map(this.cacheUser.roles, r => r.rolename);
     }
     return [];
-
   }
+
 
   hasRole(role: string): boolean {
-    return !!this.getRoles().find(roles => roles.indexOf(role) !== -1);
+    if (this.isEnabled()) {
+      return !!this.getRoles().find(roles => roles.indexOf(role) !== -1);
+    } else {
+      return true;
+    }
   }
+
 
   hasRoutePermissions(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
     return true;

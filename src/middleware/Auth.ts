@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import * as bcrypt from "bcrypt";
+import * as bcrypt from 'bcrypt';
 import {ConnectionWrapper, Inject, Invoker, Log, StorageRef} from '@typexs/base';
 import {
   IApplication,
@@ -8,29 +8,29 @@ import {
   K_ROUTE_CONTROLLER,
   RoutePermissionsHelper
 } from '@typexs/server';
-import {Action, BadRequestError} from "routing-controllers";
-import {AuthLifeCycle} from "../libs/Constants";
-import {AuthSession} from "../entities/AuthSession";
-import {AuthMethod} from "../entities/AuthMethod";
-import {EmptyHttpRequestError} from "../libs/exceptions/EmptyHttpRequestError";
-import {IAuthConfig} from "../libs/auth/IAuthConfig";
-import {IAuthAdapter} from "../libs/adapter/IAuthAdapter";
-import {IAuthOptions} from "../libs/auth/IAuthOptions";
-import {AbstractUserSignup} from "../libs/models/AbstractUserSignup";
-import {AbstractUserLogin} from "../libs/models/AbstractUserLogin";
-import {IAuthMethodInfo} from "../libs/auth/IAuthMethodInfo";
-import {User} from "../entities/User";
-import {EntityController} from "@typexs/schema";
-import {AbstractUserLogout} from "../libs/models/AbstractUserLogout";
-import {AuthDataContainer} from "../libs/auth/AuthDataContainer";
-import {AuthHelper} from "../libs/auth/AuthHelper";
-import {AuthManager} from "../libs/auth/AuthManager";
-import {UserAuthApi} from "../api/UserAuth.api";
-import {UserNotApprovedError} from "../libs/exceptions/UserNotApprovedError";
-import {UserDisabledError} from "../libs/exceptions/UserDisabledError";
-import {UserNotFoundError} from "../libs/exceptions/UserNotFoundError";
-import {RestrictedAccessError} from "../libs/exceptions/RestrictedAccessError";
-import {IEntityRef, IPropertyRef} from "commons-schema-api";
+import {Action, BadRequestError} from 'routing-controllers';
+import {AuthLifeCycle} from '../libs/Constants';
+import {AuthSession} from '../entities/AuthSession';
+import {AuthMethod} from '../entities/AuthMethod';
+import {EmptyHttpRequestError} from '../libs/exceptions/EmptyHttpRequestError';
+import {IAuthConfig} from '../libs/auth/IAuthConfig';
+import {IAuthAdapter} from '../libs/adapter/IAuthAdapter';
+import {IAuthOptions} from '../libs/auth/IAuthOptions';
+import {AbstractUserSignup} from '../libs/models/AbstractUserSignup';
+import {AbstractUserLogin} from '../libs/models/AbstractUserLogin';
+import {IAuthMethodInfo} from '../libs/auth/IAuthMethodInfo';
+import {User} from '../entities/User';
+import {EntityController} from '@typexs/schema';
+import {AbstractUserLogout} from '../libs/models/AbstractUserLogout';
+import {AuthDataContainer} from '../libs/auth/AuthDataContainer';
+import {AuthHelper} from '../libs/auth/AuthHelper';
+import {AuthManager} from '../libs/auth/AuthManager';
+import {UserAuthApi} from '../api/UserAuth.api';
+import {UserNotApprovedError} from '../libs/exceptions/UserNotApprovedError';
+import {UserDisabledError} from '../libs/exceptions/UserDisabledError';
+import {UserNotFoundError} from '../libs/exceptions/UserNotFoundError';
+import {RestrictedAccessError} from '../libs/exceptions/RestrictedAccessError';
+import {IEntityRef, IPropertyRef} from 'commons-schema-api';
 
 
 export class Auth implements IMiddleware {
@@ -57,7 +57,7 @@ export class Auth implements IMiddleware {
 
   // support currently only express
   validate(cfg: any): boolean {
-    if (cfg.type == 'web' && cfg.framework === 'express') {
+    if (cfg.type === 'web' && cfg.framework === 'express') {
       this.frameworkId = cfg.framework;
       return true;
     }
@@ -125,16 +125,18 @@ export class Auth implements IMiddleware {
 
   extendOptions(options: any) {
     if (options.type === K_ROUTE_CONTROLLER) {
-      (<IRoutingController>options).authorizationChecker = this.authorizationChecker.bind(this);
-      (<IRoutingController>options).currentUserChecker = this.currentUserChecker.bind(this);
+      if (this.authManager.isEnabled()) {
+        (<IRoutingController>options).authorizationChecker = this.authorizationChecker.bind(this);
+        (<IRoutingController>options).currentUserChecker = this.currentUserChecker.bind(this);
+      }
     }
   }
 
   getSupportedMethodsInfos() {
-    let methods: IAuthMethodInfo[] = [];
+    const methods: IAuthMethodInfo[] = [];
 
-    for (let method of this.getUsedAuthMethods()) {
-      let methodInfo: IAuthMethodInfo = {
+    for (const method of this.getUsedAuthMethods()) {
+      const methodInfo: IAuthMethodInfo = {
         label: method.label ? method.label : _.capitalize(method.authId),
         authId: method.authId,
         type: method.type
@@ -143,7 +145,7 @@ export class Auth implements IMiddleware {
       if (_.has(method, 'passKeys')) {
         method.passKeys.forEach(k => {
           methodInfo[k] = method[k];
-        })
+        });
       }
 
       methods.push(methodInfo);
@@ -157,10 +159,10 @@ export class Auth implements IMiddleware {
   }
 
   private getInstanceFor(stage: AuthLifeCycle, authId: string = 'default', values: any = null): any {
-    let adapter = this.getAdapterByIdentifier(authId);
+    const adapter = this.getAdapterByIdentifier(authId);
     if (adapter && adapter.getModelFor(stage)) {
-      let clazz = adapter.getModelFor(stage);
-      let signup = Reflect.construct(clazz, []);
+      const clazz = adapter.getModelFor(stage);
+      const signup = Reflect.construct(clazz, []);
       if (values) {
         _.assign(signup, values);
       }
@@ -172,22 +174,22 @@ export class Auth implements IMiddleware {
 
 
   getInstanceForSignup<T extends AbstractUserSignup>(authId: string = 'default', values: any = null): T {
-    return this.getInstanceFor("signup", authId, values);
+    return this.getInstanceFor('signup', authId, values);
   }
 
 
   getInstanceForLogin<T extends AbstractUserLogin>(authId: string = 'default', values: any = null): T {
-    return this.getInstanceFor("login", authId, values);
+    return this.getInstanceFor('login', authId, values);
   }
 
 
   getInstanceForLogout<T extends AbstractUserLogout>(authId: string = 'default', values: any = null): T {
-    return this.getInstanceFor("logout", authId, values);
+    return this.getInstanceFor('logout', authId, values);
   }
 
 
   private getAuthIdFromObject(data: AbstractUserLogin | AbstractUserSignup) {
-    return _.get(data, "authId", "default");
+    return _.get(data, 'authId', 'default');
   }
 
 
@@ -202,15 +204,15 @@ export class Auth implements IMiddleware {
     if (!_.isEmpty(signup)) {
 
       // check if signup is allowed
-      let id = this.getAuthIdFromObject(signup);
-      let adapter = this.getAdapterByIdentifier(id);
+      const id = this.getAuthIdFromObject(signup);
+      const adapter = this.getAdapterByIdentifier(id);
       signup = this.getInstanceForSignup(id, signup);
       dataContainer = new AuthDataContainer(signup);
 
       if (!this.canSignup(adapter)) {
         dataContainer.addError({
-          property: "username",
-          value: "username",
+          property: 'username',
+          value: 'username',
           constraints: {
             signup_not_allowed_error: 'signup not allowed'
           }
@@ -228,9 +230,9 @@ export class Auth implements IMiddleware {
       if (dataContainer.isSuccessValidated) {
 
         // check if username for type is already given
-        let adapter = this.getAdapterByIdentifier(id);
+        const adapter = this.getAdapterByIdentifier(id);
 
-        let [method, user] = await Promise.all([
+        const [method, user] = await Promise.all([
           this.getMethodByUsername(id, signup.getIdentifier()),
           this.getUserByUsername(signup.getIdentifier())
         ]);
@@ -242,7 +244,7 @@ export class Auth implements IMiddleware {
 
           // TODO impl. adapter method to generate entry
           try {
-            let isSignuped = await adapter.signup(dataContainer);
+            const isSignuped = await adapter.signup(dataContainer);
             if (isSignuped) {
               await AuthHelper.createUserAndMethod(
                 this.invoker,
@@ -269,10 +271,10 @@ export class Auth implements IMiddleware {
         } else {
           signup.resetSecret();
           dataContainer.addError({
-            property: "username", // Object's property that haven't pass validation.
-            value: "username", // Value that haven't pass a validation.
+            property: 'username', // Object's property that haven't pass validation.
+            value: 'username', // Value that haven't pass a validation.
             constraints: { // Constraints that failed validation with error messages.
-              exists: "$property already assigned."
+              exists: '$property already assigned.'
             }
           });
           return dataContainer;
@@ -302,10 +304,10 @@ export class Auth implements IMiddleware {
    * @returns {Promise<AbstractUserLogin>}
    */
   async doLogin(login: AbstractUserLogin, req: any, res: any): Promise<AuthDataContainer<AbstractUserLogin>> {
-    let id = this.getAuthIdFromObject(login);
+    const id = this.getAuthIdFromObject(login);
     login = this.getInstanceForLogin(id, login);
     let container: AuthDataContainer<AbstractUserLogin> = new AuthDataContainer<AbstractUserLogin>(login);
-    let isAuthenticated = await this.isAuthenticated(req);
+    const isAuthenticated = await this.isAuthenticated(req);
     if (isAuthenticated) {
       container.isAuthenticated = isAuthenticated;
       login.resetSecret();
@@ -313,9 +315,9 @@ export class Auth implements IMiddleware {
     } else {
 
       if (!_.isEmpty(login)) {
-        let authIdsChain = this.authChain();
+        const authIdsChain = this.authChain();
 
-        for (let authId of authIdsChain) {
+        for (const authId of authIdsChain) {
           container = await this.doLoginForAdapter(authId, login);
           if (container.isAuthenticated) {
             break;
@@ -333,7 +335,7 @@ export class Auth implements IMiddleware {
           property: 'username',
           value: null,
           constraints: {
-            empty_request_error: "$property empty, no access data passed."
+            empty_request_error: '$property empty, no access data passed.'
           }
         });
         return container;
@@ -343,8 +345,8 @@ export class Auth implements IMiddleware {
 
 
   async doAuthenticatedLogin(dataContainer: AuthDataContainer<AbstractUserLogin>, req: any, res: any): Promise<AuthDataContainer<AbstractUserLogin>> {
-    let loginInstance = dataContainer.instance;
-    let adapter = this.getAdapterByIdentifier(loginInstance.authId);
+    const loginInstance = dataContainer.instance;
+    const adapter = this.getAdapterByIdentifier(loginInstance.authId);
 
     let method = await this.getMethodByUsername(
       loginInstance.authId,
@@ -364,7 +366,7 @@ export class Auth implements IMiddleware {
           // user with name does not exists
           try {
             if (adapter.createOnLogin(dataContainer)) {
-              let ref = await AuthHelper.createUserAndMethod(
+              const ref = await AuthHelper.createUserAndMethod(
                 this.invoker,
                 this.entityController,
                 adapter,
@@ -382,9 +384,9 @@ export class Auth implements IMiddleware {
               property: 'user',
               value: err.message,
               constraints: {
-                user_create_error: "$property error thrown $value."
+                user_create_error: '$property error thrown $value.'
               }
-            })
+            });
           }
         } else {
           // username already used
@@ -392,9 +394,9 @@ export class Auth implements IMiddleware {
             property: 'username',
             value: loginInstance.getIdentifier(),
             constraints: {
-              user_already_exists: "$property already reserved."
+              user_already_exists: '$property already reserved.'
             }
-          })
+          });
         }
       } else {
         // no user found and auto create not allowed
@@ -402,13 +404,13 @@ export class Auth implements IMiddleware {
           property: 'user',
           value: loginInstance.getIdentifier(),
           constraints: {
-            user_not_exists: "$property can not be created for this authentication."
+            user_not_exists: '$property can not be created for this authentication.'
           }
-        })
+        });
       }
     } else {
       await this.invoker.use(UserAuthApi).onLoginMethod(method, adapter, dataContainer);
-      //await adapter.extend(method, loginInstance);
+      // await adapter.extend(method, loginInstance);
       user = await this.getUser(method.userId);
     }
 
@@ -421,9 +423,9 @@ export class Auth implements IMiddleware {
           property: 'user',
           value: loginInstance.getIdentifier(),
           constraints: {
-            user_is_disabled: "$property is disabled. Please contact the administrator."
+            user_is_disabled: '$property is disabled. Please contact the administrator.'
           }
-        })
+        });
       }
       if (!user.isApproved()) {
         dataContainer.isAuthenticated = false;
@@ -432,34 +434,34 @@ export class Auth implements IMiddleware {
           property: 'user',
           value: loginInstance.getIdentifier(),
           constraints: {
-            user_is_not_approved: "$property is not approved. Please contact the administrator."
+            user_is_not_approved: '$property is not approved. Please contact the administrator.'
           }
-        })
+        });
       }
     }
 
     if (user && user.isApproved() && !user.isDisabled()) {
       try {
 
-        let remoteAddress = this.getRemoteAddress(req);
-        let current = new Date((new Date()).getTime() - 24 * 60 * 60 * 1000);
-        let mgr = this.connection.manager;
+        const remoteAddress = this.getRemoteAddress(req);
+        const current = new Date((new Date()).getTime() - 24 * 60 * 60 * 1000);
+        const mgr = this.connection.manager;
 
         await mgr.transaction(async em => {
 
           // delete old user sessions which where last updated 24*60*60s
-          let q = em.createQueryBuilder(AuthSession, "s").delete();
-          q.where("userId = :userId and ip = :ip", {
+          const q = em.createQueryBuilder(AuthSession, 's').delete();
+          q.where('userId = :userId and ip = :ip', {
             userId: user.id,
             ip: remoteAddress
           });
-          q.orWhere("userId = :userId and updated_at < :updated_at", {
+          q.orWhere('userId = :userId and updated_at < :updated_at', {
             userId: user.id,
             updated_at: current
           });
           await q.execute();
 
-          let session = new AuthSession();
+          const session = new AuthSession();
           session.ip = remoteAddress;
           session.userId = user.id;
           session.authId = adapter.authId;
@@ -484,9 +486,9 @@ export class Auth implements IMiddleware {
           property: 'user',
           value: err.message,
           constraints: {
-            session_error: "$property can not be created for this authentication."
+            session_error: '$property can not be created for this authentication.'
           }
-        })
+        });
       }
     }
 
@@ -498,7 +500,7 @@ export class Auth implements IMiddleware {
     if (this.getAuthConfig().chain && !_.isEmpty(this.getAuthConfig().chain)) {
       return this.getAuthConfig().chain;
     } else {
-      let first = _.first(this.getAdapters());
+      const first = _.first(this.getAdapters());
       return [first.authId];
     }
   }
@@ -506,15 +508,15 @@ export class Auth implements IMiddleware {
 
   private async doLoginForAdapter(authId: string, _login: AbstractUserLogin): Promise<AuthDataContainer<AbstractUserLogin>> {
 
-    let login = this.getInstanceForLogin(authId, _login);
-    let dataContainer = new AuthDataContainer(login);
+    const login = this.getInstanceForLogin(authId, _login);
+    const dataContainer = new AuthDataContainer(login);
     await dataContainer.validate();
     dataContainer.isAuthenticated = false;
 
     if (dataContainer.isSuccessValidated) {
       // everything is okay
       // check if username for type is already given
-      let adapter = this.getAdapterByIdentifier(authId);
+      const adapter = this.getAdapterByIdentifier(authId);
       dataContainer.isAuthenticated = await adapter.authenticate(dataContainer);
     }
 
@@ -528,16 +530,16 @@ export class Auth implements IMiddleware {
     if (!user) {
       throw new UserNotFoundError(null);
     }
-    let container = new AuthDataContainer(user);
+    const container = new AuthDataContainer(user);
     const token = this.getToken(req);
     container.success = false;
 
     if (!_.isEmpty(token)) {
-      let session = await this.getSessionByToken(token);
+      const session = await this.getSessionByToken(token);
       if (!_.isEmpty(session) && session.userId === user.id) {
-        let repo = this.connection.manager.getRepository(AuthSession);
-        let q = repo.createQueryBuilder("s").delete();
-        q.where("token = :token", {token: token});
+        const repo = this.connection.manager.getRepository(AuthSession);
+        const q = repo.createQueryBuilder('s').delete();
+        q.where('token = :token', {token: token});
         await q.execute();
         container.success = true;
         res.removeHeader(this.getHttpAuthKey());
@@ -546,18 +548,18 @@ export class Auth implements IMiddleware {
           property: 'session',
           value: 'session',
           constraints: {
-            session_error: "No valid session found."
+            session_error: 'No valid session found.'
           }
-        })
+        });
       }
     } else {
       container.addError({
         property: 'token',
         value: 'token',
         constraints: {
-          token_error: "No auth token in request found."
+          token_error: 'No auth token in request found.'
         }
-      })
+      });
     }
     return container;
   }
@@ -573,10 +575,10 @@ export class Auth implements IMiddleware {
       const token = this.getToken(req);
 
       if (!_.isEmpty(token)) {
-        let session = await this.getSessionByToken(token);
+        const session = await this.getSessionByToken(token);
         if (!_.isEmpty(session)) {
           // TODO check roles
-          let user = await this.getUser(session.userId);
+          const user = await this.getUser(session.userId);
 
           if (!user.isApproved()) {
             throw new UserNotApprovedError(user.username);
@@ -601,36 +603,36 @@ export class Auth implements IMiddleware {
 
 
   async authorizationChecker(action: Action, roles: any[]): Promise<boolean> {
-    let isAuth = await this.isAuthenticated(action.request);
+    const isAuth = await this.isAuthenticated(action.request);
     if (isAuth) {
       const permissions = RoutePermissionsHelper.getPermissionsForAction(action);
       if (permissions.length > 0) {
-        let token = this.getToken(action.request);
+        const token = this.getToken(action.request);
         if (!token) {
           return false;
         }
-        let session = await this.getSessionByToken(token);
+        const session = await this.getSessionByToken(token);
         if (!session) {
           return false;
         }
 
-        let users = await this.entityController.find(User, {id: session.userId}, {
+        const users = await this.entityController.find(User, {id: session.userId}, {
           limit: 1, hooks: {
             abortCondition: (entityRef: IEntityRef, propertyDef: IPropertyRef, results: any, op: any) => {
               return op.entityDepth > 1; // get permissions!
             }
           }
         });
-        if (users.length == 1) {
-          let user = <User>users.shift();
+        if (users.length === 1) {
+          const user = <User>users.shift();
 
-          let hasPermissions = AuthHelper.checkPermissions(user, permissions);
+          const hasPermissions = AuthHelper.checkPermissions(user, permissions);
           if (hasPermissions.length > 0) {
             return true;
           }
         }
         throw new RestrictedAccessError();
-        //return false;
+        // return false;
       }
     }
     return isAuth;
@@ -639,7 +641,7 @@ export class Auth implements IMiddleware {
 
   async currentUserChecker(action: Action): Promise<any> {
     if (this.isEnabled()) {
-      return this.getUserByRequest(action.request)
+      return this.getUserByRequest(action.request);
     }
     return null;
   }
@@ -647,7 +649,7 @@ export class Auth implements IMiddleware {
 
   async getUserByRequest(request: any) {
     const token = this.getToken(request);
-    let session = await this.getSessionByToken(token);
+    const session = await this.getSessionByToken(token);
     if (!_.isEmpty(session)) {
       return this.getUser(session.userId);
     }
@@ -656,7 +658,7 @@ export class Auth implements IMiddleware {
 
 
   getUser(id_or_username: number | string): Promise<User> {
-    let cond = {};
+    const cond = {};
     if (_.isString(id_or_username)) {
       cond['username'] = id_or_username;
     } else {
@@ -700,7 +702,7 @@ export class Auth implements IMiddleware {
         // TODO config session stuff
         app.use(session(this.getAuthConfig().session));
 
-        for (let adapter of this.authManager.getAdapters()) {
+        for (const adapter of this.authManager.getAdapters()) {
           if (adapter.use) {
             adapter.use(app, 'after');
           }

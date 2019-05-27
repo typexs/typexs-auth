@@ -1,9 +1,9 @@
-import {Injectable} from "@angular/core";
-import {HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from "@angular/common/http";
-import {Observable} from "rxjs/Observable";
-import * as _ from "lodash";
-import {AuthService} from "@typexs/ng-base";
-import {UserAuthService} from "./user-auth.service";
+import {Injectable} from '@angular/core';
+import {HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
+import {Observable} from 'rxjs/Observable';
+import * as _ from 'lodash';
+import {AuthService} from '@typexs/ng-base';
+import {UserAuthService} from './user-auth.service';
 
 @Injectable()
 export class AuthTokenInterceptor implements HttpInterceptor {
@@ -12,13 +12,13 @@ export class AuthTokenInterceptor implements HttpInterceptor {
   }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    if(this.auth instanceof UserAuthService){
+    if (this.auth instanceof UserAuthService && this.auth.isEnabled()) {
       const provider = <UserAuthService>this.auth;
 
-      let token = provider.getStoredToken();
+      const token = provider.getStoredToken();
       if (token && _.isString(token) && !_.isEmpty(token)) {
-        let tokenKey = provider.getTokenKey();
-        let setHeaders = {};
+        const tokenKey = provider.getTokenKey();
+        const setHeaders = {};
         setHeaders[tokenKey] = token;
         provider.setToken(token);
         request = request.clone({

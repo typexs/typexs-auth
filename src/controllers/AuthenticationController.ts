@@ -1,13 +1,14 @@
-import {Body, CurrentUser, Get, JsonController, Post, Req, Res} from "routing-controllers";
-import {Authorized} from "routing-controllers/decorator/Authorized";
+import {Body, CurrentUser, Get, JsonController, Post, Req, Res} from 'routing-controllers';
+import {Authorized} from 'routing-controllers/decorator/Authorized';
 
-import {Inject} from "@typexs/base";
-import {ContextGroup, IRequest, IResponse} from "@typexs/server";
-import {Auth} from "../middleware/Auth";
+import {Inject} from '@typexs/base';
+import {ContextGroup, IRequest, IResponse} from '@typexs/server';
+import {Auth} from '../middleware/Auth';
 
-import {User} from "../entities/User";
-import {AbstractUserSignup} from "../libs/models/AbstractUserSignup";
-import {AbstractUserLogin} from "../libs/models/AbstractUserLogin";
+import {User} from '../entities/User';
+import {AbstractUserSignup} from '../libs/models/AbstractUserSignup';
+import {AbstractUserLogin} from '../libs/models/AbstractUserLogin';
+import {IAuthSettings} from '../libs/auth/IAuthSettings';
 
 
 @ContextGroup('api')
@@ -17,14 +18,17 @@ export class AuthenticationController {
   @Inject(Auth.NAME)
   auth: Auth;
 
+
   @Get('/user/_config')
-  config(): any {
-    let methods = this.auth.getSupportedMethodsInfos();
+  config(): IAuthSettings {
+    const methods = this.auth.getSupportedMethodsInfos();
     return {
+      enabled: this.auth.isEnabled(),
       authKey: this.auth.getHttpAuthKey(),
       methods: methods
     };
   }
+
 
   @Get('/user/isAuthenticated')
   isAuthenticated(@Req() req: IRequest, @Res() res: IResponse) {
@@ -36,7 +40,7 @@ export class AuthenticationController {
   register(@Body() signup: any, @Req() req: IRequest, @Res() res: IResponse): Promise<AbstractUserSignup> {
     return this.auth.doSignup(signup, req, res).then(c => {
       c.applyState();
-      return c.instance
+      return c.instance;
     });
   }
 
@@ -45,7 +49,7 @@ export class AuthenticationController {
   login(@Body() login: any, @Req() req: IRequest, @Res() res: IResponse): Promise<AbstractUserLogin> {
     return this.auth.doLogin(login, req, res).then(c => {
       c.applyState();
-      return c.instance
+      return c.instance;
     });
   }
 
@@ -62,7 +66,7 @@ export class AuthenticationController {
   logout(@CurrentUser({required: true}) user: User, @Req() req: IRequest, @Res() res: IResponse) {
     return this.auth.doLogout(user, req, res).then(e => {
       e.applyState();
-      return e.instance
+      return e.instance;
     });
   }
 

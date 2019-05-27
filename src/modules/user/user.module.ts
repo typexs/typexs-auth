@@ -3,12 +3,12 @@ import {RouterModule} from '@angular/router';
 import {UserProfileComponent} from './user_profile.component';
 import {HTTP_INTERCEPTORS, HttpClientModule} from '@angular/common/http';
 
-import {UserSignupComponent} from "./user_signup.component";
-import {UserLoginComponent} from "./user_login.component";
-import {UserLogoutComponent} from "./user_logout.component";
-import {FormsModule as NgFormsModule} from "@angular/forms";
-import {CommonModule} from "@angular/common";
-import {AuthTokenInterceptor} from "./authtoken.interceptor";
+import {UserSignupComponent} from './user_signup.component';
+import {UserLoginComponent} from './user_login.component';
+import {UserLogoutComponent} from './user_logout.component';
+import {FormsModule as NgFormsModule} from '@angular/forms';
+import {CommonModule} from '@angular/common';
+import {AuthTokenInterceptor} from './authtoken.interceptor';
 import {
 
   AuthGuardService,
@@ -16,10 +16,10 @@ import {
   FormsModule,
   NavigatorModule,
   SystemModule
-} from "@typexs/ng-base";
-import {UserAuthGuardService} from "./user-auth-guard.service";
-import {APP_ROUTES} from "./user.routes";
-import {UserAuthService} from "./user-auth.service";
+} from '@typexs/ng-base';
+import {UserAuthGuardService} from './user-auth-guard.service';
+import {APP_ROUTES} from './user.routes';
+import {UserAuthService} from './user-auth.service';
 
 const PROVIDERS = [
   UserAuthService,
@@ -80,11 +80,12 @@ const PROVIDERS = [
   providers: PROVIDERS
 })
 export class UserModule {
+
   static forRoot() {
     return {
       ngModule: UserModule,
       providers: PROVIDERS
-    }
+    };
   }
 
   constructor(private authService: AuthService) {
