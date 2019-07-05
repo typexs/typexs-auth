@@ -9,10 +9,14 @@
     "paths": {
       "core-js/es7/reflect": [
         "node_modules/core-js/proposals/reflect-metadata"
+      ],
+      "react-native-sqlite-storage": [
+        "src/dummy.ts"
       ]
     }
   },
   "include": [
+    "src/dummy.ts",
     "src/app/**/*.ts",
     "src/modules/**/*.ts"
   ],
