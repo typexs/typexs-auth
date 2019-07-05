@@ -13,9 +13,8 @@ import {
 import {PermissionsRolesComponent} from './permissions-roles.component';
 import {BrowserModule} from '@angular/platform-browser';
 import {UserModule} from '../user/user.module';
-import {Provider} from '@angular/compiler/src/core';
 
-export const PROVIDERS: Provider[] = [];
+export const PROVIDERS: any[] = [];
 
 @NgModule({
   declarations: [

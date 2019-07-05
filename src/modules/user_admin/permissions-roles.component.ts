@@ -1,14 +1,14 @@
 import * as _ from 'lodash';
-import {Component, OnInit,OnDestroy} from '@angular/core';
-import {Entity} from "@typexs/schema/libs/decorators/Entity";
-import {Property} from "@typexs/schema/libs/decorators/Property";
-import {ISelectOption} from "@typexs/ng-base/modules/forms/libs/ISelectOption";
-import {EntityService, IMessage, MessageChannel, MessageService, MessageType} from "@typexs/ng-base";
-import {Role} from "../../entities/Role";
-import {Permission} from "../../entities/Permission";
-import {FormLabel} from "@typexs/ng/libs/forms/decorators/FormLabel";
-import {FormCheckbox} from "@typexs/ng/libs/forms/decorators/FormCheckbox";
-import {FormGrid} from "@typexs/ng/libs/forms/decorators/FormGrid";
+import {Component, OnInit, OnDestroy} from '@angular/core';
+import {Entity} from '@typexs/schema/libs/decorators/Entity';
+import {Property} from '@typexs/schema/libs/decorators/Property';
+import {ISelectOption} from '@typexs/ng-base/modules/forms/libs/ISelectOption';
+import {EntityService, IMessage, MessageChannel, MessageService, MessageType} from '@typexs/ng-base';
+import {Role} from '../../entities/Role';
+import {Permission} from '../../entities/Permission';
+import {FormLabel} from '@typexs/ng/libs/forms/decorators/FormLabel';
+import {FormCheckbox} from '@typexs/ng/libs/forms/decorators/FormCheckbox';
+import {FormGrid} from '@typexs/ng/libs/forms/decorators/FormGrid';
 
 
 @Entity({storeable: false})
@@ -39,11 +39,11 @@ export class PermissionMatrix {
   selector: 'permissions-rights-overview',
   templateUrl: './permissions-roles.component.html',
 })
-export class PermissionsRolesComponent implements OnInit, OnDestroy{
+export class PermissionsRolesComponent implements OnInit, OnDestroy {
 
   permissionsMatrix: PermissionMatrix;
 
-  matrixReady: boolean = false;
+  matrixReady = false;
 
   channel: MessageChannel<IMessage>;
 
@@ -59,7 +59,7 @@ export class PermissionsRolesComponent implements OnInit, OnDestroy{
   }
 
   isReady() {
-    let permissionsMatrix = new PermissionMatrix();
+    const permissionsMatrix = new PermissionMatrix();
 
     this.entityService.query('Permission').subscribe((permissions) => {
       if (permissions) {
@@ -68,9 +68,9 @@ export class PermissionsRolesComponent implements OnInit, OnDestroy{
         this.entityService.query('Role').subscribe((roles) => {
           if (roles) {
             this.roles = roles.entities;
-            let roleNames = roles.entities.map((r: Role) => <ISelectOption>{value: r.rolename, label: r.displayName});
+            const roleNames = roles.entities.map((r: Role) => <ISelectOption>{value: r.rolename, label: r.displayName});
             this.permissions.forEach((p: Permission) => {
-              let per = new PermissionData();
+              const per = new PermissionData();
               per.permission = p.permission;
               per.roles = _.map(p.roles, r => r.rolename);
               per.roleNames = _.clone(roleNames);
@@ -98,35 +98,35 @@ export class PermissionsRolesComponent implements OnInit, OnDestroy{
 
   onSubmit($event: any) {
     if ($event.data.isSuccessValidated) {
-      let instance: PermissionMatrix = $event.data.instance;
+      const instance: PermissionMatrix = $event.data.instance;
 
-      let tosave: Permission[] = [];
+      const tosave: Permission[] = [];
       instance.permissions.forEach(p => {
-        let permission: Permission = _.find(this.permissions, _p => _p.permission == p.permission);
+        const permission: Permission = _.find(this.permissions, _p => _p.permission == p.permission);
         permission.roles = _.filter(this.roles, _r => p.roles.indexOf(_r.rolename) !== -1);
         tosave.push(permission);
       });
 
-      let observable = this.entityService.save('Permission', tosave);
+      const observable = this.entityService.save('Permission', tosave);
       observable.subscribe((v: any) => {
         if (v) {
           // TODO saved in form user
           this.channel.publish({
-            type:MessageType.SUCCESS,
+            type: MessageType.SUCCESS,
             content: 'Permissions successful saved.'
           });
         }
       }, (error: Error) => {
         console.error(error);
         this.channel.publish({
-          type:MessageType.SUCCESS,
+          type: MessageType.SUCCESS,
           content: error.message
         });
-      })
+      });
 
     } else {
       this.channel.publish({
-        type:MessageType.ERROR,
+        type: MessageType.ERROR,
         content: 'Validation failed.'
       });
     }
