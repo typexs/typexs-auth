@@ -1,12 +1,4 @@
-import {
-  ClassesLoader,
-  Container,
-  IBootstrap,
-  Inject,
-  Invoker,
-  IPermissions, Log,
-  StorageRef
-} from '@typexs/base';
+import {ClassesLoader, Container, IBootstrap, Inject, Invoker, IPermissions, Log, StorageRef} from '@typexs/base';
 
 import {Bootstrap} from '@typexs/base/Bootstrap';
 import {Permission} from './entities/Permission';
@@ -87,6 +79,9 @@ export class Startup implements IBootstrap {
     }
     */
 
+    if (backend) {
+      await backend.close();
+    }
 
     // TODO create default permissions
 
