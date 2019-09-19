@@ -6,11 +6,10 @@ module.exports = function (config) {
   config.set({
     basePath: 'src',
     exclude: ['test/**'],
-    frameworks: ['es6-shim', 'mocha', 'chai', 'sinon-chai', '@angular-devkit/build-angular'],
+    frameworks: [ 'mocha', 'chai', 'sinon-chai', '@angular-devkit/build-angular'],
     plugins: [
       require('karma-mocha'),
       require('karma-chai'),
-      require('karma-es6-shim'),
       require('karma-sinon'),
       require('karma-sinon-chai'),
       require('karma-chrome-launcher'),
