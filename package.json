@@ -60,7 +60,7 @@
     "bootstrap": "^4.3.1",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "codecov": "^3.5.0",
+    "codecov": "^3.6.0",
     "codelyzer": "^5.1.1",
     "concurrently": "^4.1.2",
     "core-js": "^3.2.1",
@@ -111,7 +111,7 @@
     "typescript-require": "^0.2.10"
   },
   "dependencies": {
-    "@typexs/base": "^0.9.43",
+    "@typexs/base": "^0.9.44",
     "@typexs/ng": "^0.8.4",
     "@typexs/ng-base": "^0.8.4",
     "@typexs/schema": "^0.6.15",
