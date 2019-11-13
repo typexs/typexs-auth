@@ -62,7 +62,7 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "codecov": "^3.6.0",
-    "codelyzer": "^5.1.1",
+    "codelyzer": "5.2.0",
     "concurrently": "^4.1.2",
     "core-js": "^3.2.1",
     "del": "^5.1.0",
