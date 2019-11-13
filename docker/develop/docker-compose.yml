@@ -13,7 +13,7 @@ services:
     command: --copy-service --loglevel debug
 
   txs_auth_dev_postgres:
-    image: postgres
+    image: postgres:9
     environment:
       POSTGRES_DATABASES: auth
       POSTGRES_USER: auth
