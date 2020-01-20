@@ -1,6 +1,6 @@
 {
   "name": "@typexs/auth",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Auth module for typexs",
   "main": "index.js",
   "directories": {
@@ -56,6 +56,10 @@
     "@types/string-template": "^1.0.2",
     "@types/superagent": "^4.1.3",
     "@types/supertest": "^2.0.8",
+    "@typexs/ng": "0.x",
+    "@typexs/ng-base": "0.x",
+    "@typexs/schema": "0.x",
+    "@typexs/server": "0.x",
     "animate.css": "^3.7.2",
     "body-parser": "^1.19.0",
     "bootstrap": "^4.3.1",
@@ -112,16 +116,18 @@
     "typescript-require": "^0.2.10"
   },
   "dependencies": {
-    "@typexs/base": "^0.10.0",
-    "@typexs/ng": "^0.8.5",
-    "@typexs/ng-base": "^0.8.5",
-    "@typexs/schema": "^0.6.17",
-    "@typexs/server": "^0.4.19",
+    "@typexs/base": "0.x",
     "bcrypt": "^3.0.6",
     "commons-expressions": "^1.0.7",
     "commons-schema-api": "^1.1.4",
     "jsonwebtoken": "^8.5.1",
     "tslib": "^1.10.0"
+  },
+  "peerDependencies": {
+    "@typexs/ng": "0.x",
+    "@typexs/ng-base": "0.x",
+    "@typexs/schema": "0.x",
+    "@typexs/server": "0.x"
   },
   "private": true,
   "nyc": {
