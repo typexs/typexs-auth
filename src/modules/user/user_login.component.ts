@@ -1,19 +1,11 @@
 import * as _ from 'lodash';
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 
-import {DefaultUserLogin} from "../../libs/models/DefaultUserLogin";
-import {Router} from "@angular/router";
-import {UserAuthService} from "./user-auth.service";
-import {
-  AuthService,
-  IMessage,
-  LogMessage,
-  MessageChannel,
-  MessageService,
-  MessageType,
-  NavigatorService
-} from "@typexs/ng-base";
-import {Helper} from "@typexs/ng/browser";
+import {DefaultUserLogin} from '../../libs/models/DefaultUserLogin';
+import {Router} from '@angular/router';
+import {UserAuthService} from './user-auth.service';
+import {AuthService, IMessage, LogMessage, MessageChannel, MessageService, MessageType, NavigatorService} from '@typexs/ng-base';
+import {Helper} from '@typexs/ng/browser';
 
 
 @Component({
@@ -50,8 +42,8 @@ export class UserLoginComponent implements OnInit, OnDestroy {
     this.logChannel = this.messageService.getLogService();
     this.formMessage = this.messageService.get('form.user-login-form');
     this.user = this.getUserAuthService().newUserLogin();
-    let init = this.authService.isInitialized();
-    Helper.after(init, (x) => {
+    const init = this.authService.isInitialized();
+    Helper.after(init as any, (x: boolean) => {
       if (x) {
         if (this.isAuthenticated()) {
           this.redirectOnSuccess();
@@ -63,7 +55,7 @@ export class UserLoginComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.formMessage.finish();
-    //this.logChannel.finish();
+    // this.logChannel.finish();
   }
 
 
@@ -73,7 +65,7 @@ export class UserLoginComponent implements OnInit, OnDestroy {
 
   async redirectOnSuccess() {
     if (_.isString(this.successUrl)) {
-      let nav = this.navigatorService.entries.find(e => e.path && e.path.includes(<string>this.successUrl));
+      const nav = this.navigatorService.entries.find(e => e.path && e.path.includes(<string>this.successUrl));
       if (nav) {
         await this.router.navigate([nav.getFullPath()]);
       } else {
@@ -89,18 +81,18 @@ export class UserLoginComponent implements OnInit, OnDestroy {
     if ($event.data.isSuccessValidated) {
 
       try {
-        let user = await this.getUserAuthService().authenticate(this.user);
+        const user = await this.getUserAuthService().authenticate(this.user);
         if (user.$state.isAuthenticated) {
           // is login successfull
-          await this.redirectOnSuccess()
+          await this.redirectOnSuccess();
         } else {
-          for (let error of user.$state.errors) {
+          for (const error of user.$state.errors) {
             _.keys(error.constraints).forEach(k => {
               this.formMessage.publish({
                 type: <any>MessageType[error.type.toUpperCase()],
                 content: error.constraints[k],
                 topic: null
-              })
+              });
             });
           }
         }

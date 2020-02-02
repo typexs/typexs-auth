@@ -1,19 +1,11 @@
-import {Component, OnInit, Input, OnDestroy} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 
-import {DefaultUserSignup} from "../../libs/models/DefaultUserSignup";
-import {Router} from "@angular/router";
-import {UserAuthService} from "./user-auth.service";
-import {
-  AuthService,
-  IMessage,
-  LogMessage,
-  MessageChannel,
-  MessageService,
-  MessageType,
-  NavigatorService
-} from "@typexs/ng-base";
-import * as _ from "lodash";
-import {Helper} from "@typexs/ng/browser";
+import {DefaultUserSignup} from '../../libs/models/DefaultUserSignup';
+import {Router} from '@angular/router';
+import {UserAuthService} from './user-auth.service';
+import {AuthService, IMessage, LogMessage, MessageChannel, MessageService, MessageType, NavigatorService} from '@typexs/ng-base';
+import * as _ from 'lodash';
+import {Helper} from '@typexs/ng/browser';
 
 
 @Component({
@@ -33,7 +25,6 @@ export class UserSignupComponent implements OnInit, OnDestroy {
   formMessage: MessageChannel<IMessage>;
 
 
-
   constructor(private authService: AuthService, private navigatorService: NavigatorService, private router: Router,
               private messageService: MessageService) {
   }
@@ -50,8 +41,8 @@ export class UserSignupComponent implements OnInit, OnDestroy {
     this.logChannel = this.messageService.getLogService();
     this.formMessage = this.messageService.get('form.user-signup-form');
     this.signup = this.getUserAuthService().newUserSignup();
-    let init = this.authService.isInitialized();
-    Helper.after(init, (x) => {
+    const init = this.authService.isInitialized();
+    Helper.after(init as any, (x: boolean) => {
       if (x) {
         if (this.isAuthenticated()) {
           this.redirectOnSuccess();
@@ -72,7 +63,7 @@ export class UserSignupComponent implements OnInit, OnDestroy {
 
   async redirectOnSuccess() {
     if (_.isString(this.successUrl)) {
-      let nav = this.navigatorService.entries.find(e => e.path && e.path.includes(<string>this.successUrl));
+      const nav = this.navigatorService.entries.find(e => e.path && e.path.includes(<string>this.successUrl));
       if (nav) {
         await this.router.navigate([nav.getFullPath()]);
       } else {
@@ -88,17 +79,17 @@ export class UserSignupComponent implements OnInit, OnDestroy {
     if ($event.data.isSuccessValidated) {
 
       try {
-        let data = await this.getUserAuthService().signup($event.data.instance);
+        const data = await this.getUserAuthService().signup($event.data.instance);
         if (data.$state.success) {
           await this.redirectOnSuccess();
         } else {
-          for (let error of data.$state.errors) {
+          for (const error of data.$state.errors) {
             _.keys(error.constraints).forEach(k => {
               this.formMessage.publish({
                 type: <any>MessageType[error.type.toUpperCase()],
                 content: error.constraints[k],
                 topic: null
-              })
+              });
             });
           }
         }

@@ -1,8 +1,8 @@
-import {IActivator, IPermissions, Container} from '@typexs/base';
+import {IActivator, Container} from '@typexs/base';
 import {AuthManager} from './libs/auth/AuthManager';
 import {Auth} from './middleware/Auth';
 
-export class Activator implements IActivator, IPermissions {
+export class Activator implements IActivator {
 
 
   async startup(): Promise<void> {
@@ -17,8 +17,5 @@ export class Activator implements IActivator, IPermissions {
     await manager.prepare();
   }
 
-  permissions(): Promise<string[]> | string[] {
-    return ['*'];
-  }
 
 }

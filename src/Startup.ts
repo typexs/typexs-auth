@@ -1,11 +1,12 @@
-import {ClassesLoader, Container, IBootstrap, Inject, Invoker, IPermissions, Log, StorageRef} from '@typexs/base';
+import * as _ from 'lodash';
+import {ClassesLoader, Config, Container, IBootstrap, Inject, Invoker, Log, StorageRef} from '@typexs/base';
 
 import {Bootstrap} from '@typexs/base/Bootstrap';
-import {Permission} from './entities/Permission';
-import * as _ from 'lodash';
 import {AuthHelper} from './libs/auth/AuthHelper';
-import {EntityController} from '@typexs/schema';
 import {AuthManager} from './libs/auth/AuthManager';
+import {IUser} from '@typexs/ng';
+import {IConfigUser} from './libs/models/IConfigUser';
+import {EntityController} from '@typexs/schema';
 
 
 export class Startup implements IBootstrap {
@@ -24,54 +25,56 @@ export class Startup implements IBootstrap {
 
 
     await this.authManager.prepare();
-    const activators = Bootstrap._().getActivators();
+    // const activators = Bootstrap._().getActivators();
+    //
+    // // collect permissions
+    // const backend = await this.storageRef.connect();
+    // const foundPermissions = await backend.manager.find(Permission);
+    // let storePermission: Permission[] = [];
+    //
+    // for (const activator of activators) {
+    //   const ipermissions: IPermissions = (<IPermissions>(<any>activator));
+    //   if (ipermissions.permissions) {
+    //     // if methods
+    //
+    //     const _module = ClassesLoader.getModulName((<any>ipermissions).__proto__.constructor);
+    //     const modul_permissions = await ipermissions.permissions();
+    //
+    //     modul_permissions.forEach(p => {
+    //       const _permissions = _.find(foundPermissions, fp => fp.permission === p);
+    //       if (!_permissions) {
+    //         const alreadyInList = _.find(storePermission, _p => _p.permission === p);
+    //         if (!alreadyInList) {
+    //           const permission = new Permission();
+    //           permission.permission = p;
+    //           permission.disabled = false;
+    //           permission.type = /\*/.test(p) ? 'pattern' : 'single';
+    //           permission.module = _module;
+    //           storePermission.push(permission);
+    //         }
+    //       }
+    //     });
+    //   }
+    // }
+    //
+    // if (storePermission.length > 0) {
+    //   storePermission = _.uniq(storePermission);
+    //   await backend.manager.save(storePermission);
+    // }
 
-    // collect permissions
-    const backend = await this.storageRef.connect();
-    const foundPermissions = await backend.manager.find(Permission);
-    let storePermission: Permission[] = [];
+    // const authConfig = this.authManager.getConfig();
+    // if (authConfig.initRoles) {
+    //   Log.info('init roles');
+    //   await AuthHelper.initRoles(controller, authConfig.initRoles);
+    // }
 
-    for (const activator of activators) {
-      const ipermissions: IPermissions = (<IPermissions>(<any>activator));
-      if (ipermissions.permissions) {
-        // if methods
+    const cfgUsers = Config.get('initialise.users', []) as IConfigUser[];
 
-        const _module = ClassesLoader.getModulName((<any>ipermissions).__proto__.constructor);
-        const modul_permissions = await ipermissions.permissions();
-
-        modul_permissions.forEach(p => {
-          const _permissions = _.find(foundPermissions, fp => fp.permission === p);
-          if (!_permissions) {
-            const alreadyInList = _.find(storePermission, _p => _p.permission === p);
-            if (!alreadyInList) {
-              const permission = new Permission();
-              permission.permission = p;
-              permission.disabled = false;
-              permission.type = /\*/.test(p) ? 'pattern' : 'single';
-              permission.module = _module;
-              storePermission.push(permission);
-            }
-          }
-        });
-      }
-    }
-
-    if (storePermission.length > 0) {
-      storePermission = _.uniq(storePermission);
-      await backend.manager.save(storePermission);
-    }
-
-    const authConfig = this.authManager.getConfig();
-    const controller: EntityController = Container.get('EntityController.default');
-    if (authConfig.initRoles) {
-      Log.info('init roles');
-      await AuthHelper.initRoles(controller, authConfig.initRoles);
-    }
-
-    if (authConfig.initUsers) {
+    if (!_.isEmpty(cfgUsers)) {
       // user are dependent by the adapter + roles mapping
       Log.info('init users');
-      await AuthHelper.initUsers(this.invoker, controller, this.authManager, authConfig.initUsers);
+      const controller: EntityController = Container.get('EntityController.default');
+      await AuthHelper.initUsers(this.invoker, controller, this.authManager, cfgUsers);
     }
     /* skip cleanup
     if(foundPermissions.length > 0){
@@ -79,15 +82,10 @@ export class Startup implements IBootstrap {
     }
     */
 
-    if (backend) {
-      await backend.close();
-    }
+    // if (backend) {
+    //   await backend.close();
+    // }
 
-    // TODO create default permissions
-
-    // TODO create default roles
-
-    // TODO create default user
   }
 
 }

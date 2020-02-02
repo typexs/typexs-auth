@@ -1,13 +1,7 @@
 import * as _ from 'lodash';
 import * as bcrypt from 'bcrypt';
 import {ConnectionWrapper, Inject, Invoker, Log, StorageRef} from '@typexs/base';
-import {
-  IApplication,
-  IMiddleware,
-  IRoutingController,
-  K_ROUTE_CONTROLLER,
-  RoutePermissionsHelper
-} from '@typexs/server';
+import {IApplication, IMiddleware, IRoutingController, K_ROUTE_CONTROLLER, RoutePermissionsHelper} from '@typexs/server';
 import {Action, BadRequestError} from 'routing-controllers';
 import {AuthLifeCycle} from '../libs/Constants';
 import {AuthSession} from '../entities/AuthSession';
@@ -31,6 +25,7 @@ import {UserDisabledError} from '../libs/exceptions/UserDisabledError';
 import {UserNotFoundError} from '../libs/exceptions/UserNotFoundError';
 import {RestrictedAccessError} from '../libs/exceptions/RestrictedAccessError';
 import {IEntityRef, IPropertyRef} from 'commons-schema-api';
+import {Access} from '@typexs/roles/libs/Access';
 
 
 export class Auth implements IMiddleware {
@@ -46,6 +41,8 @@ export class Auth implements IMiddleware {
   @Inject(AuthManager.NAME)
   private authManager: AuthManager;
 
+  @Inject(() => Access)
+  private access: Access;
 
   @Inject(Invoker.NAME)
   private invoker: Invoker;
@@ -230,6 +227,7 @@ export class Auth implements IMiddleware {
       if (dataContainer.isSuccessValidated) {
 
         // check if username for type is already given
+        // tslint:disable-next-line:no-shadowed-variable
         const adapter = this.getAdapterByIdentifier(id);
 
         const [method, user] = await Promise.all([
@@ -344,7 +342,9 @@ export class Auth implements IMiddleware {
   }
 
 
-  async doAuthenticatedLogin(dataContainer: AuthDataContainer<AbstractUserLogin>, req: any, res: any): Promise<AuthDataContainer<AbstractUserLogin>> {
+  async doAuthenticatedLogin(dataContainer: AuthDataContainer<AbstractUserLogin>,
+                             req: any,
+                             res: any): Promise<AuthDataContainer<AbstractUserLogin>> {
     const loginInstance = dataContainer.instance;
     const adapter = this.getAdapterByIdentifier(loginInstance.authId);
 
@@ -626,7 +626,7 @@ export class Auth implements IMiddleware {
         if (users.length === 1) {
           const user = <User>users.shift();
 
-          const hasPermissions = AuthHelper.checkPermissions(user, permissions);
+          const hasPermissions = await this.access.validate(user, permissions);
           if (hasPermissions.length > 0) {
             return true;
           }

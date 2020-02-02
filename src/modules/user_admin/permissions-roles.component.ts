@@ -4,11 +4,11 @@ import {Entity} from '@typexs/schema/libs/decorators/Entity';
 import {Property} from '@typexs/schema/libs/decorators/Property';
 import {ISelectOption} from '@typexs/ng-base/modules/forms/libs/ISelectOption';
 import {EntityService, IMessage, MessageChannel, MessageService, MessageType} from '@typexs/ng-base';
-import {Role} from '../../entities/Role';
-import {Permission} from '../../entities/Permission';
 import {FormLabel} from '@typexs/ng/libs/forms/decorators/FormLabel';
 import {FormCheckbox} from '@typexs/ng/libs/forms/decorators/FormCheckbox';
 import {FormGrid} from '@typexs/ng/libs/forms/decorators/FormGrid';
+import {Role} from '@typexs/roles/entities/Role';
+import {Permission} from '@typexs/roles';
 
 
 @Entity({storeable: false})

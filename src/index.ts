@@ -24,9 +24,6 @@ export * from './api/UserAuth.api';
 
 export * from './entities/AuthMethod';
 export * from './entities/AuthSession';
-export * from './entities/Permission';
-export * from './entities/RBelongsTo';
-export * from './entities/Role';
 export * from './entities/User';
 
 export * from './libs/adapter/AbstractAuthAdapter';
@@ -61,6 +58,5 @@ export * from './libs/models/DefaultUserLogout';
 export * from './libs/models/DefaultUserSignup';
 export * from './libs/models/IAuthMethod';
 export * from './libs/models/IAuthUser';
-export * from './libs/models/IConfigRole';
 export * from './libs/models/IConfigUser';
 export * from './middleware/Auth';

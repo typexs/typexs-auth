@@ -1,13 +1,11 @@
-import {ISessionOptions} from "./ISessionOptions";
-import {IAuthOptions} from "./IAuthOptions";
-import {IConfigUser} from "../models/IConfigUser";
-import {IConfigRole} from "../models/IConfigRole";
+import {ISessionOptions} from './ISessionOptions';
+import {IAuthOptions} from './IAuthOptions';
 
 
 export interface IAuthConfig {
 
   // backend for user accounts
-  //backend?:string;
+  // backend?:string;
 
   httpAuthKey?: string;
 
@@ -17,15 +15,11 @@ export interface IAuthConfig {
 
   session?: ISessionOptions;
 
-  userClass?: string | Function
-
-  initUsers?: IConfigUser[]
-
-  initRoles?: IConfigRole[]
+  userClass?: string | Function;
 
 
   chain?: string[];
 
-  methods?: { [key: string]: IAuthOptions }
+  methods?: { [key: string]: IAuthOptions };
 
 }
