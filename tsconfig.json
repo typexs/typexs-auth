@@ -32,7 +32,8 @@
     "build",
     "dist",
     "tmp",
-    "src/**/files"
+    "src/**/files",
+    "node_modules"
   ],
   "compileOnSave": true
 }

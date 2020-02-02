@@ -117,8 +117,8 @@
   },
   "dependencies": {
     "@typexs/base": "0.x",
-    "@typexs/roles": "^1.0.4",
-    "@typexs/roles-api": "^1.0.9",
+    "@typexs/roles": "^1.0.5",
+    "@typexs/roles-api": "^1.0.10",
     "@typexs/schema": "0.x",
     "bcrypt": "^3.0.7",
     "commons-expressions": "^1.0.7",
