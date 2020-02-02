@@ -1,58 +1,64 @@
-import {suite, test} from "mocha-typescript";
+import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 
-import {C_DEFAULT, K_ROUTE_CONTROLLER, WebServer} from "@typexs/server";
-import {Bootstrap, Container, Invoker, PlatformUtils, RuntimeLoader} from "@typexs/base";
-import {AuthManager} from "../../src/libs/auth/AuthManager";
+import {C_DEFAULT, K_ROUTE_CONTROLLER, WebServer} from '@typexs/server';
+import {Bootstrap, Container, PlatformUtils} from '@typexs/base';
+import {AuthManager} from '../../src/libs/auth/AuthManager';
+import {TestHelper} from './TestHelper';
 
+let bootstrap: Bootstrap;
 
 @suite('functional/middleware')
 class MiddlewareSpec {
 
-
-  before() {
-    Bootstrap.reset();
+  async after() {
+    if (bootstrap) {
+      await bootstrap.shutdown();
+      Bootstrap.reset();
+    }
   }
-
-
-  after() {
-    Bootstrap.reset();
-  }
-
 
   @test
   async 'inject middleware in express'() {
 
-    let loader = new RuntimeLoader({
-      appdir: PlatformUtils.pathResolve('.'),
-      libs: [
-        {
-          "topic": "server.middleware",
-          "refs": [
-            "src/middleware",
-          ]
-        }]
+    bootstrap = await TestHelper.bootstrap_basic({
+      modules: {
+        appdir: PlatformUtils.pathResolve('.'),
+        libs: [
+          {
+            'topic': 'server.middleware',
+            'refs': [
+              'src/middleware',
+            ]
+          }]
+      }
     });
 
+    //
+    // const loader = new RuntimeLoader({});
+    //
+    //
+    // await loader.prepare();
+    // Container.set('RuntimeLoader', loader);
+    // const invoker = new Invoker();
+    // Bootstrap.prepareInvoker(invoker, loader);
+    //
+    // Container.set(Invoker.NAME, invoker);
+    //
+    // // Dummy storage entry for auth
+    // Container.set('storage.default', {
+    //   connect: function () {
+    //   }
+    // });
+    // Container.set('EntityController.default', {});
 
-    await loader.prepare();
-    Container.set("RuntimeLoader", loader);
-    let invoker = new Invoker();
-    Bootstrap.prepareInvoker(invoker, loader);
 
-    Container.set(Invoker.NAME, invoker);
-
-    // Dummy storage entry for auth
-    Container.set("storage.default", {connect:function(){}});
-    Container.set("EntityController.default", {});
-
-
-    let manager = Container.get(AuthManager);
+    const manager = Container.get(AuthManager);
     Container.set(AuthManager.NAME, manager);
     await manager.prepare();
 
 
-    let web = <WebServer>Container.get(WebServer);
+    const web = <WebServer>Container.get(WebServer);
     await web.initialize({
       type: 'web',
       framework: 'express',
@@ -64,16 +70,16 @@ class MiddlewareSpec {
 
     await web.prepare();
 
-    let middlewares = web.middlewares();
+    const middlewares = web.middlewares();
 
-    let uri = web.getUri();
-    let routes = web.getRoutes();
+    const uri = web.getUri();
+    const routes = web.getRoutes();
 
-    let started = await web.start();
+    const started = await web.start();
 
     expect(started).to.be.true;
-    //let res = await request(uri).get('/get').expect(200);
-    let stopped = await web.stop();
+    // let res = await request(uri).get('/get').expect(200);
+    const stopped = await web.stop();
     expect(stopped).to.be.true;
     expect(middlewares).to.have.length(1);
     /*

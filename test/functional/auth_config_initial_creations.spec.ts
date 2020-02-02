@@ -1,27 +1,28 @@
 import {suite, test, timeout} from 'mocha-typescript';
-import {Bootstrap, Config} from '@typexs/base';
-import * as _ from 'lodash';
+import {Bootstrap, Container, Invoker} from '@typexs/base';
 import {expect} from 'chai';
 import {User} from '../../src/entities/User';
-import {TESTDB_SETTING, TestHelper} from './TestHelper';
+import {TESTDB_SETTING} from './TestHelper';
 import {ITypexsOptions} from '@typexs/base/libs/ITypexsOptions';
 import {AuthHelper} from '../../src/libs/auth/AuthHelper';
+import {AuthManager} from '../../src';
+import {EntityController} from '@typexs/schema';
 
 // process.env['LOG'] = 'asd';
 
-const OPTIONS: ITypexsOptions = <ITypexsOptions>{
-  storage: {
-    default: TESTDB_SETTING
-  },
-  auth: {
-    // allowSignup: true,
-    methods: {
-      default: {
-        type: 'database',
-      }
-    }
-  }
-};
+// const OPTIONS: ITypexsOptions = <ITypexsOptions>{
+//   storage: {
+//     default: TESTDB_SETTING
+//   },
+//   auth: {
+//     // allowSignup: true,
+//     methods: {
+//       default: {
+//         type: 'database',
+//       }
+//     }
+//   }
+// };
 
 
 let bootstrap: Bootstrap = null;
@@ -32,7 +33,6 @@ class AuthConfigSpec {
 
   before() {
     Bootstrap.reset();
-    Config.clear();
   }
 
 
@@ -41,7 +41,6 @@ class AuthConfigSpec {
       await bootstrap.shutdown();
     }
     Bootstrap.reset();
-    Config.clear();
 
   }
 
@@ -103,17 +102,66 @@ class AuthConfigSpec {
 
   @test
   async 'init users'() {
-    const opts = <any>_.clone(OPTIONS);
-    opts.initilise.roles = [
-      {
-        role: 'admin', label: 'Admin', permissions: ['*']
-      },
-      {
-        role: 'user', label: 'User',
-        permissions: ['allow see profile', 'allow edit profile']
-      },
-    ];
-    opts.initilise.users = [
+
+    bootstrap = Bootstrap
+      .setConfigSources([{type: 'system'}])
+      .configure(<ITypexsOptions & any>{
+        // app: {name: 'test', nodeId: 'worker'},
+        logging: {enable: true, level: 'debug'},
+        // modules: {paths: [__dirname + '/../../..']},
+        storage: {
+          default: TESTDB_SETTING
+        },
+        auth: {
+          // allowSignup: true,
+          methods: {
+            default: {
+              type: 'database',
+            }
+          }
+        },
+        // storage: {default: TEST_STORAGE_OPTIONS},
+        // workers: {access: [{name: 'TaskMonitorWorker', access: 'allow'}]},
+        // auth: {
+        //   userClass: User, // ./User as string
+        //   methods: {
+        //     default: {
+        //       type: 'database',
+        //     }
+        //   }
+        // }
+        initialise: {
+          roles: [
+            {
+              role: 'admin', label: 'Admin', permissions: ['*']
+            },
+            {
+              role: 'user', label: 'User',
+              permissions: ['allow see profile', 'allow edit profile']
+            },
+          ],
+          // users:
+        }
+      });
+    bootstrap.activateLogger();
+    bootstrap.activateErrorHandling();
+    await bootstrap.prepareRuntime();
+    bootstrap = await bootstrap.activateStorage();
+    bootstrap = await bootstrap.startup();
+
+    const name = 'default';
+
+    // const ref = await TestHelper.bootstrap_auth(name, opts);
+    // bootstrap = ref.bootstrap;
+    // /// let auth = ref.auth;
+    // const manager = ref.authManager;
+    // const xsem = ref.controller;
+    // const invoker = ref.invoker;
+
+    const invoker = Container.get(Invoker.NAME) as Invoker; // await AuthHelper.initRoles(xsem, opts.auth.initRoles);
+    const xsem = Container.get('EntityController.default') as EntityController;
+    const authManager = Container.get(AuthManager.NAME) as AuthManager;
+    const initUsers = [
       {
         username: 'admin',
         adapter: 'default',
@@ -122,23 +170,17 @@ class AuthConfigSpec {
         roles: ['admin']
       }
     ];
-    const name = 'default';
 
-    const ref = await TestHelper.bootstrap_auth(name, opts);
-    bootstrap = ref.bootstrap;
-    /// let auth = ref.auth;
-    const manager = ref.authManager;
-    const xsem = ref.controller;
-    const invoker = ref.invoker;
-
-
-    // await AuthHelper.initRoles(xsem, opts.auth.initRoles);
-
-    let users = await AuthHelper.initUsers(invoker, xsem, manager, opts.auth.initUsers);
+    let users = await AuthHelper.initUsers(invoker, xsem, authManager, initUsers);
     expect(users).to.have.length(1);
 
-    users = await AuthHelper.initUsers(invoker, xsem, manager, opts.auth.initUsers);
+    users = await AuthHelper.initUsers(invoker, xsem, authManager, initUsers);
     expect(users).to.have.length(0);
+
+    users = await xsem.find(User, null, {limit: 0});
+    // console.log(users);
+
+    expect(users[0].getRoles()).to.have.length(1);
 
 
   }

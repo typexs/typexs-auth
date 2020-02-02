@@ -1,17 +1,21 @@
-import {suite, test, timeout} from "mocha-typescript";
+import {suite, test, timeout} from 'mocha-typescript';
 import * as request from 'supertest';
 
-import {K_ROUTE_CONTROLLER, WebServer} from "@typexs/server";
-import {Bootstrap, Config, Container} from "@typexs/base";
+import {K_ROUTE_CONTROLLER, WebServer} from '@typexs/server';
+import {Bootstrap, Config, Container} from '@typexs/base';
 
-import {Auth} from "../../../src/middleware/Auth";
-import {DefaultUserSignup} from "../../../src/libs/models/DefaultUserSignup";
-import {ITypexsOptions} from "@typexs/base/libs/ITypexsOptions";
-import {TESTDB_SETTING, TestHelper} from "../TestHelper";
-import {IDatabaseAuthOptions} from "../../../src/adapters/auth/db/IDatabaseAuthOptions";
-import {IAuthConfig} from "../../../src/libs/auth/IAuthConfig";
+import {Auth} from '../../../src/middleware/Auth';
+import {DefaultUserSignup} from '../../../src/libs/models/DefaultUserSignup';
+import {ITypexsOptions} from '@typexs/base/libs/ITypexsOptions';
+import {TESTDB_SETTING, TestHelper} from '../TestHelper';
+import {IDatabaseAuthOptions} from '../../../src/adapters/auth/db/IDatabaseAuthOptions';
+import {IAuthConfig} from '../../../src/libs/auth/IAuthConfig';
 import {expect} from 'chai';
-import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
+import {DefaultUserLogin} from '../../../src/libs/models/DefaultUserLogin';
+import {User} from '../../../src';
+import {Role} from '@typexs/roles/entities/Role';
+import {RBelongsTo} from '@typexs/roles';
+import {EntityController} from '@typexs/schema';
 
 let web: WebServer = null;
 
@@ -31,19 +35,25 @@ const OPTIONS = <ITypexsOptions>{
   storage: {
     default: TESTDB_SETTING
   },
+  initialise: {
+    roles: [
+      {
+        role: 'testrole',
+        label: 'testrole',
+        permissions: ['check test permission']
+      }
+    ],
+    users: [
+      {
+        adapter: 'default',
+        username: 'testuser',
+        mail: 'adim@admin.local',
+        password: 'password',
+        roles: ['testrole']
+      }
+    ],
+  },
   auth: <IAuthConfig>{
-    initRoles: [{
-      role: 'testrole',
-      displayName: 'testrole',
-      permissions: ['check test permission']
-    }],
-    initUsers: [{
-      adapter: 'default',
-      username: 'testuser',
-      mail: 'adim@admin.local',
-      password: 'password',
-      roles: ['testrole']
-    }],
     methods: {
       default: <IDatabaseAuthOptions>{
         type: 'database',
@@ -54,7 +64,7 @@ const OPTIONS = <ITypexsOptions>{
     }
   },
   logging: {
-    enable: false,
+    enable: true,
     level: 'debug',
     transports: [{console: {}}]
   },
@@ -75,22 +85,21 @@ const OPTIONS = <ITypexsOptions>{
 let bootstrap: Bootstrap = null;
 
 @suite('functional/database/auth_database_permissions') @timeout(20000)
-class Auth_database_permissionsSpec {
+class AuthDatabasePermissionsSpec {
 
   static async before() {
     Config.clear();
     Container.reset();
 
-    let ref = await TestHelper.bootstrap_basic(
+    bootstrap = await TestHelper.bootstrap_basic(
       OPTIONS,
       [{type: 'system'}]
     );
-    bootstrap = ref;
 
     web = Container.get('server.default');
 
-    let uri = web.getUri();
-    let routes = web.getRoutes();
+    // const uri = web.getUri();
+    // const routes = web.getRoutes();
 
     await web.start();
 
@@ -110,15 +119,30 @@ class Auth_database_permissionsSpec {
 
   @test
   async 'lifecycle signup -> login -> get user -> logout'() {
-    let auth = <Auth>Container.get("Auth");
+    const entityController = <EntityController>Container.get('EntityController.default');
 
-// not authorized and no access permissison
+    const c = await entityController.storageRef.connect();
+    const _users = await c.manager.getRepository(User).find();
+    const rBelongsTo = await c.manager.getRepository(RBelongsTo).find();
+    const roles = await c.manager.getRepository(Role).find();
+    await c.close();
+
+    expect(_users).to.have.length(1);
+    expect(rBelongsTo).to.have.length(2);
+    expect(roles).to.have.length(1);
+    const users = await entityController.find(User) as User[];
+    expect(users).to.have.length(1);
+    expect(users[0].roles).to.have.length(1);
+
+    const auth = <Auth>Container.get('Auth');
+
+    // not authorized and no access permissison
     let res = await request(web.getUri())
       .get('/api/permissionsTest')
       .expect(401);
 
 
-    let signUp: DefaultUserSignup = auth.getInstanceForSignup();
+    const signUp: DefaultUserSignup = auth.getInstanceForSignup();
     signUp.username = 'testmann';
     signUp.mail = 'testman@test.tx';
     signUp.password = 'password';

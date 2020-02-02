@@ -1,39 +1,45 @@
-import {suite, test} from "mocha-typescript";
-import {Bootstrap, Config, Container, StorageRef} from "@typexs/base";
-import * as _ from "lodash";
-import {expect} from "chai";
-import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
-import {MockResponse} from "../../helper/MockResponse";
-import {MockRequest} from "../../helper/MockRequest";
+import {suite, test} from 'mocha-typescript';
+import {Bootstrap, Config, Container, StorageRef} from '@typexs/base';
+import * as _ from 'lodash';
+import {expect} from 'chai';
+import {DefaultUserLogin} from '../../../src/libs/models/DefaultUserLogin';
+import {MockResponse} from '../../helper/MockResponse';
+import {MockRequest} from '../../helper/MockRequest';
 
-import {AuthMethod} from "../../../src/entities/AuthMethod";
-import {AuthSession} from "../../../src/entities/AuthSession";
-import {User} from "../../../src/entities/User";
-import {TESTDB_SETTING, TestHelper} from "../TestHelper";
-import {LDAP_CONFIG} from "./ldap_config";
-import {IAuthConfig} from "../../../src/libs/auth/IAuthConfig";
-import {IDatabaseAuthOptions} from "../../../src/adapters/auth/db/IDatabaseAuthOptions";
-import {Auth} from "../../../src/middleware/Auth";
-
+import {AuthMethod} from '../../../src/entities/AuthMethod';
+import {AuthSession} from '../../../src/entities/AuthSession';
+import {User} from '../../../src/entities/User';
+import {TESTDB_SETTING, TestHelper} from '../TestHelper';
+import {LDAP_CONFIG} from './ldap_config';
+import {IAuthConfig} from '../../../src/libs/auth/IAuthConfig';
+import {IDatabaseAuthOptions} from '../../../src/adapters/auth/db/IDatabaseAuthOptions';
+import {Auth} from '../../../src/middleware/Auth';
 
 
 const settingsTemplate = {
   storage: {
     default: TESTDB_SETTING
   },
+  initialise: {
+    roles: [
+      {role: 'admin', label: 'Administrator', permissions: ['*']}
+    ],
+    users: [
+      {
+        username: 'admin',
+        password: 'admin123',
+        adapter: 'database',
+        mail: 'admin@local.txs',
+      }
+    ],
+
+  },
+
   auth: <IAuthConfig>{
     chain: [
       'default',
       'database'
     ],
-    initRoles: [{role: 'admin', displayName: 'Administrator', permissions: ['*']}],
-    initUsers: [{
-      username: 'admin',
-      password: 'admin123',
-      adapter: 'database',
-      mail: 'admin@local.txs',
-
-    }],
     methods: {
       default: LDAP_CONFIG,
       database: <IDatabaseAuthOptions>{
@@ -43,14 +49,15 @@ const settingsTemplate = {
     }
   },
   logging: {
-    enable: false,
+    enable: true,
     level: 'debug',
     transports: [{console: {name: 'ldap_then_database'}}]
   }
 };
 let bootstrap: Bootstrap = null;
+
 @suite('functional/auth_ldap_then_database_lifecycle')
-class Auth_ldap_lifecycleSpec {
+class AuthLdapLifecycleSpec {
 
   static async before() {
     Bootstrap.reset();
@@ -66,27 +73,28 @@ class Auth_ldap_lifecycleSpec {
 
   async after() {
     // await web.stop();
-    if(bootstrap){
+    if (bootstrap) {
       await bootstrap.shutdown();
+      Bootstrap.reset();
     }
-    Bootstrap.reset();
+
   }
 
 
   @test
   async 'do login by user search through admin bind'() {
-    let settings = _.clone(settingsTemplate);
+    const settings = _.clone(settingsTemplate);
 
     bootstrap = await TestHelper.bootstrap_basic(settings);
-    let auth = <Auth>Container.get(Auth.NAME);
+    const auth = <Auth>Container.get(Auth.NAME);
     await auth.prepare(settings.auth);
 
-    let ref: StorageRef = Container.get('storage.default');
-    let c = await ref.connect();
+    const ref: StorageRef = Container.get('storage.default');
+    const c = await ref.connect();
 
     let doingLogin = null;
     let login: DefaultUserLogin = null;
-    let res = new MockResponse();
+    const res = new MockResponse();
     let req = new MockRequest();
 
     let adapter = auth.getAdapterByIdentifier('default');
@@ -97,8 +105,8 @@ class Auth_ldap_lifecycleSpec {
     options = adapter.getOptions();
     expect(options.approval.auto).to.be.true;
 
-    let userList = await c.manager.find(User);
-    let methodList = await c.manager.find(AuthMethod);
+    let userList = await c.manager.getRepository(User).find();
+    let methodList = await c.manager.getRepository(AuthMethod).find();
     expect(userList).to.have.length(1);
     expect(methodList).to.have.length(1);
 
@@ -117,7 +125,7 @@ class Auth_ldap_lifecycleSpec {
     expect(_.first(sessionList)).to.deep.include({authId: 'database'});
 
     req = res;
-    let doLogout = await auth.doLogout(doingLogin.user, req, res);
+    const doLogout = await auth.doLogout(doingLogin.user, req, res);
 
     sessionList = await c.manager.find(AuthSession);
     expect(sessionList).to.have.length(0);
@@ -144,13 +152,12 @@ class Auth_ldap_lifecycleSpec {
     expect(sessionList).to.have.length(0);
 
     userList = await c.manager.find(User);
-    expect(_.map(userList,u => u.username)).to.be.deep.eq(['admin','billy']);
+    expect(_.map(userList, u => u.username)).to.be.deep.eq(['admin', 'billy']);
     methodList = await c.manager.find(AuthMethod);
 
 //    console.log(userList, methodList, sessionList);
     expect(userList).to.have.length(2);
     expect(methodList).to.have.length(2);
-
 
 
   }
