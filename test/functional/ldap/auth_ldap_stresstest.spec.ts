@@ -1,20 +1,19 @@
-import {suite, test, timeout} from "mocha-typescript";
-import {Bootstrap, Config, Container, StorageRef} from "@typexs/base";
-import * as _ from "lodash";
+import {suite, test, timeout} from 'mocha-typescript';
+import {Bootstrap, Config, Container, StorageRef} from '@typexs/base';
+import * as _ from 'lodash';
 import {getMetadataArgsStorage} from 'typeorm';
-import {expect} from "chai";
-import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
-import {MockResponse} from "../../helper/MockResponse";
-import {MockRequest} from "../../helper/MockRequest";
-import {User} from "../../../src/entities/User";
-import {TestHelper} from "../TestHelper";
-import {LDAP_CONFIG} from "./ldap_config";
-import {LOGGING} from "../config";
-import {Role} from "../../../src/entities/Role";
-import {Permission} from "../../../src/entities/Permission";
-import {RBelongsTo} from "../../../src/entities/RBelongsTo";
+import {expect} from 'chai';
+import {DefaultUserLogin} from '../../../src/libs/models/DefaultUserLogin';
+import {MockResponse} from '../../helper/MockResponse';
+import {MockRequest} from '../../helper/MockRequest';
+import {User} from '../../../src/entities/User';
+import {TestHelper} from '../TestHelper';
+import {LDAP_CONFIG} from './ldap_config';
+import {LOGGING} from '../config';
+import {Role} from '@typexs/roles/entities/Role';
+import {Permission, RBelongsTo} from '@typexs/roles';
 
-let inc = 0;
+const inc = 0;
 
 
 const settingsTemplate = {
@@ -36,18 +35,19 @@ const settingsTemplate = {
   logging: LOGGING
 };
 let bootstrap: Bootstrap = null;
+
 @suite('functional/auth_ldap_stresstest') @timeout(60000)
-class Auth_ldap_lifecycleSpec {
+class AuthLdapLifecycleSpec {
 
   static async before() {
-    _.remove(getMetadataArgsStorage().tables,x => x.target == User);
-    _.remove(getMetadataArgsStorage().columns,x => x.target == User);
-    _.remove(getMetadataArgsStorage().tables,x => x.target == Role);
-    _.remove(getMetadataArgsStorage().columns,x => x.target == Role);
-    _.remove(getMetadataArgsStorage().tables,x => x.target == Permission);
-    _.remove(getMetadataArgsStorage().columns,x => x.target == Permission);
-    _.remove(getMetadataArgsStorage().tables,x => x.target == RBelongsTo);
-    _.remove(getMetadataArgsStorage().columns,x => x.target == RBelongsTo);
+    _.remove(getMetadataArgsStorage().tables, x => x.target === User);
+    _.remove(getMetadataArgsStorage().columns, x => x.target === User);
+    _.remove(getMetadataArgsStorage().tables, x => x.target === Role);
+    _.remove(getMetadataArgsStorage().columns, x => x.target === Role);
+    _.remove(getMetadataArgsStorage().tables, x => x.target === Permission);
+    _.remove(getMetadataArgsStorage().columns, x => x.target === Permission);
+    _.remove(getMetadataArgsStorage().tables, x => x.target === RBelongsTo);
+    _.remove(getMetadataArgsStorage().columns, x => x.target === RBelongsTo);
     Bootstrap.reset();
     Config.clear();
   }
@@ -56,20 +56,20 @@ class Auth_ldap_lifecycleSpec {
   static async after() {
     // await web.stop();
     Bootstrap.reset();
-    _.remove(getMetadataArgsStorage().tables,x => x.target == User);
-    _.remove(getMetadataArgsStorage().columns,x => x.target == User);
-    _.remove(getMetadataArgsStorage().tables,x => x.target == Role);
-    _.remove(getMetadataArgsStorage().columns,x => x.target == Role);
-    _.remove(getMetadataArgsStorage().tables,x => x.target == Permission);
-    _.remove(getMetadataArgsStorage().columns,x => x.target == Permission);
-    _.remove(getMetadataArgsStorage().tables,x => x.target == RBelongsTo);
-    _.remove(getMetadataArgsStorage().columns,x => x.target == RBelongsTo)
+    _.remove(getMetadataArgsStorage().tables, x => x.target === User);
+    _.remove(getMetadataArgsStorage().columns, x => x.target === User);
+    _.remove(getMetadataArgsStorage().tables, x => x.target === Role);
+    _.remove(getMetadataArgsStorage().columns, x => x.target === Role);
+    _.remove(getMetadataArgsStorage().tables, x => x.target === Permission);
+    _.remove(getMetadataArgsStorage().columns, x => x.target === Permission);
+    _.remove(getMetadataArgsStorage().tables, x => x.target === RBelongsTo);
+    _.remove(getMetadataArgsStorage().columns, x => x.target === RBelongsTo);
   }
 
 
- async after() {
+  async after() {
     // await web.stop();
-    if(bootstrap){
+    if (bootstrap) {
       await bootstrap.shutdown();
     }
     Bootstrap.reset();
@@ -78,23 +78,23 @@ class Auth_ldap_lifecycleSpec {
 
   @test
   async 'do 10 logins after an other'() {
-    let settings = _.clone(settingsTemplate);
-    //settings.logging.enable = true;
-    //settings.auth.methods.default.timeout = 5000;
-    //settings.auth.methods.default.idleTimeout = 50;
-    let refs = await TestHelper.bootstrap_auth('default', settings);
+    const settings = _.clone(settingsTemplate);
+    // settings.logging.enable = true;
+    // settings.auth.methods.default.timeout = 5000;
+    // settings.auth.methods.default.idleTimeout = 50;
+    const refs = await TestHelper.bootstrap_auth('default', settings);
     bootstrap = refs.bootstrap;
-    let auth = refs.auth;
+    const auth = refs.auth;
 
-    let ref: StorageRef = Container.get('storage.default');
-    let c = await ref.connect();
+    const ref: StorageRef = Container.get('storage.default');
+    const c = await ref.connect();
 
     let doingLogin = null;
     let login: DefaultUserLogin = null;
-    let r = _.range(0, 10);
+    const r = _.range(0, 10);
     let auths = 0;
-    for (let _r of r) {
-      let res = new MockResponse();
+    for (const _r of r) {
+      const res = new MockResponse();
       let req = new MockRequest();
 
       // user doesn't exists and shouldn't be created if auth failed
@@ -103,7 +103,9 @@ class Auth_ldap_lifecycleSpec {
       login.password = 'password';
 
       doingLogin = await auth.doLogin(login, req, res);
+      // tslint:disable-next-line:no-unused-expression
       expect(doingLogin.success).to.be.true;
+      // tslint:disable-next-line:no-unused-expression
       expect(doingLogin.isAuthenticated).to.be.true;
       auths++;
       req = res;
@@ -117,37 +119,39 @@ class Auth_ldap_lifecycleSpec {
 
   @test
   async 'do parallel logins'() {
-    let settings = _.clone(settingsTemplate);
-    //settings.logging.enable = true;
-    //settings.auth.methods.default.idleTimeout = 50;
-    //settings.auth.methods.default.timeout = 5000;
+    const settings = _.clone(settingsTemplate);
+    // settings.logging.enable = true;
+    // settings.auth.methods.default.idleTimeout = 50;
+    // settings.auth.methods.default.timeout = 5000;
 
-    let refs = await TestHelper.bootstrap_auth('default', settings);
-    let auth = refs.auth;
+    const refs = await TestHelper.bootstrap_auth('default', settings);
+    const auth = refs.auth;
     bootstrap = refs.bootstrap;
 
 
-    let ref: StorageRef = Container.get('storage.default');
-    let c = await ref.connect();
+    const ref: StorageRef = Container.get('storage.default');
+    const c = await ref.connect();
 
-    let names = ['billy', 'franz', 'herbert', 'neon', 'robert', 'sammy', 'lukas'];
+    const names = ['billy', 'franz', 'herbert', 'neon', 'robert', 'sammy', 'lukas'];
 
 
     let auths = 0;
-    let promises = [];
-    for (let _r of names) {
-      let res = new MockResponse();
+    const promises = [];
+    for (const _r of names) {
+      const res = new MockResponse();
       let req = new MockRequest();
 
       // user doesn't exists and shouldn't be created if auth failed
-      let login: DefaultUserLogin = auth.getInstanceForLogin('default');
+      const login: DefaultUserLogin = auth.getInstanceForLogin('default');
       login.username = _r;
       login.password = 'password';
 
-      let p = auth.doLogin(login, req, res);
+      const p = auth.doLogin(login, req, res);
       p.then((l) => {
 
+        // tslint:disable-next-line:no-unused-expression
         expect(l.success).to.be.true;
+        // tslint:disable-next-line:no-unused-expression
         expect(l.isAuthenticated).to.be.true;
         req = res;
         auths++;

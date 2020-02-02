@@ -1,13 +1,12 @@
-import {suite, test, timeout} from "mocha-typescript";
-import {Bootstrap, Config, Container, Log, StorageRef, TypeOrmEntityRegistry} from "@typexs/base";
-import * as _ from "lodash";
-import {expect} from "chai";
-import {TESTDB_SETTING, TestHelper} from "./TestHelper";
-import {Permission} from "../../src/entities/Permission";
-import {EntityController} from "@typexs/schema";
-import {Role} from "../../src/entities/Role";
-import {User} from "../../src/entities/User";
-import {LookupRegistry} from "commons-schema-api";
+import {suite, test, timeout} from 'mocha-typescript';
+import {Bootstrap, Container, StorageRef, TypeOrmEntityRegistry} from '@typexs/base';
+import * as _ from 'lodash';
+import {expect} from 'chai';
+import {TESTDB_SETTING, TestHelper} from './TestHelper';
+import {EntityController} from '@typexs/schema';
+import {User} from '../../src/entities/User';
+import {Permission} from '@typexs/roles';
+import {Role} from '@typexs/roles/entities/Role';
 
 
 const settingsTemplate = {
@@ -17,21 +16,21 @@ const settingsTemplate = {
   }
 };
 
-let bootstrap:Bootstrap;
+let bootstrap: Bootstrap;
 
 @suite('functional/entity_schema') @timeout(20000)
-class Entity_schemaSpec {
+class EntitySchemaSpec {
 
   static async before() {
-    let settings = _.clone(settingsTemplate);
+    const settings = _.clone(settingsTemplate);
     bootstrap = await TestHelper.bootstrap_basic(settings);
 
   }
 
 
   static async after() {
-    if(bootstrap){
-     await bootstrap.shutdown();
+    if (bootstrap) {
+      await bootstrap.shutdown();
     }
     // await web.stop();
     Bootstrap.reset();
@@ -40,18 +39,18 @@ class Entity_schemaSpec {
 
   @test
   async 'create schema'() {
-    let ref: StorageRef = Container.get('storage.default');
-    let controller: EntityController = Container.get('EntityController.default');
-    let c = await ref.connect();
+    const ref: StorageRef = Container.get('storage.default');
+    const controller: EntityController = Container.get('EntityController.default');
+    const c = await ref.connect();
 
-    let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\' and tbl_name not like \'%sqlite%\';');
+    const tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\' and tbl_name not like \'%sqlite%\';');
     expect(_.map(tables, t => t.name)).to.have.include.members([
-      "auth_method",
-      "auth_session",
-      "permission",
-      "role",
-      "r_belongsto",
-      "user"
+      'auth_method',
+      'auth_session',
+      'permission',
+      'role',
+      'r_belongsto',
+      'user'
     ]);
 
     let permission = new Permission();
@@ -86,15 +85,15 @@ class Entity_schemaSpec {
 
     found = await controller.find(Role, {id: 1});
 
-    let results: any[] = await c.connection.query('SELECT * FROM r_belongsto;');
+    const results: any[] = await c.connection.query('SELECT * FROM r_belongsto;');
     expect(results).to.have.length(2);
 
   }
 
   @test
   async 'check schema data'() {
-    let entity = TypeOrmEntityRegistry.$().getEntityRefFor('RBelongsTo');
-    let props = entity.getPropertyRefs();
+    const entity = TypeOrmEntityRegistry.$().getEntityRefFor('RBelongsTo');
+    const props = entity.getPropertyRefs();
     expect(props).to.have.length(7);
   }
 

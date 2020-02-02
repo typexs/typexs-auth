@@ -1,4 +1,5 @@
-import {IActivator, IPermissions} from "@typexs/base";
+import {IActivator} from '@typexs/base';
+import {BasicPermission, IPermissionDef, IPermissions} from '@typexs/roles-api';
 
 export class Activator implements IActivator, IPermissions {
 
@@ -6,8 +7,10 @@ export class Activator implements IActivator, IPermissions {
   async startup(): Promise<void> {
   }
 
-  permissions(): Promise<string[]> | string[] {
-    return ['check test permission'];
+  permissions(): IPermissionDef[] {
+    return [
+      new BasicPermission('check test permission')
+    ];
   }
 
 }
