@@ -617,7 +617,8 @@ export class Auth implements IMiddleware {
         }
 
         const users = await this.entityController.find(User, {id: session.userId}, {
-          limit: 1, hooks: {
+          limit: 1,
+          hooks: {
             abortCondition: (entityRef: IEntityRef, propertyDef: IPropertyRef, results: any, op: any) => {
               return op.entityDepth > 1; // get permissions!
             }
@@ -627,7 +628,7 @@ export class Auth implements IMiddleware {
           const user = <User>users.shift();
 
           const hasPermissions = await this.access.validate(user, permissions);
-          if (hasPermissions.length > 0) {
+          if (hasPermissions) {
             return true;
           }
         }
