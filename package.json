@@ -122,7 +122,8 @@
     "@typexs/schema": "0.x",
     "bcrypt": "^3.0.7",
     "commons-expressions": "^1.0.7",
-    "commons-schema-api": "^1.1.4",
+    "commons-schema-api": "^1.1.8",
+    "commons-base": "^1.2.1",
     "jsonwebtoken": "^8.5.1",
     "tslib": "^1.10.0"
   },
