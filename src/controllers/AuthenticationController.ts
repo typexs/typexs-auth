@@ -21,7 +21,6 @@ import {
 
 @ContextGroup('api')
 @JsonController(API_USER)
-@ContentType('application/json')
 export class AuthenticationController {
 
   @Inject(Auth.NAME)
@@ -29,6 +28,7 @@ export class AuthenticationController {
 
 
   @Get(_API_USER_CONFIG)
+  @ContentType('application/json')
   config(): IAuthSettings {
     const methods = this.auth.getSupportedMethodsInfos();
     return {
@@ -40,12 +40,14 @@ export class AuthenticationController {
 
 
   @Get(_API_USER_IS_AUTHENTICATED)
+  @ContentType('application/json')
   isAuthenticated(@Req() req: IRequest, @Res() res: IResponse) {
     return this.auth.isAuthenticated(req);
   }
 
 
   @Post(_API_USER_SIGNUP)
+  @ContentType('application/json')
   register(@Body() signup: any, @Req() req: IRequest, @Res() res: IResponse): Promise<AbstractUserSignup> {
     return this.auth.doSignup(signup, req, res).then(c => {
       c.applyState();
@@ -55,6 +57,7 @@ export class AuthenticationController {
 
 
   @Post(_API_USER_LOGIN)
+  @ContentType('application/json')
   login(@Body() login: any, @Req() req: IRequest, @Res() res: IResponse): Promise<AbstractUserLogin> {
     return this.auth.doLogin(login, req, res).then(c => {
       c.applyState();
@@ -65,6 +68,7 @@ export class AuthenticationController {
 
   @Authorized()
   @Get()
+  @ContentType('application/json')
   async user(@CurrentUser({required: true}) user: User): Promise<User> {
     return user;
   }
@@ -72,6 +76,7 @@ export class AuthenticationController {
 
   @Authorized()
   @Get(_API_USER_LOGOUT)
+  @ContentType('application/json')
   logout(@CurrentUser({required: true}) user: User, @Req() req: IRequest, @Res() res: IResponse) {
     return this.auth.doLogout(user, req, res).then(e => {
       e.applyState();
