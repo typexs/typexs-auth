@@ -1,18 +1,18 @@
-import {suite, test} from "mocha-typescript";
-import {Bootstrap, Config, Container, StorageRef} from "@typexs/base";
-import * as _ from "lodash";
-import {expect} from "chai";
-import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
-import {MockResponse} from "../../helper/MockResponse";
-import {MockRequest} from "../../helper/MockRequest";
+import {suite, test} from 'mocha-typescript';
+import {Bootstrap, Config, Container, StorageRef} from '@typexs/base';
+import * as _ from 'lodash';
+import {expect} from 'chai';
+import {DefaultUserLogin} from '../../../src/libs/models/DefaultUserLogin';
+import {MockResponse} from '../../helper/MockResponse';
+import {MockRequest} from '../../helper/MockRequest';
 
-import {AuthMethod} from "../../../src/entities/AuthMethod";
-import {AuthSession} from "../../../src/entities/AuthSession";
-import {User} from "../../../src/entities/User";
-import {TESTDB_SETTING, TestHelper} from "../TestHelper";
-import {LDAP_CONFIG} from "./ldap_config";
+import {AuthMethod} from '../../../src/entities/AuthMethod';
+import {AuthSession} from '../../../src/entities/AuthSession';
+import {User} from '../../../src/entities/User';
+import {TESTDB_SETTING, TestHelper} from '../TestHelper';
+import {LDAP_CONFIG} from './ldap_config';
 
-let inc = 0;
+const inc = 0;
 
 let bootstrap: Bootstrap = null;
 const settingsTemplate = {
@@ -27,7 +27,7 @@ const settingsTemplate = {
 };
 
 @suite('functional/auth_ldap_lifecycle')
-class Auth_ldap_lifecycleSpec {
+class AuthLdapLifecycleSpec {
 
   static async before() {
     Bootstrap.reset();
@@ -37,7 +37,7 @@ class Auth_ldap_lifecycleSpec {
 
   static async after() {
     // await web.stop();
-    if(bootstrap){
+    if (bootstrap) {
       await bootstrap.shutdown();
     }
     Bootstrap.reset();
@@ -46,22 +46,22 @@ class Auth_ldap_lifecycleSpec {
 
   @test
   async 'do login by user search through admin bind'() {
-    let settings = _.clone(settingsTemplate);
+    const settings = _.clone(settingsTemplate);
 
-    let refs = await TestHelper.bootstrap_auth('default', settings);
+    const refs = await TestHelper.bootstrap_auth('default', settings);
     bootstrap = refs.bootstrap;
-    let auth = refs.auth;
+    const auth = refs.auth;
 
-    let ref: StorageRef = Container.get('storage.default');
-    let c = await ref.connect();
+    const ref: StorageRef = Container.get('storage.default');
+    const c = await ref.connect();
 
     let doingLogin = null;
     let login: DefaultUserLogin = null;
-    let res = new MockResponse();
-    let req = new MockRequest();
+    const res = new MockResponse();
+    const req = new MockRequest();
 
-    let adapter = auth.getAdapterByIdentifier('default');
-    let options = adapter.getOptions();
+    const adapter = auth.getAdapterByIdentifier('default');
+    const options = adapter.getOptions();
     expect(options.approval.auto).to.be.true;
 
     // user doesn't exists and shouldn't be created if auth failed
@@ -99,7 +99,7 @@ class Auth_ldap_lifecycleSpec {
     userList = await c.manager.find(User);
     methodList = await c.manager.find(AuthMethod);
     sessionList = await c.manager.find(AuthSession);
-    //console.log(userList, methodList, sessionList);
+    // console.log(userList, methodList, sessionList);
     expect(userList).to.have.length(1);
     expect(sessionList).to.have.length(1);
     expect(methodList).to.have.length(1);
