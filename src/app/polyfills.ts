@@ -68,4 +68,13 @@ import 'perfect-scrollbar/dist/perfect-scrollbar';
 import 'prismjs/prism';
 
 
+(window as any).global = window;
+import {Buffer} from 'buffer';
+
+(window as any).Buffer = Buffer;
+
+(window as any).process = {
+  browser: true,
+};
+
 
