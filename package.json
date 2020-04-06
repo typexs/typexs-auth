@@ -56,10 +56,6 @@
     "@types/string-template": "^1.0.2",
     "@types/superagent": "^4.1.4",
     "@types/supertest": "^2.0.8",
-    "@typexs/ng": "^0.8.8",
-    "@typexs/ng-base": "^0.8.8",
-    "@typexs/schema": "^0.7.3",
-    "@typexs/server": "^0.4.24",
     "animate.css": "^3.7.2",
     "body-parser": "^1.19.0",
     "bootstrap": "^4.4.1",
@@ -117,17 +113,17 @@
   },
   "dependencies": {
     "@typexs/base": "^0.11.0",
-    "@typexs/roles": "^1.0.5",
+    "@typexs/roles": "^1.0.6",
     "@typexs/roles-api": "^1.0.10",
-    "@typexs/schema": "^0.7.3",
+    "@typexs/schema": "^0.7.4",
     "commons-base": "^1.2.2",
     "commons-schema-api": "^1.1.15",
     "bcrypt": "^3.0.7",
     "jsonwebtoken": "^8.5.1",
     "tslib": "^1.10.0",
-    "@typexs/server": "^0.4.24",
-    "@typexs/ng": "^0.8.8",
-    "@typexs/ng-base": "^0.8.8"
+    "@typexs/server": "^0.4.26",
+    "@typexs/ng": "^0.8.9",
+    "@typexs/ng-base": "^0.8.9"
   },
   "private": true,
   "nyc": {
