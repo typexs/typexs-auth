@@ -1,8 +1,11 @@
 <bat-card title="Permissions">
   <div class="row">
     <div class="col-xl-12" *ngIf="matrixReady">
-      <xform formName="permissions-roles-matrix" [instance]="permissionsMatrix" [channel]="channel"
-             (ngSubmit)="onSubmit($event)"></xform>
+      <xform formName="permissions-roles-matrix"
+             [instance]="permissionsMatrix"
+             [channel]="channel"
+             (ngSubmit)="onSubmit($event)">
+      </xform>
     </div>
     <div *ngIf="!matrixReady">loading ...</div>
   </div>

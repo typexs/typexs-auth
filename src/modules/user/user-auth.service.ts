@@ -13,9 +13,10 @@ import {Observable} from 'rxjs/Observable';
 import {IAuthServiceProvider} from '@typexs/ng-base/modules/system/api/auth/IAuthServiceProvider';
 import {User} from '../../entities/User';
 import {NotYetImplementedError} from 'commons-base/browser';
-import {MessageChannel, MessageService, MessageType, AuthMessage, LogMessage} from '@typexs/ng-base';
+import {AuthMessage, LogMessage, MessageChannel, MessageService, MessageType} from '@typexs/ng-base';
 import {BehaviorSubject} from 'rxjs';
 import {IAuthSettings} from '../../libs/auth/IAuthSettings';
+import {_API_USER_IS_AUTHENTICATED, _API_USER_LOGIN, _API_USER_LOGOUT, _API_USER_SIGNUP, API_USER} from '../../libs/Constants';
 
 @Injectable()
 export class UserAuthService implements IAuthServiceProvider {
@@ -131,7 +132,7 @@ export class UserAuthService implements IAuthServiceProvider {
       return this.cacheUser;
     }
     this.loading = true;
-    const req = this.http.get('/api/user');
+    const req = this.http.get('/api' + API_USER);
     return new Promise<User>((resolve, reject) => {
       req.subscribe(
         (user: User) => {
@@ -171,7 +172,7 @@ export class UserAuthService implements IAuthServiceProvider {
         // console.log('auth check ', token)
         if (token) {
 
-          const req = this.http.get('/api/user/isAuthenticated');
+          const req = this.http.get('/api' + API_USER + _API_USER_IS_AUTHENTICATED);
           this.connected = false;
           req.subscribe(
             (res: boolean) => {
@@ -211,7 +212,7 @@ export class UserAuthService implements IAuthServiceProvider {
 
   signup(signup: AbstractUserSignup): Promise<AbstractUserSignup> {
     this.loading = true;
-    const signupReq = this.http.post('/api/user/signup', signup);
+    const signupReq = this.http.post('/api' + API_USER + _API_USER_SIGNUP, signup);
     return new Promise((resolve, reject) => {
       signupReq.subscribe(
         (user: AbstractUserSignup) => {
@@ -235,7 +236,7 @@ export class UserAuthService implements IAuthServiceProvider {
 
   authenticate(login: AbstractUserLogin): Promise<AbstractUserLogin> {
     this.loading = true;
-    const loginReq = this.http.post('/api/user/login', login);
+    const loginReq = this.http.post('/api' + API_USER + _API_USER_LOGIN, login);
 
     return new Promise((resolve, reject) => {
       loginReq.subscribe(
@@ -259,9 +260,10 @@ export class UserAuthService implements IAuthServiceProvider {
   }
 
 
+
   logout(logout: AbstractUserLogout): Promise<AbstractUserLogout> {
     this.loading = true;
-    const req = this.http.get('/api/user/logout');
+    const req = this.http.get('/api' + API_USER + _API_USER_LOGOUT);
 
     return new Promise((resolve, reject) => {
       req.subscribe(

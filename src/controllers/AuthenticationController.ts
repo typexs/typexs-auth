@@ -1,4 +1,4 @@
-import {Body, CurrentUser, Get, JsonController, Post, Req, Res} from 'routing-controllers';
+import {Body, ContentType, CurrentUser, Get, JsonController, Post, Req, Res} from 'routing-controllers';
 import {Authorized} from 'routing-controllers/decorator/Authorized';
 
 import {Inject} from '@typexs/base';
@@ -9,17 +9,26 @@ import {User} from '../entities/User';
 import {AbstractUserSignup} from '../libs/models/AbstractUserSignup';
 import {AbstractUserLogin} from '../libs/models/AbstractUserLogin';
 import {IAuthSettings} from '../libs/auth/IAuthSettings';
+import {
+  _API_USER_CONFIG,
+  _API_USER_IS_AUTHENTICATED,
+  _API_USER_LOGIN,
+  _API_USER_LOGOUT,
+  _API_USER_SIGNUP,
+  API_USER
+} from '../libs/Constants';
 
 
 @ContextGroup('api')
-@JsonController()
+@JsonController(API_USER)
+@ContentType('application/json')
 export class AuthenticationController {
 
   @Inject(Auth.NAME)
   auth: Auth;
 
 
-  @Get('/user/_config')
+  @Get(_API_USER_CONFIG)
   config(): IAuthSettings {
     const methods = this.auth.getSupportedMethodsInfos();
     return {
@@ -30,13 +39,13 @@ export class AuthenticationController {
   }
 
 
-  @Get('/user/isAuthenticated')
+  @Get(_API_USER_IS_AUTHENTICATED)
   isAuthenticated(@Req() req: IRequest, @Res() res: IResponse) {
     return this.auth.isAuthenticated(req);
   }
 
 
-  @Post('/user/signup')
+  @Post(_API_USER_SIGNUP)
   register(@Body() signup: any, @Req() req: IRequest, @Res() res: IResponse): Promise<AbstractUserSignup> {
     return this.auth.doSignup(signup, req, res).then(c => {
       c.applyState();
@@ -45,7 +54,7 @@ export class AuthenticationController {
   }
 
 
-  @Post('/user/login')
+  @Post(_API_USER_LOGIN)
   login(@Body() login: any, @Req() req: IRequest, @Res() res: IResponse): Promise<AbstractUserLogin> {
     return this.auth.doLogin(login, req, res).then(c => {
       c.applyState();
@@ -55,14 +64,14 @@ export class AuthenticationController {
 
 
   @Authorized()
-  @Get('/user')
+  @Get()
   async user(@CurrentUser({required: true}) user: User): Promise<User> {
     return user;
   }
 
 
   @Authorized()
-  @Get('/user/logout')
+  @Get(_API_USER_LOGOUT)
   logout(@CurrentUser({required: true}) user: User, @Req() req: IRequest, @Res() res: IResponse) {
     return this.auth.doLogout(user, req, res).then(e => {
       e.applyState();
