@@ -110,7 +110,7 @@
     "source-map": "^0.7.3",
     "sqlite3": "^4.1.1",
     "supertest": "^4.0.2",
-    "ts-node": "^8.6.2",
+    "ts-node": "^8.8.2",
     "tslint": "^6.0.0",
     "typescript": "3.5.3",
     "typescript-require": "^0.2.10"
@@ -128,9 +128,9 @@
     "tslib": "^1.10.0"
   },
   "peerDependencies": {
-    "@typexs/ng": "0.x",
-    "@typexs/ng-base": "0.x",
-    "@typexs/server": "0.x"
+    "@typexs/ng": "^0.8.7",
+    "@typexs/ng-base": "^0.8.7",
+    "@typexs/server": "^0.4.23"
   },
   "private": true,
   "nyc": {
