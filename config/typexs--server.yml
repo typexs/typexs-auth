@@ -1,19 +1,16 @@
-
-
-
-auth:
-  allowSignup: true
-  initRoles:
+initialise:
+  roles:
     - role: admin
-      displayName: Admin
+      label: Admin
       permissions:
         - '*'
     - role: user
-      displayName: User
+      label: User
       permissions:
         - allow view profile
         - allow edit profile
-  initUsers:
+
+  users:
     - username: admin
       password: admin123
       displayName: Admin
@@ -21,6 +18,10 @@ auth:
       mail: admin@local.txs
       roles:
         - admin
+
+auth:
+  allowSignup: true
+
   methods:
     default:
       type: database
@@ -35,6 +36,6 @@ auth:
       clientSecret: ${onedrive.demoapp.secret}
       callbackURL: http://localhost:4500/api/auth/onedrive/callback
       scope:
-      - User.Read
+        - User.Read
       # - onedrive.read
 

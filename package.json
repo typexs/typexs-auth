@@ -56,10 +56,10 @@
     "@types/string-template": "^1.0.2",
     "@types/superagent": "^4.1.4",
     "@types/supertest": "^2.0.8",
-    "@typexs/ng": "^0.8.7",
-    "@typexs/ng-base": "^0.8.7",
+    "@typexs/ng": "^0.8.8",
+    "@typexs/ng-base": "^0.8.8",
     "@typexs/schema": "^0.7.3",
-    "@typexs/server": "^0.4.23",
+    "@typexs/server": "^0.4.24",
     "animate.css": "^3.7.2",
     "body-parser": "^1.19.0",
     "bootstrap": "^4.4.1",
@@ -120,17 +120,14 @@
     "@typexs/roles": "^1.0.5",
     "@typexs/roles-api": "^1.0.10",
     "@typexs/schema": "^0.7.3",
+    "commons-base": "^1.2.2",
+    "commons-schema-api": "^1.1.15",
     "bcrypt": "^3.0.7",
-    "commons-expressions": "^1.0.7",
-    "commons-schema-api": "^1.1.8",
-    "commons-base": "^1.2.1",
     "jsonwebtoken": "^8.5.1",
-    "tslib": "^1.10.0"
-  },
-  "peerDependencies": {
-    "@typexs/ng": "^0.8.7",
-    "@typexs/ng-base": "^0.8.7",
-    "@typexs/server": "^0.4.23"
+    "tslib": "^1.10.0",
+    "@typexs/server": "^0.4.24",
+    "@typexs/ng": "^0.8.8",
+    "@typexs/ng-base": "^0.8.8"
   },
   "private": true,
   "nyc": {
