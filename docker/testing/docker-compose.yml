@@ -1,25 +1,35 @@
 version: '3'
+
+networks:
+  txs_auth: {}
+
 services:
 
   txs_auth_testing_ldap:
     image: osixia/openldap:1.2.2
     ports:
-    - 389:389
-    - 689:689
+    - 127.0.0.1:389:389
+    - 127.0.0.1:689:689
     environment:
       LDAP_NOFILE: 10000
     volumes:
     - ./ldap/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
     command: --copy-service --loglevel debug
+    networks:
+      - txs_auth
 
   txs_auth_testing_postgres:
-    image: postgres:9
+    image: postgres:11
+    ports:
+      - 127.0.0.1:5234:5432
     environment:
       POSTGRES_DATABASES: auth
       POSTGRES_USER: auth
-      POSTGRES_PASSWORD:
-    ports:
-      - 5234:5432
+      POSTGRES_HOST_AUTH_METHOD: trust
+#      POSTGRES_PASSWORD:
+    command: postgres -c 'shared_buffers=256MB' -c 'max_connections=200'
+    networks:
+      - txs_auth
 
 
 # https://hub.docker.com/r/unicon/shibboleth-idp/
