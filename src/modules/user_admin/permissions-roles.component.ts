@@ -4,9 +4,9 @@ import {Entity} from '@typexs/schema/libs/decorators/Entity';
 import {Property} from '@typexs/schema/libs/decorators/Property';
 import {ISelectOption} from '@typexs/ng-base/modules/forms/libs/ISelectOption';
 import {AuthService, EntityService, IMessage, MessageChannel, MessageService, MessageType} from '@typexs/ng-base';
-import {FormLabel} from '@typexs/ng/libs/forms/decorators/FormLabel';
-import {FormCheckbox} from '@typexs/ng/libs/forms/decorators/FormCheckbox';
-import {FormGrid} from '@typexs/ng/libs/forms/decorators/FormGrid';
+import {Label} from '@typexs/ng/libs/forms/decorators/Label';
+import {Checkbox} from '@typexs/ng/libs/forms/decorators/Checkbox';
+import {Grid} from '@typexs/ng/libs/forms/decorators/Grid';
 import {Role} from '@typexs/roles/entities/Role';
 import {Permission} from '@typexs/roles/entities/Permission';
 
@@ -14,11 +14,11 @@ import {Permission} from '@typexs/roles/entities/Permission';
 @Entity({storeable: false})
 export class PermissionData {
 
-  @FormLabel()
+  @Label()
   @Property({type: 'string'})
   permission: string;
 
-  @FormCheckbox({enum: 'roleNames'})
+  @Checkbox({enum: 'roleNames'})
   @Property({type: 'string', enum: 'roleNames', cardinality: 0})
   roles: string[];
 
@@ -28,7 +28,7 @@ export class PermissionData {
 @Entity({storeable: false})
 export class PermissionMatrix {
 
-  @FormGrid({fixed: true, nr: false})
+  @Grid({fixed: true, nr: false})
   @Property({type: PermissionData, cardinality: 0})
   permissions: PermissionData[] = [];
 

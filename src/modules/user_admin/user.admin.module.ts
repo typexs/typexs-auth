@@ -8,7 +8,7 @@ import {
   FormsModule,
   NavigatorModule,
   NavigatorService,
-  SystemModule
+  BaseModule
 } from '@typexs/ng-base';
 import {PermissionsRolesComponent} from './permissions-roles.component';
 import {BrowserModule} from '@angular/platform-browser';
@@ -25,7 +25,7 @@ export const PROVIDERS: any[] = [];
     EntityModule,
     BrowserModule,
     FormsModule,
-    SystemModule,
+    BaseModule,
     AdminModule,
     NavigatorModule,
     UserModule,

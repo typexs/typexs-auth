@@ -4,19 +4,30 @@ import {BrowserModule} from '@angular/platform-browser';
 import {RouterModule} from '@angular/router';
 import {ModuleWithProviders, Type} from '@angular/core';
 import {UserModule} from '../user/user.module';
-import {AdminModule, BaseAdminThemeModule, FormsModule, NavigatorModule, ViewsModule} from '@typexs/ng-base';
+import {
+  AdminModule,
+  BaseAdminThemeModule,
+  DistributedStorageModule,
+  EntityModule,
+  FormsModule,
+  NavigatorModule,
+  StorageModule,
+  ViewsModule
+} from '@typexs/ng-base';
 import {UserAdminModule} from '../user_admin/user.admin.module';
 
 
 export const APP_MODULES: Array<Type<any> | ModuleWithProviders | any[]> = [
   BrowserModule,
   UserModule.forRoot(),
-
   NavigatorModule,
   FormsModule,
   ViewsModule,
   RouterModule.forRoot(APP_ROUTES),
   AdminModule,
   UserAdminModule.forRoot(),
-  BaseAdminThemeModule
+  BaseAdminThemeModule,
+  StorageModule,
+  EntityModule,
+  DistributedStorageModule
 ];

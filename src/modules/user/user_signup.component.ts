@@ -79,21 +79,26 @@ export class UserSignupComponent implements OnInit, OnDestroy {
     if ($event.data.isSuccessValidated) {
 
       try {
-        const data = await this.getUserAuthService().signup($event.data.instance);
-        if (data.$state.success) {
-          await this.redirectOnSuccess();
-        } else {
-          for (const error of data.$state.errors) {
-            _.keys(error.constraints).forEach(k => {
-              this.formMessage.publish({
-                type: <any>MessageType[error.type.toUpperCase()],
-                content: error.constraints[k],
-                topic: null
+        const user = await this.getUserAuthService().signup($event.data.instance);
+        let state: any = null;
+        if (user) {
+          state = (user as any).$state;
+          if (state && state.success) {
+            await this.redirectOnSuccess();
+          } else {
+            for (const error of state.errors) {
+              _.keys(error.constraints).forEach(k => {
+                this.formMessage.publish({
+                  type: <any>MessageType[error.type.toUpperCase()],
+                  content: error.constraints[k],
+                  topic: null
+                });
               });
-            });
+            }
           }
+        } else {
+          throw new Error('No user object.');
         }
-
       } catch (e) {
         this.logChannel.publish(LogMessage.error(e, this, 'onSubmit'));
       }

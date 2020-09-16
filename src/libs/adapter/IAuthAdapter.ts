@@ -1,17 +1,12 @@
-import {IAuthOptions} from "../auth/IAuthOptions";
-import {AuthLifeCycle} from "../Constants";
-import {AuthMethod} from "../../entities/AuthMethod";
-
-import {AbstractUserSignup} from "../models/AbstractUserSignup";
-
-
-import {AbstractUserLogin} from "../models/AbstractUserLogin";
-import {IApplication, IRequest, IResponse} from "@typexs/server";
-import {User} from "../../entities/User";
-import {AuthDataContainer} from "../auth/AuthDataContainer";
+import {IAuthOptions} from '../auth/IAuthOptions';
+import {AuthLifeCycle} from '../Constants';
+import {AbstractUserSignup} from '../models/AbstractUserSignup';
+import {AbstractUserLogin} from '../models/AbstractUserLogin';
+import {IApplication, IRequest, IResponse} from '@typexs/server';
+import {AuthDataContainer} from '../auth/AuthDataContainer';
 
 
-export type T_AUTH_ADAPTER_STAGE = 'before' | 'after'
+export type T_AUTH_ADAPTER_STAGE = 'before' | 'after';
 
 export interface IAuthAdapter {
 
@@ -36,9 +31,9 @@ export interface IAuthAdapter {
 
   canAutoApprove(): boolean;
 
-  getDefaultRole():string;
+  getDefaultRole(): string;
 
-  getOptions():IAuthOptions;
+  getOptions(): IAuthOptions;
 
   signup?(signup: AuthDataContainer<AbstractUserSignup>): Promise<boolean> | boolean;
 

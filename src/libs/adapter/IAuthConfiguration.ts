@@ -1,4 +1,4 @@
-import {IAuthAdapter} from "./IAuthAdapter";
+import {IAuthAdapter} from './IAuthAdapter';
 
 export interface IAuthConfiguration {
 

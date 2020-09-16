@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import * as bcrypt from 'bcrypt';
-import {ConnectionWrapper, Inject, Invoker, Log, StorageRef} from '@typexs/base';
+import {Inject, Invoker, Log} from '@typexs/base';
 import {IApplication, IMiddleware, IRoutingController, K_ROUTE_CONTROLLER, RoutePermissionsHelper} from '@typexs/server';
 import {Action, BadRequestError} from 'routing-controllers';
 import {AuthLifeCycle} from '../libs/Constants';
@@ -26,17 +26,17 @@ import {UserNotFoundError} from '../libs/exceptions/UserNotFoundError';
 import {RestrictedAccessError} from '../libs/exceptions/RestrictedAccessError';
 import {IEntityRef, IPropertyRef} from 'commons-schema-api';
 import {Access} from '@typexs/roles/libs/Access';
-
+import {IEntityController, Injector, IStorageRef} from '@typexs/base/browser';
 
 export class Auth implements IMiddleware {
 
   static NAME = 'Auth';
 
   @Inject('storage.default')
-  private storage: StorageRef;
+  private storage: IStorageRef;
 
-  @Inject('EntityController.default')
-  private entityController: EntityController;
+  // @Inject('EntityController.default')
+  private _entityController: EntityController;
 
   @Inject(AuthManager.NAME)
   private authManager: AuthManager;
@@ -47,7 +47,7 @@ export class Auth implements IMiddleware {
   @Inject(Invoker.NAME)
   private invoker: Invoker;
 
-  private connection: ConnectionWrapper;
+  // private connection: TypeOrmConnectionWrapper;
 
   private frameworkId: string;
 
@@ -63,9 +63,9 @@ export class Auth implements IMiddleware {
 
 
   async prepare(options: any = {}) {
-    if (this.isEnabled()) {
-      this.connection = await this.storage.connect();
-    }
+    // if (this.isEnabled()) {
+    //   this.connection = await this.storage.connect() as TypeOrmConnectionWrapper;
+    // }
   }
 
 
@@ -78,6 +78,16 @@ export class Auth implements IMiddleware {
     return this.authManager.getConfig();
   }
 
+  getStorageEntityController() {
+    return this.storage.getController();
+  }
+
+  getEntityController(): EntityController {
+    if (!this._entityController) {
+      this._entityController = Injector.get('EntityController.default');
+    }
+    return this._entityController;
+  }
 
   getConfig() {
     return this.config();
@@ -246,7 +256,7 @@ export class Auth implements IMiddleware {
             if (isSignuped) {
               await AuthHelper.createUserAndMethod(
                 this.invoker,
-                this.entityController,
+                this.getEntityController(),
                 adapter,
                 dataContainer
               );
@@ -289,7 +299,9 @@ export class Auth implements IMiddleware {
 
 
   async createToken(session: AuthSession) {
-    return bcrypt.hash(new Date().getTime() + '' + session.ip, 5);
+    const magicNumber = _.random(100000, 999999, true);
+    const v: string = await bcrypt.hash([new Date().getTime(), magicNumber, session.ip].join('-'), 5);
+    return v.replace('$', '');
   }
 
   /**
@@ -368,7 +380,7 @@ export class Auth implements IMiddleware {
             if (adapter.createOnLogin(dataContainer)) {
               const ref = await AuthHelper.createUserAndMethod(
                 this.invoker,
-                this.entityController,
+                this.getEntityController(),
                 adapter,
                 dataContainer
               );
@@ -445,40 +457,33 @@ export class Auth implements IMiddleware {
 
         const remoteAddress = this.getRemoteAddress(req);
         const current = new Date((new Date()).getTime() - 24 * 60 * 60 * 1000);
-        const mgr = this.connection.manager;
+        // const mgr = this.connection.manager;
 
-        await mgr.transaction(async em => {
-
-          // delete old user sessions which where last updated 24*60*60s
-          const q = em.createQueryBuilder(AuthSession, 's').delete();
-          q.where('userId = :userId and ip = :ip', {
-            userId: user.id,
-            ip: remoteAddress
-          });
-          q.orWhere('userId = :userId and updated_at < :updated_at', {
-            userId: user.id,
-            updated_at: current
-          });
-          await q.execute();
-
-          const session = new AuthSession();
-          session.ip = remoteAddress;
-          session.userId = user.id;
-          session.authId = adapter.authId;
-          session.token = await this.createToken(session);
-
-          await Promise.all([
-            em.save(session),
-            em.save(user),
-            em.save(method)
-          ]);
-
-          dataContainer.token = session.token;
-          dataContainer.user = user;
-          dataContainer.method = method;
-          dataContainer.success = true;
-          res.setHeader(this.getHttpAuthKey(), session.token);
+        await this.getStorageEntityController().remove(AuthSession, {
+          $or: [
+            {
+              userId: user.id,
+              ip: remoteAddress
+            },
+            {
+              userId: user.id,
+              updated_at: {$le: current}
+            }
+          ]
         });
+
+        const session = new AuthSession();
+        session.ip = remoteAddress;
+        session.userId = user.id;
+        session.authId = adapter.authId;
+        session.token = await this.createToken(session);
+
+        await this.getStorageEntityController().save([session, user, method]);
+        dataContainer.token = session.token;
+        dataContainer.user = user;
+        dataContainer.method = method;
+        dataContainer.success = true;
+        res.setHeader(this.getHttpAuthKey(), session.token);
 
       } catch (err) {
         Log.error(err);
@@ -537,10 +542,15 @@ export class Auth implements IMiddleware {
     if (!_.isEmpty(token)) {
       const session = await this.getSessionByToken(token);
       if (!_.isEmpty(session) && session.userId === user.id) {
-        const repo = this.connection.manager.getRepository(AuthSession);
-        const q = repo.createQueryBuilder('s').delete();
-        q.where('token = :token', {token: token});
-        await q.execute();
+        // const repo = this.getStorageEntityController().remove()
+        // entityController.remove();
+        // connection.manager.getRepository(AuthSession);
+        // const q = repo.createQueryBuilder('s').delete();
+        // q.where('token = :token', {token: token});
+        // await q.execute();
+        await this.getStorageEntityController().remove(AuthSession, {
+          token: token
+        });
         container.success = true;
         res.removeHeader(this.getHttpAuthKey());
       } else {
@@ -588,10 +598,7 @@ export class Auth implements IMiddleware {
             throw new UserDisabledError(user.username);
           }
 
-          await Promise.all([
-            this.connection.manager.save(user),
-            this.connection.manager.save(session)
-          ]);
+          await this.getEntityController().save([user, session]);
 
           return true;
         }
@@ -616,7 +623,7 @@ export class Auth implements IMiddleware {
           return false;
         }
 
-        const users = await this.entityController.find(User, {id: session.userId}, {
+        const user = await this.getEntityController().findOne(User, {id: session.userId}, {
           limit: 1,
           hooks: {
             abortCondition: (entityRef: IEntityRef, propertyDef: IPropertyRef, results: any, op: any) => {
@@ -624,9 +631,7 @@ export class Auth implements IMiddleware {
             }
           }
         });
-        if (users.length === 1) {
-          const user = <User>users.shift();
-
+        if (user) {
           const hasPermissions = await this.access.validate(user, permissions);
           if (hasPermissions) {
             return true;
@@ -650,9 +655,11 @@ export class Auth implements IMiddleware {
 
   async getUserByRequest(request: any) {
     const token = this.getToken(request);
-    const session = await this.getSessionByToken(token);
-    if (!_.isEmpty(session)) {
-      return this.getUser(session.userId);
+    if (token && !_.isEmpty(token)) {
+      const session = await this.getSessionByToken(token);
+      if (!_.isEmpty(session)) {
+        return this.getUser(session.userId);
+      }
     }
     return null;
   }
@@ -665,14 +672,17 @@ export class Auth implements IMiddleware {
     } else {
       cond['id'] = id_or_username;
     }
-    return this.entityController.find<User>(User, cond, {
-      limit: 1,
+    return this.getEntityController().findOne<User>(User, cond, {
+      // limit: 1,
       hooks: {
-        abortCondition: (entityRef: IEntityRef, propertyDef: IPropertyRef, results: any, op: any) => {
+        abortCondition: (entityRef: IEntityRef,
+                         propertyDef: IPropertyRef,
+                         results: any,
+                         op: any) => {
           return op.entityDepth > 1;
         }
       }
-    }).then(u => u.shift());
+    });
   }
 
 
@@ -682,17 +692,17 @@ export class Auth implements IMiddleware {
 
 
   getMethodByUsername(authId: string, username: string) {
-    return this.connection.manager.findOne(AuthMethod, {
-      where: {
-        identifier: username,
-        authId: authId
-      }
+    return this.getEntityController().findOne(AuthMethod, {
+      // where: {
+      identifier: username,
+      authId: authId
+      // }
     });
   }
 
 
   getSessionByToken(token: string) {
-    return this.connection.manager.findOne(AuthSession, token);
+    return this.getEntityController().findOne(AuthSession, {token: token});
   }
 
 

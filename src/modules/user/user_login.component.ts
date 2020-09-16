@@ -1,12 +1,10 @@
 import * as _ from 'lodash';
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-
 import {DefaultUserLogin} from '../../libs/models/DefaultUserLogin';
 import {Router} from '@angular/router';
 import {UserAuthService} from './user-auth.service';
 import {AuthService, IMessage, LogMessage, MessageChannel, MessageService, MessageType, NavigatorService} from '@typexs/ng-base';
-import {Helper} from '@typexs/ng/browser';
-
+import {mergeMap} from 'rxjs/operators';
 
 @Component({
   selector: 'user-login',
@@ -42,14 +40,15 @@ export class UserLoginComponent implements OnInit, OnDestroy {
     this.logChannel = this.messageService.getLogService();
     this.formMessage = this.messageService.get('form.user-login-form');
     this.user = this.getUserAuthService().newUserLogin();
-    const init = this.authService.isInitialized();
-    Helper.after(init as any, (x: boolean) => {
-      if (x) {
-        if (this.isAuthenticated()) {
-          this.redirectOnSuccess();
+    const sub = this.authService.isInitialized()
+      .pipe(mergeMap(x => this.isAuthenticated()))
+      .subscribe(async x => {
+        if (x) {
+          await this.redirectOnSuccess();
         }
-      }
-    });
+        sub.unsubscribe();
+      });
+
 
   }
 
@@ -82,19 +81,25 @@ export class UserLoginComponent implements OnInit, OnDestroy {
 
       try {
         const user = await this.getUserAuthService().authenticate(this.user);
-        if (user.$state.isAuthenticated) {
-          // is login successfull
-          await this.redirectOnSuccess();
-        } else {
-          for (const error of user.$state.errors) {
-            _.keys(error.constraints).forEach(k => {
-              this.formMessage.publish({
-                type: <any>MessageType[error.type.toUpperCase()],
-                content: error.constraints[k],
-                topic: null
+        let state: any = null;
+        if (user) {
+          state = (user as any).$state;
+          if (state && state.isAuthenticated) {
+            // is login successfull
+            await this.redirectOnSuccess();
+          } else {
+            for (const error of state.errors) {
+              _.keys(error.constraints).forEach(k => {
+                this.formMessage.publish({
+                  type: <any>MessageType[error.type.toUpperCase()],
+                  content: error.constraints[k],
+                  topic: null
+                });
               });
-            });
+            }
           }
+        } else {
+          throw new Error('No user object.');
         }
         // TODO navigate to the preferred startup state
       } catch (e) {

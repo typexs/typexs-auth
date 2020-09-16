@@ -1,4 +1,4 @@
-import {IAuthMethodInfo} from "./IAuthMethodInfo";
+import {IAuthMethodInfo} from './IAuthMethodInfo';
 
 export interface IAuthOptions extends IAuthMethodInfo {
 
@@ -11,21 +11,21 @@ export interface IAuthOptions extends IAuthMethodInfo {
   approval?: {
     auto?: boolean,
     notify?: string[]
-  }
+  };
 
   role?: string;
 
-  clazz?: Function
+  clazz?: Function;
 
   /**
    * Create automatically a local account when authentication succeed.
    */
-  createOnLogin?: boolean
+  createOnLogin?: boolean;
 
   /**
    * Allow signup for this adapter if it is supported
    */
-  allowSignup?: boolean
+  allowSignup?: boolean;
 
   /**
    * Name keys which must be passed to the frontend

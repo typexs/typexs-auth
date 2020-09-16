@@ -1,4 +1,4 @@
-import {ClassesLoader, Config, Container, Inject, Log, RuntimeLoader} from '@typexs/base';
+import {ClassesLoader, Config, Inject, Injector, Log, RuntimeLoader} from '@typexs/base';
 import {CryptUtils} from 'commons-base';
 
 import {K_LIB_AUTH_ADAPTERS, K_LIB_AUTH_CONFIGURATIONS} from '../Constants';
@@ -44,16 +44,21 @@ export class AuthManager {
 
   private enabled = false;
 
-  async prepare() {
-    Container.set('AuthManager', this);
+
+  initialize() {
+    Injector.set('AuthManager', this);
     const x = Config.get('auth', {});
     this.authConfig = <IAuthConfig>x;
     _.defaultsDeep(this.authConfig, DEFAULT_CONFIG_OPTIONS);
 
+    this.enabled = !_.isEmpty(this.authConfig) && _.keys(this.authConfig.methods).length > 0;
+  }
+
+  async prepare() {
     await this.initConfigurations();
     await this.initAdapter();
-
   }
+
 
   getDefinedAdapters() {
     return this.allAdapters;
@@ -64,7 +69,7 @@ export class AuthManager {
     const classes = this.loader.getClasses(K_LIB_AUTH_CONFIGURATIONS);
 
     for (const cls of classes) {
-      const adapterInstance = <IAuthConfiguration>Container.get(cls);
+      const adapterInstance = <IAuthConfiguration>Injector.get(cls);
       const cfg: IAuthConfigurationDef = {
         id: adapterInstance.id,
         cls: cls
@@ -105,7 +110,7 @@ export class AuthManager {
                   authAdapter.updateOptions(methodOptions);
                 }
 
-                const adapterInstance = <IAuthAdapter>Container.get(cls);
+                const adapterInstance = <IAuthAdapter>Injector.get(cls);
                 adapterInstance.authId = authId;
                 this.adapters.push(adapterInstance);
                 await adapterInstance.prepare(methodOptions);
@@ -116,7 +121,7 @@ export class AuthManager {
         this.allAdapters.push(def);
       }
     }
-    this.enabled = !_.isEmpty(this.authConfig) && _.keys(this.authConfig.methods).length > 0;
+
   }
 
 
@@ -137,7 +142,7 @@ export class AuthManager {
   getConfiguration(id: string) {
     const cfg = _.find(this.configurations, {id: id});
     if (cfg) {
-      return <IAuthConfiguration>Container.get(cfg.cls);
+      return <IAuthConfiguration>Injector.get(cfg.cls);
     }
     return null;
 

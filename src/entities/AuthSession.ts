@@ -1,73 +1,73 @@
-import {
-  AfterInsert,
-  AfterLoad,
-  AfterUpdate,
-  BeforeInsert,
-  BeforeUpdate,
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryColumn,
-  UpdateDateColumn
-} from "typeorm";
-
-import * as _ from "lodash";
+// import {
+//   AfterInsert,
+//   AfterLoad,
+//   AfterUpdate,
+//   BeforeInsert,
+//   BeforeUpdate,
+//   Column,
+//   CreateDateColumn,
+//   Entity,
+//   PrimaryColumn,
+//   UpdateDateColumn
+// } from 'typeorm';
+//
+import {Entity, Property} from '@typexs/schema/browser';
 
 
 @Entity()
 export class AuthSession {
 
-  @PrimaryColumn({type: 'varchar', length: 64})
+  @Property({type: 'string', id: true})
   token: string;
 
-  @Column({type: 'varchar', length: 64})
+  @Property({type: 'string'})
   ip: string;
 
-  @Column({type:'int'})
+  @Property()
   userId: number = null;
 
-  @Column()
+  @Property()
   authId: string;
 
-  @Column({type: 'text', nullable: true})
+  @Property({nullable: true})
   data: any = null;
 
-  @CreateDateColumn()
+  @Property({type: 'date:created'})
   created_at: Date;
 
-  @UpdateDateColumn()
+  @Property({type: 'date:updated'})
   updated_at: Date;
 
 
-  @BeforeInsert()
-  bin() {
-    if (!_.isString(this.data)) {
-      this.data = JSON.stringify(this.data);
-    }
-  }
-
-  @BeforeUpdate()
-  bup() {
-    this.bin()
-  }
-
-
-  @AfterLoad()
-  load() {
-    if (_.isString(this.data)) {
-      this.data = JSON.parse(this.data);
-    }
-  }
-
-  @AfterInsert()
-  ain() {
-    this.load()
-  }
-
-  @AfterUpdate()
-  aup() {
-    this.load()
-  }
+  // @BeforeInsert()
+  // bin() {
+  //   if (!_.isString(this.data)) {
+  //     this.data = JSON.stringify(this.data);
+  //   }
+  // }
+  //
+  // @BeforeUpdate()
+  // bup() {
+  //   this.bin();
+  // }
+  //
+  //
+  // @AfterLoad()
+  // load() {
+  //   if (_.isString(this.data)) {
+  //     this.data = JSON.parse(this.data);
+  //   }
+  // }
+  //
+  // @AfterInsert()
+  // ain() {
+  //   this.load();
+  // }
+  //
+  // @AfterUpdate()
+  // aup() {
+  //   this.load();
+  // }
 
 
 }

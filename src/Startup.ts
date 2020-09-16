@@ -1,12 +1,9 @@
 import * as _ from 'lodash';
-import {ClassesLoader, Config, Container, IBootstrap, Inject, Invoker, Log, StorageRef} from '@typexs/base';
-
-import {Bootstrap} from '@typexs/base/Bootstrap';
+import {Config, IBootstrap, Inject, Injector, Invoker, Log, StorageRef} from '@typexs/base';
 import {AuthHelper} from './libs/auth/AuthHelper';
 import {AuthManager} from './libs/auth/AuthManager';
-import {IUser} from '@typexs/ng';
 import {IConfigUser} from './libs/models/IConfigUser';
-import {EntityController} from '@typexs/schema';
+import {IEntityController} from '@typexs/base/browser';
 
 
 export class Startup implements IBootstrap {
@@ -22,7 +19,6 @@ export class Startup implements IBootstrap {
 
 
   async bootstrap() {
-
 
     await this.authManager.prepare();
     // const activators = Bootstrap._().getActivators();
@@ -73,7 +69,7 @@ export class Startup implements IBootstrap {
     if (!_.isEmpty(cfgUsers)) {
       // user are dependent by the adapter + roles mapping
       Log.info('init users');
-      const controller: EntityController = Container.get('EntityController.default');
+      const controller: IEntityController = Injector.get('EntityController.default');
       await AuthHelper.initUsers(this.invoker, controller, this.authManager, cfgUsers);
     }
     /* skip cleanup

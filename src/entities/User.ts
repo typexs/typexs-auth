@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import {Asc, Entity, From, Join, Property, To} from '@typexs/schema/browser';
 import {And, Eq, Key, Value} from 'commons-expressions/browser';
 import {RBelongsTo} from '@typexs/roles/entities/RBelongsTo';
-import {FormReadonly} from '@typexs/ng/browser';
+import {Readonly} from '@typexs/ng/libs/forms/decorators/Readonly';
 import {IAuthUser} from '../libs/models/IAuthUser';
 import {Role} from '@typexs/roles/entities/Role';
 import {IRolesHolder} from '@typexs/roles-api';
@@ -43,11 +43,11 @@ export class User implements IAuthUser, IRolesHolder {
   })
   roles: Role[];
 
-  @FormReadonly()
+  @Readonly()
   @Property({type: 'date:created'})
   created_at: Date;
 
-  @FormReadonly()
+  @Readonly()
   @Property({type: 'date:updated'})
   updated_at: Date;
 

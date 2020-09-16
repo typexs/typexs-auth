@@ -1,25 +1,21 @@
-//import * as passport from "passport";
-import * as bcrypt from "bcrypt";
-import * as _ from "lodash";
-
-import {ConnectionWrapper, Inject, StorageRef, NestedException, Invoker} from "@typexs/base";
-import {AuthMethod} from "../../../entities/AuthMethod";
-import {UserNotFoundError} from "../../../libs/exceptions/UserNotFoundError";
-import {PasswordIsWrongError} from "../../../libs/exceptions/PasswordIsWrongError";
-import {DefaultUserLogin} from "../../../libs/models/DefaultUserLogin";
-import {IDatabaseAuthOptions} from "./IDatabaseAuthOptions";
-import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
-
-import {DefaultUserSignup} from "../../../libs/models/DefaultUserSignup";
-
-
-import {User} from "../../../entities/User";
-import {EntityController} from "@typexs/schema";
-import {AuthDataContainer} from "../../../libs/auth/AuthDataContainer";
-import {AbstractUserSignup} from "../../../libs/models/AbstractUserSignup";
-import {UserAuthApi} from "../../../api/UserAuth.api";
-import {DatabaseUserAuthExtenstion} from "./DatabaseUserAuthExtenstion";
-import {IEntityRef, IPropertyRef} from "commons-schema-api";
+// import * as passport from "passport";
+import * as bcrypt from 'bcrypt';
+import * as _ from 'lodash';
+import {Inject, Invoker, NestedException} from '@typexs/base';
+import {IStorageRef} from '@typexs/base/libs/storage/IStorageRef';
+import {AuthMethod} from '../../../entities/AuthMethod';
+import {UserNotFoundError} from '../../../libs/exceptions/UserNotFoundError';
+import {PasswordIsWrongError} from '../../../libs/exceptions/PasswordIsWrongError';
+import {DefaultUserLogin} from '../../../libs/models/DefaultUserLogin';
+import {IDatabaseAuthOptions} from './IDatabaseAuthOptions';
+import {AbstractAuthAdapter} from '../../../libs/adapter/AbstractAuthAdapter';
+import {User} from '../../../entities/User';
+import {EntityController} from '@typexs/schema';
+import {AuthDataContainer} from '../../../libs/auth/AuthDataContainer';
+import {AbstractUserSignup} from '../../../libs/models/AbstractUserSignup';
+import {UserAuthApi} from '../../../api/UserAuth.api';
+import {DatabaseUserAuthExtenstion} from './DatabaseUserAuthExtenstion';
+import {IEntityRef, IPropertyRef} from 'commons-schema-api';
 
 
 export const K_AUTH_DATABASE = 'database';
@@ -45,7 +41,7 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
 
 
   @Inject('storage.default')
-  storage: StorageRef;
+  storage: IStorageRef;
 
   @Inject('EntityController.default')
   entityController: EntityController;
@@ -53,7 +49,7 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
   @Inject(Invoker.NAME)
   invoker: Invoker;
 
-  connection: ConnectionWrapper;
+  // connection: TypeOrmConnectionWrapper;
 
   type: string = K_AUTH_DATABASE;
 
@@ -70,18 +66,18 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
     _.defaults(opts, DEFAULTS);
     super.prepare(opts);
     this.invoker.register(UserAuthApi, DatabaseUserAuthExtenstion);
-    this.connection = await this.storage.connect();
+    // this.connection = await this.storage.connect() as TypeOrmConnectionWrapper;
   }
 
 
   async authenticate(container: AuthDataContainer<DefaultUserLogin>) {
 
     try {
-      let login: DefaultUserLogin = container.instance;
-      let authMethod = await this.getAuth(<any>login);
+      const login: DefaultUserLogin = container.instance;
+      const authMethod = await this.getAuth(<any>login);
       if (authMethod) {
         container.success = true;
-        container.user = await this.entityController.find(User, {id: authMethod.userId}, {
+        container.user = await this.entityController.findOne(User, {id: authMethod.userId}, {
           limit: 1,
           hooks: {
             abortCondition: (entityRef: IEntityRef, propertyDef: IPropertyRef, results: any, op: any) => {
@@ -96,26 +92,26 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
         if (err instanceof PasswordIsWrongError) {
           // TODO handle error messages in error classes and not here
           container.addError({
-            property: "password", // Object's property that haven't pass validation.
-            value: "password", // Value that haven't pass a validation.
+            property: 'password', // Object's property that haven't pass validation.
+            value: 'password', // Value that haven't pass a validation.
             constraints: { // Constraints that failed validation with error messages.
-              exists: "username or password is wrong."
+              exists: 'username or password is wrong.'
             }
           });
         } else if (err instanceof UserNotFoundError) {
           // TODO handle error messages in error classes and not here
           container.addError({
-            property: "username", // Object's property that haven't pass validation.
-            value: "username", // Value that haven't pass a validation.
+            property: 'username', // Object's property that haven't pass validation.
+            value: 'username', // Value that haven't pass a validation.
             constraints: { // Constraints that failed validation with error messages.
-              exists: "username not found"
+              exists: 'username not found'
             }
           });
         } else {
           throw err;
         }
       } else {
-        throw new NestedException(err, "UNKNOWN");
+        throw new NestedException(err, 'UNKNOWN');
       }
     }
     return false;
@@ -146,17 +142,14 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
 
   async getAuth(login: DefaultUserLogin): Promise<AuthMethod> {
 
-    let username = login.username;
-    let password = login.password;
+    const username = login.username;
+    const password = login.password;
 
-    let authMethod = await this.connection.manager.findOne(AuthMethod,
+    const authMethod = await this.entityController.findOne(AuthMethod,
       {
-        where:
-          {
-            identifier: username,
-            authId: this.authId,
-            type: this.type
-          }
+        identifier: username,
+        authId: this.authId,
+        type: this.type
       });
 
     if (!authMethod) {
@@ -165,15 +158,15 @@ export class DatabaseAdapter extends AbstractAuthAdapter {
     // TODO: if password was  wrongly submitted multiple times then disable account and inform user
     // TODO: if disabled the admin should be contacted for re-enabling
 
-    let equal = await this.cryptCompare(password, authMethod.secret);
+    const equal = await this.cryptCompare(password, authMethod.secret);
     if (!equal) {
       authMethod.failed += 1;
-      await this.connection.save(authMethod);
+      await this.entityController.save(authMethod);
       throw new PasswordIsWrongError(username);
     }
 
     authMethod.failed = 0;
-    await this.connection.save(authMethod);
+    await this.entityController.save(authMethod);
 
     return authMethod;
   }

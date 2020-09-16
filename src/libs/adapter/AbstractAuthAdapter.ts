@@ -1,12 +1,12 @@
-import {IAuthAdapter} from "./IAuthAdapter";
-import {AuthLifeCycle} from "../Constants";
-import {DefaultUserLogin} from "../models/DefaultUserLogin";
-import {DefaultUserSignup} from "../models/DefaultUserSignup";
-import {IAuthOptions} from "../auth/IAuthOptions";
-import * as _ from "lodash";
-import {DefaultUserLogout} from "../models/DefaultUserLogout";
-import {AuthDataContainer} from "../auth/AuthDataContainer";
-import {AbstractUserLogin} from "../models/AbstractUserLogin";
+import {IAuthAdapter} from './IAuthAdapter';
+import {AuthLifeCycle} from '../Constants';
+import {DefaultUserLogin} from '../models/DefaultUserLogin';
+import {DefaultUserSignup} from '../models/DefaultUserSignup';
+import {IAuthOptions} from '../auth/IAuthOptions';
+import * as _ from 'lodash';
+import {DefaultUserLogout} from '../models/DefaultUserLogout';
+import {AuthDataContainer} from '../auth/AuthDataContainer';
+import {AbstractUserLogin} from '../models/AbstractUserLogin';
 
 const DEFAULT_AUTH_OPTIONS: IAuthOptions = {
   type: 'none',
@@ -29,7 +29,7 @@ export abstract class AbstractAuthAdapter implements IAuthAdapter {
 
   prepare(authOptions: IAuthOptions): void {
     this.options = authOptions;
-    _.defaultsDeep(this.options, DEFAULT_AUTH_OPTIONS)
+    _.defaultsDeep(this.options, DEFAULT_AUTH_OPTIONS);
   }
 
 
@@ -59,21 +59,21 @@ export abstract class AbstractAuthAdapter implements IAuthAdapter {
 
 
   canSignup(): boolean {
-    let res = _.get(this.options, 'allowSignup', false) && _.isFunction(this['signup']);
+    const res = _.get(this.options, 'allowSignup', false) && _.isFunction(this['signup']);
     return res;
   }
 
 
   getModelFor(lifecycle: AuthLifeCycle): Function {
     switch (lifecycle) {
-      case "login":
+      case 'login':
         return DefaultUserLogin;
-      case "signup":
+      case 'signup':
         return DefaultUserSignup;
-      case "logout":
+      case 'logout':
         return DefaultUserLogout;
     }
-    throw new Error("No model for lifecycle " + lifecycle + ' in ' + this.authId);
+    throw new Error('No model for lifecycle ' + lifecycle + ' in ' + this.authId);
   }
 
 }

@@ -5,16 +5,15 @@ import {AbstractUserLogin} from '../models/AbstractUserLogin';
 import {AuthMethod} from '../../entities/AuthMethod';
 import * as _ from 'lodash';
 import {User} from '../../entities/User';
-
-import {EntityController} from '@typexs/schema';
-import {ConnectionWrapper, Invoker} from '@typexs/base';
+import {Invoker} from '@typexs/base';
 import {IConfigUser} from '../models/IConfigUser';
 import {DefaultUserSignup} from '../models/DefaultUserSignup';
 import {AuthManager} from './AuthManager';
 import {UserAuthApi} from '../../api/UserAuth.api';
-import {ClassType} from 'commons-schema-api';
 import {Role} from '@typexs/roles/entities/Role';
-
+// import {TypeOrmConnectionWrapper} from '@typexs/base/libs/storage/framework/typeorm/TypeOrmConnectionWrapper';
+import {IEntityController} from '@typexs/base/browser';
+import assert = require('assert');
 
 export class AuthHelper {
 
@@ -74,7 +73,7 @@ export class AuthHelper {
   }
 
 
-  static async createUser(connection: ConnectionWrapper,
+  static async createUser(entityController: IEntityController,
                           invoker: Invoker,
                           adapter: IAuthAdapter,
                           dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>) {
@@ -85,7 +84,7 @@ export class AuthHelper {
 
     const roleName = adapter.getDefaultRole();
     if (roleName) {
-      user.roles = await connection.manager.getRepository(Role).find({where: {rolename: roleName}}) as Role[];
+      user.roles = await entityController.find(Role, {rolename: roleName}) as Role[];
     }
 
     await invoker.use(UserAuthApi).onUserCreate(user, adapter, dataContainer);
@@ -110,100 +109,69 @@ export class AuthHelper {
 
 
   static async createUserAndMethod(invoker: Invoker,
-                                   controller: EntityController,
+                                   controller: IEntityController,
                                    adapter: IAuthAdapter,
                                    dataContainer: AuthDataContainer<AbstractUserSignup | AbstractUserLogin>) {
-    const c = await controller.storageRef.connect();
-    let user = await AuthHelper.createUser(c, invoker, adapter, dataContainer);
-    // user = await controller.save(user);
-    return c.manager.transaction(async em => {
-      user = await em.save(user);
-      const method = await AuthHelper.createMethod(invoker, adapter, dataContainer);
-      method.standard = true;
-      method.userId = user.id;
-      return em.save(method);
-    }).then(r => {
-      return {user: user, method: r};
-    });
+    // const c = await controller.storageRef.connect() as TypeOrmConnectionWrapper;
+    const user = await AuthHelper.createUser(controller, invoker, adapter, dataContainer);
+    await controller.save(user);
+    assert(user.id, 'user id must be set.');
+    const method = await AuthHelper.createMethod(invoker, adapter, dataContainer);
+    method.standard = true;
+    method.userId = user.id;
+    const result = await controller.save(method);
+    return {
+      user: user,
+      method: method
+    };
+    //
+    // return c.manager.transaction(async em => {
+    //   user = await em.save(user);
+    //   const method = await AuthHelper.createMethod(invoker, adapter, dataContainer);
+    //   method.standard = true;
+    //   method.userId = user.id;
+    //   return em.save(method);
+    // }).then(r => {
+    //   return {user: user, method: r};
+    // });
   }
 
-  private static async buildOrWhere<T>(c: ConnectionWrapper, type: ClassType<T>, list: string[], key: string) {
-    const repo = c.manager.getRepository(type);
-    const q = repo.createQueryBuilder('p');
-    let inc = 0;
-    for (const perm of list) {
-      const d = {};
-      const k = 'p' + (inc++);
-      d[k] = perm;
-      q.orWhere('p.' + key + ' = :' + k, d);
-    }
-    return await q.getMany();
-  }
-
-
-  // static async initRoles(entityController: EntityController, roles: IConfigRole[]): Promise<Role[]> {
-  //   // TODO check if autocreation is enabled
-  //   let permissions: string[] = [];
-  //   let existing_permissions: Permission[] = [];
-  //   let existing_roles: Role[] = [];
-  //
-  //   _.map(roles, role => permissions = permissions.concat(role.permissions));
-  //   const rolenames = _.map(roles, role => role.role);
-  //   const c = await entityController.storageRef.connect();
-  //
-  //   if (permissions.length > 0) {
-  //     existing_permissions = await this.buildOrWhere(c, Permission, permissions, 'permission');
-  //     existing_permissions.map(p => _.remove(permissions, _p => _p === p.permission));
+  // private static async buildOrWhere<T>(c: TypeOrmConnectionWrapper, type: ClassType<T>, list: string[], key: string) {
+  //   const repo = c.manager.getRepository(type);
+  //   const q = repo.createQueryBuilder('p');
+  //   let inc = 0;
+  //   const query = {$or: []};
+  //   for (const perm of list) {
+  //     const d = {};
+  //     const k = 'p' + (inc++);
+  //     d[k] = perm;
+  //     q.orWhere('p.' + key + ' = :' + k, d);
   //   }
-  //
-  //   if (rolenames.length > 0) {
-  //     existing_roles = await this.buildOrWhere(c, Role, rolenames, 'rolename');
-  //     existing_roles.map(r => _.remove(roles, _r => _r.role === r.rolename));
-  //   }
-  //
-  //
-  //   if (permissions.length > 0) {
-  //
-  //     let save_permissions: Permission[] = [];
-  //     _.uniq(permissions).map(p => {
-  //       const permission = new Permission();
-  //       permission.permission = p;
-  //       permission.type = /\*/.test(p) ? 'pattern' : 'single';
-  //       permission.module = 'system';
-  //       permission.disabled = false;
-  //       save_permissions.push(permission);
-  //     });
-  //
-  //     save_permissions = await c.manager.save(save_permissions);
-  //     existing_permissions = _.concat(existing_permissions, save_permissions);
-  //   }
-  //
-  //   if (roles.length > 0) {
-  //     const save_roles: Role[] = [];
-  //     roles.map(r => {
-  //       const role = new Role();
-  //       role.rolename = r.role;
-  //       role.displayName = r.displayName;
-  //       role.disabled = false;
-  //       role.permissions = _.map(r.permissions, p => existing_permissions.find(_p => _p.permission === p));
-  //       save_roles.push(role);
-  //     });
-  //     return await entityController.save(save_roles);
-  //   }
-  //
-  //   return [];
+  //   return await q.getMany();
   // }
 
+  private static async buildOrWhere<T>(list: string[], key: string) {
+    const query: any = {$or: []};
+    for (const perm of list) {
+      const d = {};
+      d[key] = perm;
+      query.$or.push(d);
+    }
+    return query;
+  }
+
   static async initUsers(invoker: Invoker,
-                         entityController: EntityController,
+                         entityController: IEntityController,
                          authManager: AuthManager,
                          users: IConfigUser[]): Promise<User[]> {
     // TODO check if autocreation is enabled
     if (users.length === 0) {
       return [];
     }
-    const c = await entityController.storageRef.connect();
-    const exists_users = await this.buildOrWhere(c, User, _.map(users, user => user.username), 'username');
+    // const c = await entityController.storageRef.connect() as TypeOrmConnectionWrapper;
+    const exists_users = await entityController.find(User, this.buildOrWhere(
+      _.map(users, user => user.username),
+      'username'));
 
 
     // remove already created users
@@ -218,7 +186,7 @@ export class AuthHelper {
 
     let existing_roles: Role[] = [];
     if (rolenames.length > 0) {
-      existing_roles = await this.buildOrWhere(c, Role, rolenames, 'rolename');
+      existing_roles = await entityController.find(Role, this.buildOrWhere(rolenames, 'rolename'));
       existing_roles.map(r => _.remove(rolenames, _r => _r === r.rolename));
     }
     // let existing_roles = await c.manager.find(Role, {where: {rolename: In(rolenames)}});

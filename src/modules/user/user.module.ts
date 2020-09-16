@@ -15,7 +15,7 @@ import {
   AuthService,
   FormsModule,
   NavigatorModule,
-  SystemModule
+  BaseModule
 } from '@typexs/ng-base';
 import {UserAuthGuardService} from './user-auth-guard.service';
 import {APP_ROUTES} from './user.routes';
@@ -68,7 +68,7 @@ const PROVIDERS = [
     HttpClientModule,
     NgFormsModule,
     FormsModule,
-    SystemModule,
+    BaseModule,
     NavigatorModule
   ],
   exports: [

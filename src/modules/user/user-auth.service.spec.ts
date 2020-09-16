@@ -1,10 +1,10 @@
 import {getTestBed, TestBed} from '@angular/core/testing';
 
 import {expect} from 'chai';
-import {HttpClientModule} from "@angular/common/http";
-import {Observable} from "rxjs/Observable";
-import {UserAuthService} from "./user-auth.service";
-import {MessageService, SystemModule} from "@typexs/ng-base";
+import {HttpClientModule} from '@angular/common/http';
+import {UserAuthService} from './user-auth.service';
+import {RouterTestingModule} from '@angular/router/testing';
+import {AppService, BaseModule, MessageService} from '@typexs/ng-base';
 
 
 describe('UserAuthService', () => {
@@ -12,8 +12,8 @@ describe('UserAuthService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientModule, SystemModule],
-      providers: [UserAuthService, MessageService]
+      imports: [HttpClientModule, RouterTestingModule, BaseModule],
+      providers: [UserAuthService, MessageService, AppService]
     });
   });
 
@@ -26,7 +26,7 @@ describe('UserAuthService', () => {
     // inject the service
     service = TestBed.get(UserAuthService);
     expect(service).to.exist;
-    //expect(service.isInitialized()).to.be.false;
+    // expect(service.isInitialized()).to.be.false;
 
 
   });

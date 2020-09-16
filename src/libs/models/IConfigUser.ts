@@ -1,4 +1,4 @@
-import {IAuthUser} from "./IAuthUser";
+import {IAuthUser} from './IAuthUser';
 
 
 export interface IConfigUser extends IAuthUser {

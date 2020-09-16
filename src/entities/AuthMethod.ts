@@ -1,101 +1,101 @@
-import {
-  AfterInsert,
-  AfterLoad,
-  AfterUpdate,
-  BeforeInsert,
-  BeforeUpdate,
-  CreateDateColumn,
-  Index,
-  Entity,
-  Column,
-  UpdateDateColumn,
-  PrimaryGeneratedColumn
-} from "typeorm";
+// import {
+//   AfterInsert,
+//   AfterLoad,
+//   AfterUpdate,
+//   BeforeInsert,
+//   BeforeUpdate,
+//   CreateDateColumn,
+//   Index,
+//   Entity,
+//   Column,
+//   UpdateDateColumn,
+//   PrimaryGeneratedColumn
+// } from 'typeorm';
 
-import * as _ from "lodash";
-import {IAuthMethod} from "../libs/models/IAuthMethod";
+import {IAuthMethod} from '../libs/models/IAuthMethod';
+import {Entity, Property} from '@typexs/schema/browser';
 
 
 @Entity()
-@Index(["authId", "identifier"], {unique: true})
+// @Index(['authId', 'identifier'], {unique: true})
 export class AuthMethod implements IAuthMethod {
 
-  @PrimaryGeneratedColumn()
+  @Property({auto: true})
   id: number;
 
-  @Column({type: 'varchar', length: 128})
+  @Property({type: 'string', length: 128})
   authId: string;
 
-  @Column({type: 'varchar', length: 32})
+  @Property({type: 'string', length: 32})
   type: string;
 
-  @Column({type: 'varchar', length: 256, nullable: true})
+  @Property({type: 'string', length: 256, nullable: true})
   mail: string;
 
-  @Column({type: 'int'})
+  @Property()
   userId: number;
 
   /**
    * default marker
    * @type {boolean}
    */
-  @Column()
+  @Property()
   standard: boolean = false;
 
-  @Column({type: 'varchar', length: 256, nullable: true})
+  @Property({type: 'string', length: 256, nullable: true})
   identifier: string;
 
-  @Column({type: 'varchar', length: 256, nullable: true})
+  @Property({type: 'string', length: 256, nullable: true})
   secret: string;
 
-  @Column({type: 'int'})
+  @Property()
   failed: number = 0;
 
-  @Column({type: 'int'})
+  @Property()
   failLimit: number = 100;
 
-  @Column()
+  @Property()
   disabled: boolean = false;
 
-  @CreateDateColumn()
+  @Property({type: 'date:created'})
   created_at: Date;
 
-  @UpdateDateColumn()
+  @Property({type: 'date:updated'})
   updated_at: Date;
 
-  @Column({type: 'text', nullable: true})
+  @Property({nullable: true})
   data: any = null;
 
-
-  @BeforeInsert()
-  bin() {
-    if (this.data && !_.isString(this.data)) {
-      this.data = JSON.stringify(this.data);
-    }
-  }
-
-  @BeforeUpdate()
-  bup() {
-    this.bin()
-  }
-
-
-  @AfterLoad()
-  load() {
-    if (this.data && _.isString(this.data)) {
-      this.data = JSON.parse(this.data);
-    }
-  }
-
-  @AfterInsert()
-  ain() {
-    this.load()
-  }
-
-  @AfterUpdate()
-  aup() {
-    this.load()
-  }
+  //
+  // @BeforeInsert()
+  // bin() {
+  //   if (this.data && !_.isString(this.data)) {
+  //     this.data = JSON.stringify(this.data);
+  //   }
+  // }
+  //
+  // @BeforeUpdate()
+  // bup() {
+  //   this.bin();
+  // }
+  //
+  //
+  // @AfterLoad()
+  // load() {
+  //   if (this.data && _.isString(this.data)) {
+  //     this.data = JSON.parse(this.data);
+  //   }
+  // }
+  //
+  // @AfterInsert()
+  // ain() {
+  //   this.load();
+  // }
+  //
+  // @AfterUpdate()
+  // aup() {
+  //   this.load();
+  // }
 
 
 }

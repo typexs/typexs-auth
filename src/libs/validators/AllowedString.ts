@@ -1,4 +1,4 @@
-import {registerDecorator, ValidationArguments, ValidationOptions} from "class-validator";
+import {registerDecorator, ValidationArguments, ValidationOptions} from 'class-validator';
 
 /*
 @ValidatorConstraint({ async: true })
@@ -10,17 +10,17 @@ export class AllowedCharsConstraint implements ValidatorConstraintInterface {
 }
 */
 
-export function AllowedString(regex:string | RegExp, validationOptions?: ValidationOptions) {
+export function AllowedString(regex: string | RegExp, validationOptions?: ValidationOptions) {
   return function (object: Object, propertyName: string) {
     registerDecorator({
-      name:"allowedString",
+      name: 'allowedString',
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,
       constraints: [],
       validator: {
         validate(value: any, args: ValidationArguments) {
-          if(regex instanceof RegExp){
+          if (regex instanceof RegExp) {
             return regex.test(value);
           }
           return new RegExp(regex).test(value);

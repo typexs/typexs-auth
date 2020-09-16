@@ -2,12 +2,12 @@
 
 export interface IErrorMessage {
 
-  error?:Error;
+  error?: Error;
 
-  property:string;
+  property: string;
 
-  value:string;
+  value: string;
 
-  constraints?:{[k:string]:string}
+  constraints?: {[k: string]: string};
 
 }

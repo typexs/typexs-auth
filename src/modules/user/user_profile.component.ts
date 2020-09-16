@@ -1,8 +1,8 @@
 import {Component, OnInit} from '@angular/core';
-import {Router} from "@angular/router";
-import {User} from "../../entities/User";
-import {UserAuthService} from "./user-auth.service";
-import {AuthService} from "@typexs/ng-base";
+import {Router} from '@angular/router';
+import {User} from '../../entities/User';
+import {UserAuthService} from './user-auth.service';
+import {AuthService} from '@typexs/ng-base';
 
 
 @Component({
@@ -22,8 +22,9 @@ export class UserProfileComponent implements OnInit {
   }
 
   async ngOnInit() {
-    this.user = await this.getUserAuthService().getUser();
-    //console.log(this.getUserAuthService().getStoredToken(),this.user)
+    this.getUserAuthService().getUser().subscribe(user => {
+      this.user = user;
+    });
   }
 
 

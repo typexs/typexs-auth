@@ -1,4 +1,4 @@
-import {AbstractUserLogout} from "./AbstractUserLogout";
+import {AbstractUserLogout} from './AbstractUserLogout';
 
 export class DefaultUserLogout extends AbstractUserLogout {
 
