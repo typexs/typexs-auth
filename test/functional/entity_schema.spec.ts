@@ -1,5 +1,5 @@
-import {suite, test, timeout} from 'mocha-typescript';
-import {Bootstrap, Container, StorageRef, TypeOrmEntityRegistry} from '@typexs/base';
+import {suite, test, timeout} from '@testdeck/mocha';
+import {Bootstrap, Injector, StorageRef, TypeOrmEntityRegistry} from '@typexs/base';
 import * as _ from 'lodash';
 import {expect} from 'chai';
 import {TESTDB_SETTING, TestHelper} from './TestHelper';
@@ -7,6 +7,7 @@ import {EntityController} from '@typexs/schema';
 import {User} from '../../src/entities/User';
 import {Permission} from '@typexs/roles';
 import {Role} from '@typexs/roles/entities/Role';
+import {TypeOrmConnectionWrapper} from '@typexs/base/libs/storage/framework/typeorm/TypeOrmConnectionWrapper';
 
 
 const settingsTemplate = {
@@ -39,9 +40,9 @@ class EntitySchemaSpec {
 
   @test
   async 'create schema'() {
-    const ref: StorageRef = Container.get('storage.default');
-    const controller: EntityController = Container.get('EntityController.default');
-    const c = await ref.connect();
+    const ref: StorageRef = Injector.get('storage.default');
+    const controller: EntityController = Injector.get('EntityController.default');
+    const c = await ref.connect() as TypeOrmConnectionWrapper;
 
     const tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\' and tbl_name not like \'%sqlite%\';');
     expect(_.map(tables, t => t.name)).to.have.include.members([

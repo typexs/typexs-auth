@@ -1,8 +1,8 @@
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 
 import {C_DEFAULT, K_ROUTE_CONTROLLER, WebServer} from '@typexs/server';
-import {Bootstrap, Container, PlatformUtils} from '@typexs/base';
+import {Bootstrap, Injector, PlatformUtils} from '@typexs/base';
 import {AuthManager} from '../../src/libs/auth/AuthManager';
 import {TestHelper} from './TestHelper';
 
@@ -53,12 +53,12 @@ class MiddlewareSpec {
     // Container.set('EntityController.default', {});
 
 
-    const manager = Container.get(AuthManager);
-    Container.set(AuthManager.NAME, manager);
+    const manager = Injector.get(AuthManager);
+    Injector.set(AuthManager.NAME, manager);
     await manager.prepare();
 
 
-    const web = <WebServer>Container.get(WebServer);
+    const web = <WebServer>Injector.get(WebServer);
     await web.initialize({
       type: 'web',
       framework: 'express',

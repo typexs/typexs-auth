@@ -1,5 +1,7 @@
-import {suite, test, timeout} from 'mocha-typescript';
-import {Bootstrap, Container, Invoker} from '@typexs/base';
+import * as _ from 'lodash';
+import {IEntityRef, IPropertyRef} from 'commons-schema-api/browser';
+import {suite, test, timeout} from '@testdeck/mocha';
+import {Bootstrap, Injector, Invoker} from '@typexs/base';
 import {expect} from 'chai';
 import {User} from '../../src/entities/User';
 import {TESTDB_SETTING} from './TestHelper';
@@ -158,9 +160,9 @@ class AuthConfigSpec {
     // const xsem = ref.controller;
     // const invoker = ref.invoker;
 
-    const invoker = Container.get(Invoker.NAME) as Invoker; // await AuthHelper.initRoles(xsem, opts.auth.initRoles);
-    const xsem = Container.get('EntityController.default') as EntityController;
-    const authManager = Container.get(AuthManager.NAME) as AuthManager;
+    const invoker = Injector.get(Invoker.NAME) as Invoker; // await AuthHelper.initRoles(xsem, opts.auth.initRoles);
+    const xsem = Injector.get('EntityController.default') as EntityController;
+    const authManager = Injector.get(AuthManager.NAME) as AuthManager;
     const initUsers = [
       {
         username: 'admin',
@@ -178,10 +180,22 @@ class AuthConfigSpec {
     expect(users).to.have.length(0);
 
     users = await xsem.find(User, null, {limit: 0});
-    // console.log(users);
-
+    expect(users).to.have.length(1);
     expect(users[0].getRoles()).to.have.length(1);
 
+    // return user with role and permissions
+
+    const user = await xsem.findOne(User, {id: users[0].id}, {
+      hooks: {
+        abortCondition: (entityRef: IEntityRef, propertyDef: IPropertyRef, results: any, op: any) => {
+          return op.entityDepth > 1; // get permissions!
+        }
+      }
+    });
+
+    const perms = _.concat([], ...user.getRoles().map(role => role.permissions));
+    expect(perms).to.have.length(1);
+    expect(perms.map(x => x.permission)).to.be.deep.eq(['*']);
 
   }
 }

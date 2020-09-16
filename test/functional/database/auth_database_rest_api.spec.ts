@@ -1,16 +1,14 @@
-import {suite, timeout, test} from "mocha-typescript";
-
+import {suite, test, timeout} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as request from 'supertest';
-
-import {K_ROUTE_CONTROLLER, WebServer} from "@typexs/server";
-import {Bootstrap, Container, Config} from "@typexs/base";
-
-import {Auth} from "../../../src/middleware/Auth";
-import {DefaultUserSignup} from "../../../src/libs/models/DefaultUserSignup";
-import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
-import {ITypexsOptions} from "@typexs/base/libs/ITypexsOptions";
-import {TESTDB_SETTING, TestHelper} from "../TestHelper";
+import {K_ROUTE_CONTROLLER, WebServer} from '@typexs/server';
+import {Bootstrap, Config, Injector} from '@typexs/base';
+import {Auth} from '../../../src/middleware/Auth';
+import {DefaultUserSignup} from '../../../src/libs/models/DefaultUserSignup';
+import {DefaultUserLogin} from '../../../src/libs/models/DefaultUserLogin';
+import {ITypexsOptions} from '@typexs/base/libs/ITypexsOptions';
+import {TESTDB_SETTING, TestHelper} from '../TestHelper';
+import {TypeOrmConnectionWrapper} from '@typexs/base/libs/storage/framework/typeorm/TypeOrmConnectionWrapper';
 
 
 let bootstrap: Bootstrap = null;
@@ -41,10 +39,10 @@ class AuthConfigSpec {
 
   static async before() {
     Config.clear();
-    Container.reset();
+    Injector.reset();
     bootstrap = await TestHelper.bootstrap_basic(OPTIONS);
 
-    web = Container.get(WebServer);
+    web = Injector.get(WebServer);
     await web.initialize({
       type: 'web',
       framework: 'express',
@@ -56,18 +54,18 @@ class AuthConfigSpec {
     });
 
     await web.prepare();
-    let uri = web.getUri();
-    let routes = web.getRoutes();
+    const uri = web.getUri();
+    const routes = web.getRoutes();
 
     await web.start();
 
   }
 
   static async after() {
-    if(web){
+    if (web) {
       await web.stop();
     }
-    if(bootstrap){
+    if (bootstrap) {
       await bootstrap.shutdown();
     }
     Bootstrap.reset();
@@ -75,33 +73,33 @@ class AuthConfigSpec {
   }
 
 
- /*
-  @test
-  async 'signup'() {
-    let auth = <Auth>Container.get("Auth");
-    let signUp: DefaultUserSignup = auth.getInstanceForSignup();
-    signUp.username = 'superman';
-    signUp.mail = `superman${inc++}@test.me`;
-    signUp.password = 'password';
-    signUp.passwordConfirm = 'password';
+  /*
+   @test
+   async 'signup'() {
+     let auth = <Auth>Container.get("Auth");
+     let signUp: DefaultUserSignup = auth.getInstanceForSignup();
+     signUp.username = 'superman';
+     signUp.mail = `superman${inc++}@test.me`;
+     signUp.password = 'password';
+     signUp.passwordConfirm = 'password';
 
-    let res = await request(web.getUri())
-      .post('/api/user/signup')
-      .send(signUp)
-      .expect(200);
+     let res = await request(web.getUri())
+       .post('/api/user/signup')
+       .send(signUp)
+       .expect(200);
 
 
-    expect(res.body.$state.success).to.be.true;
-    expect(res.body.password).to.be.null;
-    expect(res.body.passwordConfirm).to.be.null;
-  }
-*/
+     expect(res.body.$state.success).to.be.true;
+     expect(res.body.password).to.be.null;
+     expect(res.body.passwordConfirm).to.be.null;
+   }
+ */
 
   @test
   async 'lifecycle signup -> login -> get user -> logout'() {
-    let auth = <Auth>Container.get("Auth");
+    const auth = <Auth>Injector.get('Auth');
 
-    let signUp: DefaultUserSignup = auth.getInstanceForSignup();
+    const signUp: DefaultUserSignup = auth.getInstanceForSignup();
     signUp.username = 'testmann';
     signUp.mail = 'testman@test.tx';
     signUp.password = 'password';
@@ -112,17 +110,15 @@ class AuthConfigSpec {
       .send(signUp)
       .expect(200);
 
-    let c = await bootstrap.getStorage().get("default").connect();
-    let data = await c.manager.query("select * from auth_method");
+    const c = await bootstrap.getStorage().get('default').connect() as TypeOrmConnectionWrapper;
+    const data = await c.manager.query('select * from auth_method');
 
     expect(res.body.$state.success).to.be.true;
     expect(res.body.password).to.be.null;
     expect(res.body.passwordConfirm).to.be.null;
 
 
-
-
-    let logIn: DefaultUserLogin = auth.getInstanceForLogin();
+    const logIn: DefaultUserLogin = auth.getInstanceForLogin();
     logIn.username = 'testmann';
     logIn.password = 'password';
 
@@ -132,10 +128,10 @@ class AuthConfigSpec {
       .expect(200);
 
 
-    let token = auth.getToken(res);
-    let session = await auth.getSessionByToken(token);
+    const token = auth.getToken(res);
+    const session = await auth.getSessionByToken(token);
     expect(session).to.not.be.empty;
-    let user = await auth.getUser(session.userId);
+    const user = await auth.getUser(session.userId);
     expect(user.id).to.be.eq(session.userId);
     expect(user.username).to.be.eq(logIn.username);
     expect(res.body.$state.success).to.be.true;
@@ -161,11 +157,12 @@ class AuthConfigSpec {
       .set(auth.getHttpAuthKey(), token)
       .expect(401);
 
-    // TODO implement all error handling https://github.com/typestack/routing-controllers/blob/master/sample/sample6-global-middlewares/AllErrorsHandler.ts
-    //expect(res.body.success).to.be.false;
-    //expect(res.body.error).to.have.length(1);
+    // TODO implement all error handling
+    //  https://github.com/typestack/routing-controllers/blob/master/sample/sample6-global-middlewares/AllErrorsHandler.ts
+    // expect(res.body.success).to.be.false;
+    // expect(res.body.error).to.have.length(1);
 
-    //console.log(res.body);
+    // console.log(res.body);
 
   }
 

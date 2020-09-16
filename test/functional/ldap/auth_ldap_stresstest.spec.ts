@@ -1,5 +1,5 @@
-import {suite, test, timeout} from 'mocha-typescript';
-import {Bootstrap, Config, Container, StorageRef} from '@typexs/base';
+import {suite, test, timeout} from '@testdeck/mocha';
+import {Bootstrap, Config, Injector, StorageRef} from '@typexs/base';
 import * as _ from 'lodash';
 import {getMetadataArgsStorage} from 'typeorm';
 import {expect} from 'chai';
@@ -12,6 +12,7 @@ import {LDAP_CONFIG} from './ldap_config';
 import {LOGGING} from '../config';
 import {Role} from '@typexs/roles/entities/Role';
 import {Permission, RBelongsTo} from '@typexs/roles';
+import {AuthMethod, AuthSession} from '../../../src';
 
 const inc = 0;
 
@@ -23,7 +24,9 @@ const settingsTemplate = {
       type: 'postgres',
       database: 'auth',
       username: 'auth',
-      port: 5234
+      port: 5234,
+      logger: 'simple-console',
+      logging: 'all',
 
     }
   },
@@ -40,14 +43,12 @@ let bootstrap: Bootstrap = null;
 class AuthLdapLifecycleSpec {
 
   static async before() {
-    _.remove(getMetadataArgsStorage().tables, x => x.target === User);
-    _.remove(getMetadataArgsStorage().columns, x => x.target === User);
-    _.remove(getMetadataArgsStorage().tables, x => x.target === Role);
-    _.remove(getMetadataArgsStorage().columns, x => x.target === Role);
-    _.remove(getMetadataArgsStorage().tables, x => x.target === Permission);
-    _.remove(getMetadataArgsStorage().columns, x => x.target === Permission);
-    _.remove(getMetadataArgsStorage().tables, x => x.target === RBelongsTo);
-    _.remove(getMetadataArgsStorage().columns, x => x.target === RBelongsTo);
+    _.remove(getMetadataArgsStorage().tables, x => [
+      User, Role, Permission, RBelongsTo, AuthSession, AuthMethod
+    ].includes(x.target as any));
+    _.remove(getMetadataArgsStorage().columns, x => [
+      User, Role, Permission, RBelongsTo, AuthSession, AuthMethod
+    ].includes(x.target as any));
     Bootstrap.reset();
     Config.clear();
   }
@@ -56,14 +57,12 @@ class AuthLdapLifecycleSpec {
   static async after() {
     // await web.stop();
     Bootstrap.reset();
-    _.remove(getMetadataArgsStorage().tables, x => x.target === User);
-    _.remove(getMetadataArgsStorage().columns, x => x.target === User);
-    _.remove(getMetadataArgsStorage().tables, x => x.target === Role);
-    _.remove(getMetadataArgsStorage().columns, x => x.target === Role);
-    _.remove(getMetadataArgsStorage().tables, x => x.target === Permission);
-    _.remove(getMetadataArgsStorage().columns, x => x.target === Permission);
-    _.remove(getMetadataArgsStorage().tables, x => x.target === RBelongsTo);
-    _.remove(getMetadataArgsStorage().columns, x => x.target === RBelongsTo);
+    _.remove(getMetadataArgsStorage().tables, x => [
+      User, Role, Permission, RBelongsTo, AuthSession, AuthMethod
+    ].includes(x.target as any));
+    _.remove(getMetadataArgsStorage().columns, x => [
+      User, Role, Permission, RBelongsTo, AuthSession, AuthMethod
+    ].includes(x.target as any));
   }
 
 
@@ -86,7 +85,7 @@ class AuthLdapLifecycleSpec {
     bootstrap = refs.bootstrap;
     const auth = refs.auth;
 
-    const ref: StorageRef = Container.get('storage.default');
+    const ref: StorageRef = Injector.get('storage.default');
     const c = await ref.connect();
 
     let doingLogin = null;
@@ -129,7 +128,7 @@ class AuthLdapLifecycleSpec {
     bootstrap = refs.bootstrap;
 
 
-    const ref: StorageRef = Container.get('storage.default');
+    const ref: StorageRef = Injector.get('storage.default');
     const c = await ref.connect();
 
     const names = ['billy', 'franz', 'herbert', 'neon', 'robert', 'sammy', 'lukas'];
@@ -147,7 +146,7 @@ class AuthLdapLifecycleSpec {
       login.password = 'password';
 
       const p = auth.doLogin(login, req, res);
-      p.then((l) => {
+      p.then((l: any) => {
 
         // tslint:disable-next-line:no-unused-expression
         expect(l.success).to.be.true;

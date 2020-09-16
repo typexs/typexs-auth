@@ -1,12 +1,12 @@
-import {suite, test, timeout} from "mocha-typescript";
-import {Bootstrap, Config, Container, Log} from "@typexs/base";
-import * as _ from "lodash";
-import {DefaultUserLogin} from "../../../src/libs/models/DefaultUserLogin";
-import {LdapAdapter} from "../../../src/adapters/auth/ldap/LdapAdapter";
-import {expect} from "chai";
-import {TESTDB_SETTING, TestHelper} from "../TestHelper";
-import {AuthDataContainer} from "../../../src/libs/auth/AuthDataContainer";
-import {LDAP_CONFIG} from "./ldap_config";
+import {suite, test, timeout} from '@testdeck/mocha';
+import {Bootstrap, Config, Injector, Log} from '@typexs/base';
+import * as _ from 'lodash';
+import {DefaultUserLogin} from '../../../src/libs/models/DefaultUserLogin';
+import {LdapAdapter} from '../../../src/adapters/auth/ldap/LdapAdapter';
+import {expect} from 'chai';
+import {TESTDB_SETTING, TestHelper} from '../TestHelper';
+import {AuthDataContainer} from '../../../src/libs/auth/AuthDataContainer';
+import {LDAP_CONFIG} from './ldap_config';
 
 
 process.setMaxListeners(1000);
@@ -27,7 +27,7 @@ const settingsTemplate = {
 
 let bootstrap: Bootstrap = null;
 @suite('functional/ldap/auth_ldap_adapter') @timeout(20000)
-class Auth_ldap_adapterSpec {
+class AuthLdapAdapterSpec {
 
   static async before() {
 
@@ -36,7 +36,7 @@ class Auth_ldap_adapterSpec {
 
   static async after() {
     // await web.stop();
-    if(bootstrap){
+    if (bootstrap) {
       await bootstrap.shutdown();
     }
     Bootstrap.reset();
@@ -45,16 +45,16 @@ class Auth_ldap_adapterSpec {
 
   @test
   async 'authenticate by user search through admin bind'() {
-    let settings = _.clone(settingsTemplate);
+    const settings = _.clone(settingsTemplate);
     settings.auth.methods.default = _.clone(LDAP_CONFIG);
 
-    let ref = await TestHelper.bootstrap_auth('default',settings);
+    const ref = await TestHelper.bootstrap_auth('default', settings);
     bootstrap = ref.bootstrap;
 
-    let adapter = Container.get(LdapAdapter);
+    const adapter = Injector.get(LdapAdapter);
     await adapter.prepare(Config.get('auth.methods.default'));
 
-    //Log.info('adapter ready');
+    // Log.info('adapter ready');
 
     // success  login
     let login = new DefaultUserLogin();
@@ -63,7 +63,7 @@ class Auth_ldap_adapterSpec {
     let container = new AuthDataContainer(login);
 
     let success = await adapter.authenticate(container);
-    //Log.info(success, container);
+    // Log.info(success, container);
     expect(success).to.be.true;
 
 
@@ -74,7 +74,7 @@ class Auth_ldap_adapterSpec {
     container = new AuthDataContainer(login);
 
     success = await adapter.authenticate(container);
-    //Log.info(success, container);
+    // Log.info(success, container);
     expect(success).to.be.false;
 
     // failed  login
@@ -84,11 +84,11 @@ class Auth_ldap_adapterSpec {
     container = new AuthDataContainer(login);
 
     success = await adapter.authenticate(container);
-    //Log.info(success, container);
+    // Log.info(success, container);
     expect(success).to.be.false;
 
 
-    //await adapter.queue.await()
+    // await adapter.queue.await()
 
   }
 

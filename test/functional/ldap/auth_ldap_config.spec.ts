@@ -1,6 +1,6 @@
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
-import {Bootstrap, Config, Container, FileUtils, Invoker, ITypexsOptions, PlatformUtils, RuntimeLoader} from '@typexs/base';
+import {Bootstrap, Config, Injector, FileUtils, Invoker, ITypexsOptions, PlatformUtils, RuntimeLoader} from '@typexs/base';
 
 import {Auth} from '../../../src/middleware/Auth';
 import {IAuthConfig} from '../../../src/libs/auth/IAuthConfig';
@@ -80,7 +80,7 @@ class AuthLdapConfigSpec {
     // await manager.prepare();
 
 
-    const auth = Container.get(Auth);
+    const auth = Injector.get(Auth);
     // await auth.prepare({});
 
     const adapters = auth.getManager().getDefinedAdapters();

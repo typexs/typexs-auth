@@ -1,5 +1,5 @@
-import {suite, test} from 'mocha-typescript';
-import {Bootstrap, Container, Log} from '@typexs/base';
+import {suite, test} from '@testdeck/mocha';
+import {Bootstrap, Log} from '@typexs/base';
 import {expect} from 'chai';
 import {ITypexsOptions} from '@typexs/base/libs/ITypexsOptions';
 import {TESTDB_SETTING, TestHelper} from '../TestHelper';
@@ -124,7 +124,6 @@ class AuthConfigSpec {
 
     r = auth['canSignup'](adapter);
     expect(r).to.be.true;
-
 
 
   }

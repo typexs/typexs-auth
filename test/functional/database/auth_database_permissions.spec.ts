@@ -1,8 +1,8 @@
-import {suite, test, timeout} from 'mocha-typescript';
+import {suite, test, timeout} from '@testdeck/mocha';
 import * as request from 'supertest';
 
 import {K_ROUTE_CONTROLLER, WebServer} from '@typexs/server';
-import {Bootstrap, Config, Container} from '@typexs/base';
+import {Bootstrap, Config, Injector} from '@typexs/base';
 
 import {Auth} from '../../../src/middleware/Auth';
 import {DefaultUserSignup} from '../../../src/libs/models/DefaultUserSignup';
@@ -16,6 +16,7 @@ import {User} from '../../../src';
 import {Role} from '@typexs/roles/entities/Role';
 import {RBelongsTo} from '@typexs/roles';
 import {EntityController} from '@typexs/schema';
+import {TypeOrmConnectionWrapper} from '@typexs/base/libs/storage/framework/typeorm/TypeOrmConnectionWrapper';
 
 let web: WebServer = null;
 
@@ -89,14 +90,14 @@ class AuthDatabasePermissionsSpec {
 
   static async before() {
     Config.clear();
-    Container.reset();
+    Injector.reset();
 
     bootstrap = await TestHelper.bootstrap_basic(
       OPTIONS,
       [{type: 'system'}]
     );
 
-    web = Container.get('server.default');
+    web = Injector.get('server.default');
 
     // const uri = web.getUri();
     // const routes = web.getRoutes();
@@ -119,9 +120,9 @@ class AuthDatabasePermissionsSpec {
 
   @test
   async 'lifecycle signup -> login -> get user -> logout'() {
-    const entityController = <EntityController>Container.get('EntityController.default');
+    const entityController = <EntityController>Injector.get('EntityController.default');
 
-    const c = await entityController.storageRef.connect();
+    const c = await entityController.storageRef.connect() as TypeOrmConnectionWrapper;
     const _users = await c.manager.getRepository(User).find();
     const rBelongsTo = await c.manager.getRepository(RBelongsTo).find();
     const roles = await c.manager.getRepository(Role).find();
@@ -134,7 +135,7 @@ class AuthDatabasePermissionsSpec {
     expect(users).to.have.length(1);
     expect(users[0].roles).to.have.length(1);
 
-    const auth = <Auth>Container.get('Auth');
+    const auth = <Auth>Injector.get('Auth');
 
     // not authorized and no access permissison
     let res = await request(web.getUri())

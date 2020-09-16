@@ -1,6 +1,6 @@
-import {suite, test, timeout} from 'mocha-typescript';
+import {suite, test, timeout} from '@testdeck/mocha';
 import {expect} from 'chai';
-import {Bootstrap, Container, ITypexsOptions} from '@typexs/base';
+import {Bootstrap, Injector, ITypexsOptions} from '@typexs/base';
 
 import {Auth} from '../../src/middleware/Auth';
 import {User} from '../../src/entities/User';
@@ -78,7 +78,7 @@ class AuthConfigSpec {
     // Container.set(AuthManager.NAME, manager);
     // await manager.prepare();
 
-    const auth = Container.get(Auth);
+    const auth = Injector.get(Auth);
     await auth.prepare({});
 
     const adapters = auth.getManager().getDefinedAdapters();

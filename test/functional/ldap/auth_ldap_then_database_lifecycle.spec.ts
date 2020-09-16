@@ -1,5 +1,5 @@
-import {suite, test} from 'mocha-typescript';
-import {Bootstrap, Config, Container, StorageRef} from '@typexs/base';
+import {suite, test} from '@testdeck/mocha';
+import {Bootstrap, Config, Injector, StorageRef} from '@typexs/base';
 import * as _ from 'lodash';
 import {expect} from 'chai';
 import {DefaultUserLogin} from '../../../src/libs/models/DefaultUserLogin';
@@ -14,6 +14,7 @@ import {LDAP_CONFIG} from './ldap_config';
 import {IAuthConfig} from '../../../src/libs/auth/IAuthConfig';
 import {IDatabaseAuthOptions} from '../../../src/adapters/auth/db/IDatabaseAuthOptions';
 import {Auth} from '../../../src/middleware/Auth';
+import {TypeOrmConnectionWrapper} from '@typexs/base/libs/storage/framework/typeorm/TypeOrmConnectionWrapper';
 
 
 const settingsTemplate = {
@@ -86,11 +87,11 @@ class AuthLdapLifecycleSpec {
     const settings = _.clone(settingsTemplate);
 
     bootstrap = await TestHelper.bootstrap_basic(settings);
-    const auth = <Auth>Container.get(Auth.NAME);
+    const auth = <Auth>Injector.get(Auth.NAME);
     await auth.prepare(settings.auth);
 
-    const ref: StorageRef = Container.get('storage.default');
-    const c = await ref.connect();
+    const ref: StorageRef = Injector.get('storage.default');
+    const c = await ref.connect() as TypeOrmConnectionWrapper;
 
     let doingLogin = null;
     let login: DefaultUserLogin = null;
