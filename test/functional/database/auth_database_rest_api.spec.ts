@@ -9,6 +9,7 @@ import {DefaultUserLogin} from '../../../src/libs/models/DefaultUserLogin';
 import {ITypexsOptions} from '@typexs/base/libs/ITypexsOptions';
 import {TESTDB_SETTING, TestHelper} from '../TestHelper';
 import {TypeOrmConnectionWrapper} from '@typexs/base/libs/storage/framework/typeorm/TypeOrmConnectionWrapper';
+import {API_GET_USER, API_USER_IS_AUTHENTICATED, API_USER_LOGIN, API_USER_LOGOUT, API_USER_SIGNUP} from '../../../src';
 
 
 let bootstrap: Bootstrap = null;
@@ -106,7 +107,7 @@ class AuthConfigSpec {
     signUp.passwordConfirm = 'password';
 
     let res = await request(web.getUri())
-      .post('/api/user/signup')
+      .post('/api' + API_USER_SIGNUP)
       .send(signUp)
       .expect(200);
 
@@ -123,7 +124,7 @@ class AuthConfigSpec {
     logIn.password = 'password';
 
     res = await request(web.getUri())
-      .post('/api/user/login')
+      .post('/api' + API_USER_LOGIN)
       .send(logIn)
       .expect(200);
 
@@ -138,7 +139,7 @@ class AuthConfigSpec {
     expect(res.body.$state.isAuthenticated).to.be.true;
 
     res = await request(web.getUri())
-      .get('/api/user')
+      .get('/api' + API_GET_USER)
       .set(auth.getHttpAuthKey(), token)
       .expect(200);
 
@@ -146,16 +147,29 @@ class AuthConfigSpec {
     expect(res.body.username).to.be.eq(logIn.username);
 
     res = await request(web.getUri())
-      .get('/api/user/logout')
+      .get('/api' + API_USER_IS_AUTHENTICATED)
+      .set(auth.getHttpAuthKey(), token)
+      .expect(200);
+    expect(res.body).to.be.true;
+
+    res = await request(web.getUri())
+      .get('/api' + API_USER_LOGOUT)
       .set(auth.getHttpAuthKey(), token)
       .expect(200);
 
     expect(res.body.$state.success).to.be.true;
 
     res = await request(web.getUri())
-      .get('/api/user')
+      .get('/api' + API_GET_USER)
       .set(auth.getHttpAuthKey(), token)
       .expect(401);
+
+    res = await request(web.getUri())
+      .get('/api' + API_USER_IS_AUTHENTICATED)
+      .set(auth.getHttpAuthKey(), token)
+      .expect(200);
+    expect(res.body).to.be.false;
+
 
     // TODO implement all error handling
     //  https://github.com/typestack/routing-controllers/blob/master/sample/sample6-global-middlewares/AllErrorsHandler.ts
