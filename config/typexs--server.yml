@@ -4,11 +4,17 @@ initialise:
       label: Admin
       permissions:
         - '*'
+
     - role: user
       label: User
       permissions:
         - allow view profile
         - allow edit profile
+
+    - role: user_admin
+      label: User administrator
+      permissions:
+        - allow access user list
 
   users:
     - username: admin
