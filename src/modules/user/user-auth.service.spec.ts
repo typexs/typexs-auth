@@ -1,33 +1,60 @@
 import {getTestBed, TestBed} from '@angular/core/testing';
-
 import {expect} from 'chai';
-import {HttpClientModule} from '@angular/common/http';
+import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {UserAuthService} from './user-auth.service';
 import {RouterTestingModule} from '@angular/router/testing';
-import {AppService, BaseModule, MessageService} from '@typexs/ng-base';
+import {BaseModule} from '@typexs/ng-base';
 
 
+/**
+ * UserAuthService
+ * ---------------
+ *
+ * - check initialisation of user auth service
+ * - check if config was loaded
+ * - use session storage for session token
+ * - check user logged in
+ * - check if permissions are loaded
+ * - check if user logout
+ * - check sign in
+ * - check if menu item can be hidden / shown / are enabled / disable
+ * - check no auth support
+ *
+ */
 describe('UserAuthService', () => {
   let service: UserAuthService;
 
+
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientModule, RouterTestingModule, BaseModule],
-      providers: [UserAuthService, MessageService, AppService]
+      imports: [
+        HttpClientTestingModule,
+        RouterTestingModule,
+        BaseModule],
+      providers: [
+        UserAuthService
+      ]
     });
   });
+
 
   afterEach(() => {
     getTestBed().resetTestingModule();
   });
 
 
-  it('should have a service instance and load configuration', async () => {
+  it('should have a service instance and load configuration', () => {
     // inject the service
+    const httpMock = TestBed.get(HttpTestingController);
     service = TestBed.get(UserAuthService);
     expect(service).to.exist;
-    // expect(service.isInitialized()).to.be.false;
 
+
+    service.isInitialized().subscribe(x => {
+      expect(x).to.be.false;
+    });
+
+    // const mockReq = httpMock.expectOne(service.url);
 
   });
 

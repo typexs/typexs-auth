@@ -1,6 +1,6 @@
 <div class="user-profile-wrapper">
 
-  <div *ngIf="isAuthenticated() && user">
+  <div *ngIf="(isAuthenticated() | async) && user">
     User {{ user.username }} is authenicated.
 
     <pre>
@@ -9,7 +9,7 @@
 
   </div>
 
-  <div *ngIf="!isAuthenticated()">
+  <div *ngIf="!(isAuthenticated() | async)">
     User is not authenicated.
   </div>
 

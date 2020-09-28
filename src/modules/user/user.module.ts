@@ -1,24 +1,15 @@
-import {NgModule, APP_INITIALIZER} from '@angular/core';
-import {RouterModule} from '@angular/router';
-import {UserProfileComponent} from './user_profile.component';
+import {NgModule} from '@angular/core';
+import {UserProfileComponent} from './components/profile/user_profile.component';
 import {HTTP_INTERCEPTORS, HttpClientModule} from '@angular/common/http';
-
-import {UserSignupComponent} from './user_signup.component';
-import {UserLoginComponent} from './user_login.component';
-import {UserLogoutComponent} from './user_logout.component';
+import {UserSignupComponent} from './components/signup/user_signup.component';
+import {UserLoginComponent} from './components/login/user_login.component';
+import {UserLogoutComponent} from './components/logout/user_logout.component';
 import {FormsModule as NgFormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 import {AuthTokenInterceptor} from './authtoken.interceptor';
-import {
-
-  AuthGuardService,
-  AuthService,
-  FormsModule,
-  NavigatorModule,
-  BaseModule
-} from '@typexs/ng-base';
+import {AuthGuardService, AuthService, BaseModule, FormsModule, NavigatorModule} from '@typexs/ng-base';
 import {UserAuthGuardService} from './user-auth-guard.service';
-import {APP_ROUTES} from './user.routes';
+import {APP_ROUTES} from './routes';
 import {UserAuthService} from './user-auth.service';
 
 const PROVIDERS = [
@@ -35,23 +26,7 @@ const PROVIDERS = [
     provide: HTTP_INTERCEPTORS,
     useClass: AuthTokenInterceptor,
     multi: true
-  }/*,
-/* {
-   provide: APP_INITIALIZER,
-   multi: true,
-   deps: [AuthService],
-   useFactory: function () {
-
-   }
-
-   useFactory: (auth: AuthService) => {
-     async function startup() {
-       await (<any>auth).configure().toPromise();
-       await (<any>auth).initialAuthCheck();
-     }
-     return startup;
-   }
-  }*/
+  }
 
 ];
 
@@ -63,7 +38,7 @@ const PROVIDERS = [
     UserLogoutComponent
   ],
   imports: [
-    RouterModule.forChild(APP_ROUTES),
+    // RouterModule.forChild(APP_ROUTES),
     CommonModule,
     HttpClientModule,
     NgFormsModule,
@@ -81,6 +56,11 @@ const PROVIDERS = [
 })
 export class UserModule {
 
+
+  static getRoutes() {
+    return APP_ROUTES;
+  }
+
   static forRoot() {
     return {
       ngModule: UserModule,
@@ -89,9 +69,7 @@ export class UserModule {
   }
 
   constructor(private authService: AuthService) {
-    (<UserAuthService><any>authService).configure()
-      .toPromise()
-      .then(r => (<UserAuthService><any>authService).init());
+    (<UserAuthService><any>authService).startup();
   }
 
 

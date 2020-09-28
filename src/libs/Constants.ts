@@ -7,6 +7,8 @@ export const API_USER = '/user';
 export const _API_USER_CONFIG = '/_config';
 export const API_USER_CONFIG = API_USER + _API_USER_CONFIG;
 
+export const API_GET_USER = API_USER;
+
 export const _API_USER_IS_AUTHENTICATED = '/isAuthenticated';
 export const API_USER_IS_AUTHENTICATED = API_USER + _API_USER_IS_AUTHENTICATED;
 

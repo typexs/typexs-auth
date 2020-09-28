@@ -6,18 +6,43 @@ import {of} from 'rxjs';
 import {Injectable} from '@angular/core';
 import * as _ from 'lodash';
 import {Subscription} from 'rxjs/Rx';
-import {switchMap, tap} from 'rxjs/operators';
-import {PermissionHelper} from '@typexs/roles-api/index';
+import {first, mergeMap, switchMap, tap} from 'rxjs/operators';
+import {PermissionHelper} from '@typexs/roles-api';
+import {UserAuthHelper} from './lib/UserAuthHelper';
+import {Route} from '@angular/compiler/src/core';
 
 
+/**
+ * UserAuthGuard protects paths from unallowed access or allow access to verified users
+ *
+ * A route can be marked as "to authenticate" which is setted by parameter
+ * isAuthenticated in the data object of the route, for example:
+ *
+ * ```
+ * {
+ *   path: 'secured'
+ *   data: {
+ *     isAuthenticated: true | false
+ *     anonymView: 'hide' | 'disable' (default: 'disable')
+ *   }
+ * }
+ * ```
+ *
+ * When it is false then route will be only shown (or enabled; depends on 'anonymView' parameter)
+ * when an authentication is necessary, but the current user isn't authenticated.
+ * For example "Sign-In" view should be only accessible for not authenicated users.
+ *
+ *
+ *
+ */
 @Injectable()
 export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard {
 
   subscription: Subscription;
 
-  isAuthenticated: BehaviorSubject<boolean> = new BehaviorSubject(true);
+  isAuthenticated: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
-  isNotAuthenticated: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  isNotAuthenticated: BehaviorSubject<boolean> = new BehaviorSubject(true);
 
   hasPermissions: BehaviorSubject<string[]> = new BehaviorSubject<string[]>([]);
 
@@ -38,8 +63,8 @@ export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard 
     this.subscription = this.authService.isLoggedIn()
       .pipe(tap(
         auth => {
-          this.isAuthenticated.next(auth === false);
-          this.isNotAuthenticated.next(auth === true);
+          this.isAuthenticated.next(auth === true);
+          this.isNotAuthenticated.next(auth === false);
         })).pipe(switchMap(auth => {
         if (auth) {
           return this.authService.getPermissions();
@@ -51,12 +76,6 @@ export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard 
 
         if (permissions && !_.isBoolean(permissions)) {
           this.hasPermissions.next(permissions);
-          // for (const perms of this.checkPermissions) {
-          //   perms.subject.next(
-          //     await PermissionHelper.checkPermissions(permissions, perms.permissions)
-          //   );
-          // }
-
         } else {
           this.hasPermissions.next([]);
         }
@@ -64,35 +83,42 @@ export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard 
 
   }
 
-  // private recheckPermissions(user){
-  //
-  // }
-
   async onMessage(m: any) {
     if (m instanceof AuthMessage) {
       this._update();
     }
   }
 
+  /**
+   * Checks if a route can be accessed.
+   *
+   * @param route
+   * @param state
+   */
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
-    return this.authService.hasRoutePermissions(route, state);
+    if (!this.authService.isEnabled() || !UserAuthHelper.hasRouteAuthCheck(route)) {
+      return new BehaviorSubject(true);
+    }
+    return this.checkAccess(route);
   }
+
 
   /**
    * Mark a link as disabled
    * @param entry
    */
   isDisabled(entry: NavEntry): Observable<boolean> {
-    const isAuth = _.get(entry, 'route.data.isAuthenticated', null);
-    if (_.isBoolean(isAuth)) {
-      if (isAuth) {
-        return this.isAuthenticated.asObservable();
-      } else {
-        return this.isNotAuthenticated.asObservable();
-      }
+    const check = UserAuthHelper.checkIfAuthRequired(entry.route);
+    if (_.isNull(check)) {
+      return new BehaviorSubject(false);
     }
-    return of(false);
+    const status = UserAuthHelper.getRouteDisallowViewMode(entry.route);
+    if (status !== 'disable') {
+      return new BehaviorSubject(false);
+    }
+    return this.checkAccess(entry.route).pipe(mergeMap(x => of(!x)));
   }
+
 
   /**
    * Do not show if permissions are missing
@@ -100,16 +126,40 @@ export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard 
    * @param entry
    */
   isShown(entry: NavEntry): Observable<boolean> {
-    const permissions = _.get(entry, 'route.data.permissions', null);
-    if (permissions) {
-      return new Observable(subscriber => {
-        this.hasPermissions$.subscribe(async userPermission => {
-          subscriber.next(await PermissionHelper.checkPermissions(userPermission, permissions));
-        });
-      });
-    } else {
-      return of(true);
+    const check = UserAuthHelper.checkIfAuthRequired(entry.route);
+    if (_.isNull(check)) {
+      return new BehaviorSubject(true);
     }
+    const status = UserAuthHelper.getRouteDisallowViewMode(entry.route);
+    if (status !== 'hide') {
+      return new BehaviorSubject(true);
+    }
+    return this.checkAccess(entry.route);
   }
+
+
+  private checkAccess(route: Route): Observable<boolean> {
+    const hasAuth = UserAuthHelper.checkIfAuthRequired(route);
+    if (_.isBoolean(hasAuth)) {
+      const permissions = UserAuthHelper.getRoutePermissions(route);
+      if (_.isNull(permissions)) {
+        // no special permissions needed
+        if (hasAuth) {
+          return this.isAuthenticated;
+        } else {
+          return this.isNotAuthenticated;
+        }
+      } else {
+        const x = new BehaviorSubject(false);
+        this.hasPermissions$.subscribe(async userPermission => {
+          const allowed = await PermissionHelper.checkPermissions(userPermission, permissions);
+          x.next(allowed);
+        });
+        return x;
+      }
+    }
+    return new BehaviorSubject(true);
+  }
+
 
 }

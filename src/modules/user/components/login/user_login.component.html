@@ -1,0 +1,14 @@
+<div class="user-login-form-wrapper">
+
+  <div *ngIf="isAuthenticated() | async" class="alert alert-danger">
+    Can't login because you're already authenticated.
+  </div>
+
+  <div *ngIf="!(isAuthenticated() | async)">
+    <txs-form formName="user-login-form"
+              [instance]="user"
+              [channel]="formMessage"
+              (ngSubmit)="onSubmit($event)"></txs-form>
+  </div>
+
+</div>

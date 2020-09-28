@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import * as bcrypt from 'bcrypt';
 import {Inject, Invoker, Log} from '@typexs/base';
 import {IApplication, IMiddleware, IRoutingController, K_ROUTE_CONTROLLER, RoutePermissionsHelper} from '@typexs/server';
-import {Action, BadRequestError} from 'routing-controllers';
+import {Action, InternalServerError} from 'routing-controllers';
 import {AuthLifeCycle} from '../libs/Constants';
 import {AuthSession} from '../entities/AuthSession';
 import {AuthMethod} from '../entities/AuthMethod';
@@ -26,7 +26,7 @@ import {UserNotFoundError} from '../libs/exceptions/UserNotFoundError';
 import {RestrictedAccessError} from '../libs/exceptions/RestrictedAccessError';
 import {IEntityRef, IPropertyRef} from 'commons-schema-api';
 import {Access} from '@typexs/roles/libs/Access';
-import {IEntityController, Injector, IStorageRef} from '@typexs/base/browser';
+import {Injector, IStorageRef} from '@typexs/base/browser';
 
 export class Auth implements IMiddleware {
 
@@ -228,12 +228,8 @@ export class Auth implements IMiddleware {
       }
 
       // validate passed data
-//      signup = this.getInstanceForSignup(id, signup);
-//      let validator = new DataContainer(signup);
       await dataContainer.validate();
 
-
-      // let errors = await validate(signup, {validationError: {target: false}});
       if (dataContainer.isSuccessValidated) {
 
         // check if username for type is already given
@@ -268,7 +264,7 @@ export class Auth implements IMiddleware {
           } catch (err) {
             // TODO
             Log.error(err);
-            throw new BadRequestError(err.message);
+            throw new InternalServerError('Signup failed.');
           }
 
           // TODO: auto sign in
@@ -282,7 +278,7 @@ export class Auth implements IMiddleware {
             property: 'username', // Object's property that haven't pass validation.
             value: 'username', // Value that haven't pass a validation.
             constraints: { // Constraints that failed validation with error messages.
-              exists: '$property already assigned.'
+              exists: 'username or mail already assigned.'
             }
           });
           return dataContainer;
@@ -598,7 +594,7 @@ export class Auth implements IMiddleware {
             throw new UserDisabledError(user.username);
           }
 
-          await this.getEntityController().save([user, session]);
+          await this.getStorageEntityController().save([user, session]);
 
           return true;
         }
@@ -665,13 +661,18 @@ export class Auth implements IMiddleware {
   }
 
 
-  getUser(id_or_username: number | string): Promise<User> {
-    const cond = {};
+  getUser(id_or_username: number | string, mail?: string): Promise<User> {
+    let cond = {};
     if (_.isString(id_or_username)) {
       cond['username'] = id_or_username;
     } else {
       cond['id'] = id_or_username;
     }
+
+    if (mail) {
+      cond = {$or: [cond, {mail: mail.trim()}]};
+    }
+
     return this.getEntityController().findOne<User>(User, cond, {
       // limit: 1,
       hooks: {
@@ -686,8 +687,8 @@ export class Auth implements IMiddleware {
   }
 
 
-  async getUserByUsername(username: string) {
-    return this.getUser(username);
+  async getUserByUsername(username: string, mail?: string) {
+    return this.getUser(username, mail);
   }
 
 

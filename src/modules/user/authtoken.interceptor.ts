@@ -14,7 +14,6 @@ export class AuthTokenInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     if (this.auth instanceof UserAuthService && this.auth.isEnabled()) {
       const provider = <UserAuthService>this.auth;
-
       const token = provider.getStoredToken();
       if (token && _.isString(token) && !_.isEmpty(token)) {
         const tokenKey = provider.getTokenKey();
@@ -27,9 +26,7 @@ export class AuthTokenInterceptor implements HttpInterceptor {
       } else {
         provider.setToken(null);
       }
-
     }
-
     return next.handle(request);
   }
 }

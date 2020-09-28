@@ -1,5 +1,4 @@
 import {NgModule} from '@angular/core';
-import {Router} from '@angular/router';
 import {AppComponent} from './app.component';
 import {APP_MODULES} from './app.used.modules';
 import {DemosComponent} from './demos/demos.component';
@@ -23,11 +22,13 @@ import {BatAuthLoginComponent} from './demos/bat-auth-login/bat-auth-login.compo
 })
 export class AppModule {
 
-  constructor(private authService: AuthService,
-              private navigatorService: NavigatorService,
-              private storageService: StorageService,
-              private entityService: EntityService,
-              private dStorageService: DistributedStorageService) {
+  constructor(
+    private authService: AuthService,
+    private navigatorService: NavigatorService,
+    private storageService: StorageService,
+    private entityService: EntityService,
+    private dStorageService: DistributedStorageService
+  ) {
     entityService.setNgUrlPrefix('/admin/entity');
     storageService.setNgUrlPrefix('/admin/storage');
     dStorageService.setNgUrlPrefix('/admin/distributed-storage');

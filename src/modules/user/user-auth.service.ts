@@ -10,13 +10,13 @@ import {DefaultUserLogout} from '../../libs/models/DefaultUserLogout';
 import {Observable} from 'rxjs/Observable';
 import {IAuthServiceProvider} from '@typexs/ng-base/modules/base/api/auth/IAuthServiceProvider';
 import {User} from '../../entities/User';
-import {NotYetImplementedError} from 'commons-base/browser';
 import {AuthMessage, BackendClientService, LogMessage, MessageChannel, MessageService, MessageType} from '@typexs/ng-base';
 import {BehaviorSubject, of, Subject} from 'rxjs';
 import {map, mergeMap} from 'rxjs/operators';
 import {IAuthSettings} from '../../libs/auth/IAuthSettings';
 import {API_USER, API_USER_CONFIG, API_USER_IS_AUTHENTICATED, API_USER_LOGIN, API_USER_LOGOUT, API_USER_SIGNUP} from '../../libs/Constants';
 import {ISecuredResource, PermissionHelper} from '@typexs/roles-api/index';
+import {UserAuthHelper} from './lib/UserAuthHelper';
 
 
 function parseUser(user: any) {
@@ -60,6 +60,8 @@ export class UserAuthService implements IAuthServiceProvider {
 
   private loading = false;
 
+  private authCheckLoading = false;
+
   private permissions: string[];
 
   constructor(private backendClientService: BackendClientService,
@@ -76,22 +78,24 @@ export class UserAuthService implements IAuthServiceProvider {
 
 
   public isInitialized(): Observable<boolean> {
-    return this._initialized$.asObservable();
+    return this._initialized$;
+  }
+
+
+  startup() {
+    return this.configure().pipe(mergeMap(x => this.init()));
   }
 
 
   configure(): Observable<any> {
     const config = this.backendClientService.callApi(API_USER_CONFIG);
     config.subscribe(obj => {
-        _.assign(this._config, obj);
-        this._configured$.next(true);
-      }, error => {
-        this._configured$.error(error);
-      },
-      () => {
-        this._configured$.complete();
-      });
-    return config;
+      _.assign(this._config, obj);
+      this._configured$.next(true);
+    }, error => {
+      this._configured$.error(error);
+    });
+    return this._configured$;
   }
 
 
@@ -105,16 +109,19 @@ export class UserAuthService implements IAuthServiceProvider {
     return _.isUndefined(token) ? null : token;
   }
 
+
   saveStoredToken(token: string) {
     localStorage.setItem('token.' + this.getTokenKey(), token);
     this.setToken(token);
   }
+
 
   clearStoredToken() {
     this.connected = false;
     this.resetUser();
     localStorage.removeItem('token.' + this.getTokenKey());
   }
+
 
   setUser(user: User) {
     const _user = parseUser(user);
@@ -167,7 +174,7 @@ export class UserAuthService implements IAuthServiceProvider {
           subject.next(this.cacheUser);
         }, error => {
           this.loading = true;
-          subject.error(error);
+          subject.next(null);
         },
         () => {
           this.loading = false;
@@ -186,18 +193,19 @@ export class UserAuthService implements IAuthServiceProvider {
   // }
 
   isAuthenticated() {
+    // console.log('isAuthenticated ' + this.authCheckLoading);
     const token = this.getStoredToken();
     const validToken = token != null && token === this.token;
-    // console.log('auth check ', token)
-    if (token && (!validToken || !this.connected)) {
+    if (token && (!validToken || !this.connected) && !this.authCheckLoading) {
       this.checkAuthentication();
     }
-    return this._isAuthenticated$.asObservable();
+    return this._isAuthenticated$;
   }
 
 
   private checkAuthentication() {
     this.connected = false;
+    this.authCheckLoading = true;
     this.backendClientService.callApi<boolean>(API_USER_IS_AUTHENTICATED)
       .subscribe(
         value => {
@@ -211,17 +219,20 @@ export class UserAuthService implements IAuthServiceProvider {
         },
         error => {
           // this.logChannel.publish(LogMessage.error(error, this, 'init'));
-          // this.loading = false;
           this.clearStoredToken();
           this.resetUser();
           this._isAuthenticated$.error(error);
+        },
+        () => {
+          this.authCheckLoading = false;
         }
       );
-    return this._isAuthenticated$.asObservable();
+    return this._isAuthenticated$;
   }
 
   isEnabled(): boolean {
-    return _.get(this._config, 'enabled', false);
+    // return _.get(this._config, 'enabled', false);
+    return true;
   }
 
   /**
@@ -234,8 +245,10 @@ export class UserAuthService implements IAuthServiceProvider {
       }, error => {
         this._initialized$.error(error);
       });
+    } else {
+      this._initialized$.next(true);
     }
-    return this._initialized$.asObservable();
+    return this._initialized$;
   }
 
 
@@ -349,8 +362,12 @@ export class UserAuthService implements IAuthServiceProvider {
       const subject = new Subject<string[]>();
       this.getUser().subscribe(x => {
         // TODO cache
-        const permissions = _.concat([], ...x.roles.map(y => y.permissions));
-        this.permissions = permissions.map(p => _.isString(p) ? p : p.permission);
+        if (x && x.roles) {
+          const permissions = _.concat([], ...x.roles.map(y => y.permissions));
+          this.permissions = permissions.map(p => _.isString(p) ? p : p.permission);
+        } else {
+          this.permissions = [];
+        }
 
         subject.next(this.permissions);
         subject.complete();
@@ -378,7 +395,7 @@ export class UserAuthService implements IAuthServiceProvider {
 
 
   getRoles(): Observable<string[]> {
-    return this.getUser().pipe(map(x => _.map(x.roles, r => r.rolename)));
+    return this.getUser().pipe(map(x => x && x.roles ? _.map(x.roles, r => r.rolename) : []));
   }
 
 
@@ -394,7 +411,11 @@ export class UserAuthService implements IAuthServiceProvider {
 
   hasRoutePermissions(route: ActivatedRouteSnapshot,
                       state: RouterStateSnapshot): Observable<boolean> {
-    const permissions = _.get(route.data, 'permissions', []);
+    const permissions = UserAuthHelper.getRoutePermissions(route);
+    if (_.isNull(permissions)) {
+      // no permissions to check
+      return new BehaviorSubject(true);
+    }
     return this.getPermissions().pipe(mergeMap(async userPermissions => {
       return await PermissionHelper.checkPermissions(userPermissions, permissions);
     }));

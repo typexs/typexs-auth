@@ -2,7 +2,7 @@ import {Component} from '@angular/core';
 
 
 @Component({
-  templateUrl:'./demos.component.html'
+  templateUrl: './demos.component.html'
 })
 export class DemosComponent  {
 
@@ -32,7 +32,6 @@ export class DemosComponent  {
       if (m instanceof UserAuthMessage) {
         if (this.auth.isLoggedIn()) {
           let isAdmin = await this.auth.hasRole('admin');
-          console.log('isAdmin', isAdmin);
           this._isAdmin.next(isAdmin);
         } else {
           this._isAdmin.next(false);

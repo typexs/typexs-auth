@@ -1,0 +1,8 @@
+<div class="user-signup-wrapper">
+  <div *ngIf="(isAuthenticated() | async)" class="alert alert-danger">
+    Can't signup because you're already authenticated.
+  </div>
+  <div *ngIf="!(isAuthenticated() | async)">
+    <txs-form formName="user-signup-form" [instance]="signup" [channel]="formMessage" (ngSubmit)="onSubmit($event)"></txs-form>
+  </div>
+</div>

@@ -1,21 +1,20 @@
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 
-import {DefaultUserSignup} from '../../libs/models/DefaultUserSignup';
+import {DefaultUserSignup} from '../../../../libs/models/DefaultUserSignup';
 import {Router} from '@angular/router';
-import {UserAuthService} from './user-auth.service';
+import {UserAuthService} from './../../user-auth.service';
 import {AuthService, IMessage, LogMessage, MessageChannel, MessageService, MessageType, NavigatorService} from '@typexs/ng-base';
 import * as _ from 'lodash';
-import {Helper} from '@typexs/ng/browser';
+import {mergeMap} from 'rxjs/operators';
 
 
 @Component({
-  selector: 'user-signup',
+  selector: 'txs-user-signup',
   templateUrl: './user_signup.component.html',
 })
 export class UserSignupComponent implements OnInit, OnDestroy {
 
   signup: DefaultUserSignup;
-
 
   @Input()
   successUrl: string | any[] = 'user/login';
@@ -25,8 +24,12 @@ export class UserSignupComponent implements OnInit, OnDestroy {
   formMessage: MessageChannel<IMessage>;
 
 
-  constructor(private authService: AuthService, private navigatorService: NavigatorService, private router: Router,
-              private messageService: MessageService) {
+  constructor(
+    private authService: AuthService,
+    private navigatorService: NavigatorService,
+    private router: Router,
+    private messageService: MessageService
+  ) {
   }
 
 
@@ -41,14 +44,13 @@ export class UserSignupComponent implements OnInit, OnDestroy {
     this.logChannel = this.messageService.getLogService();
     this.formMessage = this.messageService.get('form.user-signup-form');
     this.signup = this.getUserAuthService().newUserSignup();
-    const init = this.authService.isInitialized();
-    Helper.after(init as any, (x: boolean) => {
-      if (x) {
-        if (this.isAuthenticated()) {
-          this.redirectOnSuccess();
+    this.authService.isInitialized()
+      .pipe(mergeMap(x => this.isAuthenticated()))
+      .subscribe(async x => {
+        if (x) {
+          await this.redirectOnSuccess();
         }
-      }
-    });
+      });
   }
 
   ngOnDestroy(): void {
@@ -61,47 +63,47 @@ export class UserSignupComponent implements OnInit, OnDestroy {
     return this.getUserAuthService().isLoggedIn();
   }
 
-  async redirectOnSuccess() {
+  redirectOnSuccess() {
     if (_.isString(this.successUrl)) {
       const nav = this.navigatorService.entries.find(e => e.path && e.path.includes(<string>this.successUrl));
       if (nav) {
-        await this.router.navigate([nav.getFullPath()]);
+        this.router.navigate([nav.getFullPath()]);
       } else {
-        await this.router.navigate([this.successUrl]);
+        this.router.navigate([this.successUrl]);
       }
     } else if (_.isArray(this.successUrl)) {
-      await this.router.navigate(this.successUrl);
+      this.router.navigate(this.successUrl);
     }
   }
 
 
-  async onSubmit($event: any) {
+  onSubmit($event: any) {
     if ($event.data.isSuccessValidated) {
 
-      try {
-        const user = await this.getUserAuthService().signup($event.data.instance);
-        let state: any = null;
-        if (user) {
-          state = (user as any).$state;
-          if (state && state.success) {
-            await this.redirectOnSuccess();
-          } else {
-            for (const error of state.errors) {
-              _.keys(error.constraints).forEach(k => {
-                this.formMessage.publish({
-                  type: <any>MessageType[error.type.toUpperCase()],
-                  content: error.constraints[k],
-                  topic: null
+      this.getUserAuthService().signup($event.data.instance).subscribe(user => {
+          let state: any = null;
+          if (user) {
+            state = (user as any).$state;
+            if (state && state.success) {
+              this.redirectOnSuccess();
+            } else {
+              for (const error of state.errors) {
+                _.keys(error.constraints).forEach(k => {
+                  this.formMessage.publish({
+                    type: <any>MessageType[error.type.toUpperCase()],
+                    content: error.constraints[k],
+                    topic: null
+                  });
                 });
-              });
+              }
             }
+          } else {
+            throw new Error('No user object.');
           }
-        } else {
-          throw new Error('No user object.');
-        }
-      } catch (e) {
-        this.logChannel.publish(LogMessage.error(e, this, 'onSubmit'));
-      }
+        },
+        error => {
+          this.logChannel.publish(LogMessage.error(error, this, 'onSubmit'));
+        });
     }
 
   }
