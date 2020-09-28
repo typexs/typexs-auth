@@ -39,3 +39,9 @@ Create Admin UI for managing users:
 
 * Overview of users
 * Create, Edit, Delete Accounts
+
+
+*@ISSUE {counter:task} 20200917* +
+
+* Test: Enable / Disable menu items by permission
+
