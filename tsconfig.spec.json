@@ -19,7 +19,6 @@
     "src/app/polyfills.ts"
   ],
   "include": [
-    "src/app/**/*.spec.ts",
     "src/modules/**/*.spec.ts",
     "src/modules/**/*.d.ts"
   ]
