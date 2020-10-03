@@ -1,9 +1,10 @@
 import {getTestBed, TestBed} from '@angular/core/testing';
-import {expect} from 'chai';
+// import {expect} from 'jasmine';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {UserAuthService} from './user-auth.service';
 import {RouterTestingModule} from '@angular/router/testing';
 import {BaseModule} from '@typexs/ng-base';
+import {API_CTRL_SERVER_PING, API_CTRL_SERVER_ROUTES, IRoute} from '@typexs/server/browser';
 
 
 /**
@@ -23,6 +24,8 @@ import {BaseModule} from '@typexs/ng-base';
  */
 describe('UserAuthService', () => {
   let service: UserAuthService;
+  let injector: TestBed;
+  let httpMock: HttpTestingController;
 
 
   beforeEach(() => {
@@ -35,26 +38,33 @@ describe('UserAuthService', () => {
         UserAuthService
       ]
     });
+
+    injector = getTestBed();
+    service = injector.get(UserAuthService);
+    httpMock = injector.get(HttpTestingController);
+
   });
 
 
   afterEach(() => {
-    getTestBed().resetTestingModule();
+    httpMock.verify();
   });
 
 
   it('should have a service instance and load configuration', () => {
-    // inject the service
-    const httpMock = TestBed.get(HttpTestingController);
-    service = TestBed.get(UserAuthService);
-    expect(service).to.exist;
-
+    expect(service).not.toBeNull();
 
     service.isInitialized().subscribe(x => {
-      expect(x).to.be.false;
+      expect(x).toBeFalse();
     });
 
-    // const mockReq = httpMock.expectOne(service.url);
+    // app backend check calls ping
+    const reqPings = httpMock.match('/api' + API_CTRL_SERVER_PING);
+    reqPings.map(r => r.flush({time: new Date()}));
+
+    // app backend check calls accessible routes
+    const reqRoutes = httpMock.match('/api' + API_CTRL_SERVER_ROUTES);
+    reqRoutes.map(r => r.flush(<IRoute[]>[]));
 
   });
 
