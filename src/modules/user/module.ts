@@ -69,7 +69,8 @@ export class UserModule {
   }
 
   constructor(private authService: AuthService) {
-    (<UserAuthService><any>authService).startup();
+    // init findet schon in base.module statt
+    // (<UserAuthService><any>authService).startup();
   }
 
 

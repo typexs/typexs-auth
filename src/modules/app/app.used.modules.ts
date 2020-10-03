@@ -3,7 +3,7 @@ import {APP_ROUTES} from './routes';
 import {BrowserModule} from '@angular/platform-browser';
 import {RouterModule} from '@angular/router';
 import {ModuleWithProviders, Type} from '@angular/core';
-import {UserModule} from '../user/user.module';
+import {UserModule} from '../user/module';
 import {
   AdminModule,
   BaseAdminThemeModule,
@@ -14,7 +14,7 @@ import {
   StorageModule,
   ViewsModule
 } from '@typexs/ng-base';
-import {UserAdminModule} from '../user_admin/user.admin.module';
+import {UserAdminModule} from '../users-administrator/module';
 
 
 export const APP_MODULES: Array<Type<any> | ModuleWithProviders | any[]> = [

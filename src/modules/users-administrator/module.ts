@@ -1,6 +1,6 @@
 import {NgModule} from '@angular/core';
 import {RouterModule} from '@angular/router';
-import {USER_ADMIN_ROUTES} from './user.admin.routes';
+import {USER_ADMIN_ROUTES} from './routes';
 import {
   AdminModule,
   BaseAdminThemeModule,
@@ -10,9 +10,9 @@ import {
   NavigatorService,
   BaseModule
 } from '@typexs/ng-base';
-import {PermissionsRolesComponent} from './permissions-roles.component';
+import {PermissionsRolesComponent} from './components/permissions-roles/permissions-roles.component';
 import {BrowserModule} from '@angular/platform-browser';
-import {UserModule} from '../user/user.module';
+import {UserModule} from '../user/module';
 
 export const PROVIDERS: any[] = [];
 

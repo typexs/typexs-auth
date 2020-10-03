@@ -10,9 +10,9 @@ import {DefaultUserLogout} from '../../libs/models/DefaultUserLogout';
 import {Observable} from 'rxjs/Observable';
 import {IAuthServiceProvider} from '@typexs/ng-base/modules/base/api/auth/IAuthServiceProvider';
 import {User} from '../../entities/User';
-import {AuthMessage, BackendClientService, LogMessage, MessageChannel, MessageService, MessageType} from '@typexs/ng-base';
+import {AuthMessage, BackendClientService, Log, LogMessage, MessageChannel, MessageService, MessageType} from '@typexs/ng-base';
 import {BehaviorSubject, of, Subject} from 'rxjs';
-import {map, mergeMap} from 'rxjs/operators';
+import {first, map, mergeMap} from 'rxjs/operators';
 import {IAuthSettings} from '../../libs/auth/IAuthSettings';
 import {API_USER, API_USER_CONFIG, API_USER_IS_AUTHENTICATED, API_USER_LOGIN, API_USER_LOGOUT, API_USER_SIGNUP} from '../../libs/Constants';
 import {ISecuredResource, PermissionHelper} from '@typexs/roles-api/index';
@@ -34,13 +34,11 @@ function parseUser(user: any) {
 @Injectable()
 export class UserAuthService implements IAuthServiceProvider {
 
-  private _configured$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  // private _configured$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   private _initialized$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   private _isAuthenticated$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-
-  // private _user$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   private _config: IAuthSettings = {
     authKey: 'txs-auth',
@@ -82,20 +80,42 @@ export class UserAuthService implements IAuthServiceProvider {
   }
 
 
-  startup() {
-    return this.configure().pipe(mergeMap(x => this.init()));
-  }
-
-
   configure(): Observable<any> {
+    const subject = new Subject();
     const config = this.backendClientService.callApi(API_USER_CONFIG);
     config.subscribe(obj => {
       _.assign(this._config, obj);
-      this._configured$.next(true);
+      subject.next(true);
     }, error => {
-      this._configured$.error(error);
+      subject.error(error);
     });
-    return this._configured$;
+    return subject.asObservable();
+  }
+
+
+  /**
+   * startup method to check if an existing token is still active
+   */
+  init() {
+    if (this.isEnabled()) {
+      this.configure()
+        .pipe(first())
+        .pipe(mergeMap(x => this.checkAuthentication()))
+        .subscribe(x => {
+          this._isAuthenticated$
+            .pipe(mergeMap(y => this.backendClientService.reloadRoutes()))
+            .subscribe(z => {
+              if (this._initialized$.getValue() === false) {
+                this._initialized$.next(true);
+              }
+            });
+        }, error => {
+          this._initialized$.error(error);
+        });
+    } else {
+      this._initialized$.next(true);
+    }
+    return this._initialized$;
   }
 
 
@@ -124,6 +144,7 @@ export class UserAuthService implements IAuthServiceProvider {
 
 
   setUser(user: User) {
+    this.permissions = undefined;
     const _user = parseUser(user);
     if (this.cacheUser && this.cacheUser.id === user.id) {
       this.cacheUser = _user;
@@ -139,6 +160,7 @@ export class UserAuthService implements IAuthServiceProvider {
   }
 
   resetUser() {
+    this.permissions = undefined;
     if (this.cacheUser) {
       this.cacheUser = null;
       const msg = new AuthMessage();
@@ -148,6 +170,7 @@ export class UserAuthService implements IAuthServiceProvider {
     }
   }
 
+
   /**
    * Method for interceptor to set the request token
    */
@@ -155,45 +178,44 @@ export class UserAuthService implements IAuthServiceProvider {
     this.token = token;
   }
 
+
   /**
    * Returns the user object
    */
   getUser(reload: boolean = false): Observable<User> {
     const subject = new Subject<User>();
-    if (this.cacheUser && !reload) {
-      // Tick out
-      setTimeout(() => {
-        subject.next(this.cacheUser);
-        subject.complete();
-      }, 0);
-    } else {
-      this.loading = true;
-      this.backendClientService.callApi<User>(API_USER).subscribe(x => {
-          this.setUser(x);
-          this.loading = true;
+    if (this.connected) {
+      if (this.cacheUser && !reload) {
+        // Tick out
+        setTimeout(() => {
           subject.next(this.cacheUser);
-        }, error => {
-          this.loading = true;
-          subject.next(null);
-        },
-        () => {
-          this.loading = false;
           subject.complete();
-        });
+        }, 0);
+      } else {
+        this.loading = true;
+        this.backendClientService.callApi<User>(API_USER).subscribe(x => {
+            this.setUser(x);
+            this.loading = true;
+            subject.next(this.cacheUser);
+          }, error => {
+            this.resetUser();
+            this.loading = true;
+            subject.next(null);
+          },
+          () => {
+            this.loading = false;
+            subject.complete();
+          });
+      }
+    } else {
+      subject.next(null);
+      subject.complete();
     }
     return subject;
   }
 
 
-  // isAuthenticated(): Observable<boolean> {
-  //   // TODO check if token is expired
-  //   const token = this.getStoredToken();
-  //   const isAuth = this.connected && token != null && token === this.token;
-  //   return this._isAuthenticated$;
-  // }
-
   isAuthenticated() {
-    // console.log('isAuthenticated ' + this.authCheckLoading);
     const token = this.getStoredToken();
     const validToken = token != null && token === this.token;
     if (token && (!validToken || !this.connected) && !this.authCheckLoading) {
@@ -220,7 +242,6 @@ export class UserAuthService implements IAuthServiceProvider {
         error => {
           // this.logChannel.publish(LogMessage.error(error, this, 'init'));
           this.clearStoredToken();
-          this.resetUser();
           this._isAuthenticated$.error(error);
         },
         () => {
@@ -230,25 +251,9 @@ export class UserAuthService implements IAuthServiceProvider {
     return this._isAuthenticated$;
   }
 
-  isEnabled(): boolean {
-    // return _.get(this._config, 'enabled', false);
-    return true;
-  }
 
-  /**
-   * startup method to check if an existing token is still active
-   */
-  init() {
-    if (this.isEnabled()) {
-      this.checkAuthentication().subscribe(x => {
-        this._initialized$.next(true);
-      }, error => {
-        this._initialized$.error(error);
-      });
-    } else {
-      this._initialized$.next(true);
-    }
-    return this._initialized$;
+  isEnabled(): boolean {
+    return true;
   }
 
 
@@ -267,6 +272,7 @@ export class UserAuthService implements IAuthServiceProvider {
         () => {
           this.loading = false;
           this.connected = false;
+          subject.complete();
         }
       );
     return subject;
@@ -298,8 +304,6 @@ export class UserAuthService implements IAuthServiceProvider {
         }
       );
     return subject;
-
-
   }
 
 
@@ -310,20 +314,17 @@ export class UserAuthService implements IAuthServiceProvider {
       (user: AbstractUserLogout) => {
         this.loading = false;
         this.clearStoredToken();
-        this.resetUser();
         subject.next(user);
       },
       error => {
         this.loading = false;
         this.clearStoredToken();
-        this.resetUser();
         subject.error(error);
       },
       () => {
         subject.complete();
       }
     );
-
     return subject;
   }
 
@@ -338,6 +339,7 @@ export class UserAuthService implements IAuthServiceProvider {
     return new DefaultUserLogin();
   }
 
+
   /**
    * Method for getting the suitable user login model, depending of used adapter
    *
@@ -348,9 +350,11 @@ export class UserAuthService implements IAuthServiceProvider {
     return new DefaultUserSignup();
   }
 
+
   newUserLogout(): DefaultUserLogout {
     return new DefaultUserLogout();
   }
+
 
   isLoggedIn(): Observable<boolean> {
     return this.isAuthenticated();
@@ -368,7 +372,6 @@ export class UserAuthService implements IAuthServiceProvider {
         } else {
           this.permissions = [];
         }
-
         subject.next(this.permissions);
         subject.complete();
       });
@@ -378,10 +381,11 @@ export class UserAuthService implements IAuthServiceProvider {
     }
   }
 
+
   hasPermission(right: string, params?: any): Observable<boolean> {
     const permissions = [right];
     return this.getPermissions().pipe(mergeMap(async userPermissions => {
-      return await PermissionHelper.checkPermissions(userPermissions, permissions);
+      return await PermissionHelper.checkOnePermission(userPermissions, permissions);
     }));
   }
 
@@ -389,7 +393,7 @@ export class UserAuthService implements IAuthServiceProvider {
   hasPermissionsFor(object: ISecuredResource): Observable<boolean> {
     const permissions = object.getPermissions().map(p => _.isString(p) ? p : p.permission);
     return this.getPermissions().pipe(mergeMap(async userPermissions => {
-      return await PermissionHelper.checkPermissions(userPermissions, permissions);
+      return await PermissionHelper.checkOnePermission(userPermissions, permissions);
     }));
   }
 
@@ -416,8 +420,9 @@ export class UserAuthService implements IAuthServiceProvider {
       // no permissions to check
       return new BehaviorSubject(true);
     }
+
     return this.getPermissions().pipe(mergeMap(async userPermissions => {
-      return await PermissionHelper.checkPermissions(userPermissions, permissions);
+      return await PermissionHelper.checkOnePermission(userPermissions, permissions);
     }));
   }
 

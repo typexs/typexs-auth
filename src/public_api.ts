@@ -1,5 +1,5 @@
 export * from './modules/user/user.module';
-export * from './modules/user_admin/user.admin.module';
+export * from './modules/users-administrator/user.admin.module';
 
 export * from './modules/user/components/login/user_login.component';
 export * from './modules/user/components/logout/user_logout.component';

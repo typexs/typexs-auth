@@ -6,6 +6,7 @@ import {AuthService, DistributedStorageService, EntityService, NavigatorService,
 import {BatAuthProfileComponent} from './demos/bat-auth-profile/bat-auth-profile.component';
 import {BatAuthSignupComponent} from './demos/bat-auth-signup/bat-auth-signup.component';
 import {BatAuthLoginComponent} from './demos/bat-auth-login/bat-auth-login.component';
+import {UsersListComponent} from './demos/bat-auth-users-list/users-list.component';
 
 
 @NgModule({
@@ -14,7 +15,8 @@ import {BatAuthLoginComponent} from './demos/bat-auth-login/bat-auth-login.compo
     DemosComponent,
     BatAuthProfileComponent,
     BatAuthSignupComponent,
-    BatAuthLoginComponent
+    BatAuthLoginComponent,
+    UsersListComponent
   ],
   imports: APP_MODULES,
   providers: [],

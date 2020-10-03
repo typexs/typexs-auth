@@ -13,7 +13,18 @@ import {BatAuthLoginComponent} from './demos/bat-auth-login/bat-auth-login.compo
 import {BatAuthSignupComponent} from './demos/bat-auth-signup/bat-auth-signup.component';
 import {BatAuthProfileComponent} from './demos/bat-auth-profile/bat-auth-profile.component';
 import {PERM_ALLOW_ACCESS_USER_LIST} from './lib/Constants';
+import {UsersListComponent} from './demos/bat-auth-users-list/users-list.component';
 
+
+export function wrapInArray(value: any[]): any[] {
+  // for (let i = 0; i < value.length; i++) {
+  //   // value[i].path = 'admin/' + value[i].path;
+  //   // if (!x.data.skip) {
+  //   //   x.data.group = 'admin';
+  //   // }
+  // }
+  return value;
+}
 
 export const APP_ROUTES: Routes = [
   {
@@ -39,11 +50,16 @@ export const APP_ROUTES: Routes = [
         path: 'user/profile',
         component: BatAuthProfileComponent,
         canActivate: [AuthGuardService],
-        data: {label: 'Profile', isAuthenticated: true, context: CTXT_ROUTE_USER_PROFILE, anonymView: 'hide'}
+        data: {
+          label: 'Profile',
+          isAuthenticated: true,
+          context: CTXT_ROUTE_USER_PROFILE,
+          anonymView: 'hide'
+        }
       },
       {
         path: 'users',
-        component: BatAuthProfileComponent,
+        component: UsersListComponent,
         canActivate: [AuthGuardService],
         data: {
           label: 'Users list',
@@ -55,34 +71,23 @@ export const APP_ROUTES: Routes = [
         path: 'user/logout',
         component: UserLogoutComponent,
         canActivate: [AuthGuardService],
-        data: {label: 'Logout', isAuthenticated: true, context: CTXT_ROUTE_USER_LOGOUT, anonymView: 'disable'}
+        data: {
+          label: 'Logout',
+          isAuthenticated: true,
+          context: CTXT_ROUTE_USER_LOGOUT,
+          anonymView: 'disable'
+        }
       },
     ]
   },
-  ...StorageModule.getRoutes().map(x => {
-    x.path = 'admin/' + x.path;
-    if (!x.data.skip) {
-      x.data.group = 'admin';
-    }
-    return x;
-  }),
-
-  ...EntityModule.getRoutes().map(x => {
-    x.path = 'admin/' + x.path;
-    if (!x.data.skip) {
-      x.data.group = 'admin';
-    }
-    return x;
-  }),
-
-  ...DistributedStorageModule.getRoutes().map(x => {
-    x.path = 'admin/' + x.path;
-    if (!x.data.skip) {
-      x.data.group = 'admin';
-    }
-    return x;
-  }),
-
+  {
+    path: 'admin',
+    children: [
+      ...StorageModule.getRoutes(),
+      ...EntityModule.getRoutes(),
+      ...DistributedStorageModule.getRoutes(),
+    ]
+  },
   {
     path: '', redirectTo: 'demo', pathMatch: 'full'
   },

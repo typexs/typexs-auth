@@ -6,9 +6,21 @@ import {K_ANONYM_VIEW, K_IS_AUTHENTICATED, K_PERMISSIONS} from './Constants';
 export class UserAuthHelper {
 
 
-  static getRoutePermissions(route: ActivatedRouteSnapshot | Route) {
-    return _.get(route, 'data.' + K_PERMISSIONS, null);
+  static getRoutePermissions(route: ActivatedRouteSnapshot | Route, replaceParams: boolean = true) {
+    let perms = _.get(route, 'data.' + K_PERMISSIONS, null);
+    if (replaceParams && route instanceof ActivatedRouteSnapshot) {
+      perms = perms.map((x: string) => {
+        let y = x;
+        route.paramMap.keys.forEach(k => {
+          y = y.replace(':' + k + ' ', route.paramMap.get(k) + ' ');
+        });
+        return y;
+      });
+
+    }
+    return perms;
   }
+
 
   static getRouteAuthenticationCheck(route: ActivatedRouteSnapshot | Route) {
     return _.get(route, 'data.' + K_IS_AUTHENTICATED, null);

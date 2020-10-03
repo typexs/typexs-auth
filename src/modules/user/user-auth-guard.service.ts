@@ -1,15 +1,17 @@
-import {AuthMessage, AuthService, IAuthGuardProvider, IMenuLinkGuard, NavEntry} from '@typexs/ng-base';
+import {AuthMessage, AuthService, IAuthGuardProvider, IMenuLinkGuard, Log, NavEntry} from '@typexs/ng-base';
 import {ActivatedRouteSnapshot, RouterStateSnapshot} from '@angular/router';
 import {Observable} from 'rxjs/Observable';
 import {BehaviorSubject} from 'rxjs/BehaviorSubject';
 import {of} from 'rxjs';
 import {Injectable} from '@angular/core';
 import * as _ from 'lodash';
-import {Subscription} from 'rxjs/Rx';
-import {first, mergeMap, switchMap, tap} from 'rxjs/operators';
+import {Subject, Subscription} from 'rxjs/Rx';
+import {filter, mergeMap, single, tap} from 'rxjs/operators';
 import {PermissionHelper} from '@typexs/roles-api';
 import {UserAuthHelper} from './lib/UserAuthHelper';
 import {Route} from '@angular/compiler/src/core';
+
+// import {Log} from '@typexs/ng-base/modules/base/lib/log/Log';
 
 
 /**
@@ -48,11 +50,14 @@ export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard 
 
   hasPermissions$: Observable<string[]> = this.hasPermissions.asObservable();
 
+  isReady: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
   constructor(private authService: AuthService) {
     authService.getChannel().subscribe(this.onMessage.bind(this));
     authService.isInitialized().subscribe(x => {
-      this._update();
+      if (x) {
+        this._update();
+      }
     });
   }
 
@@ -65,7 +70,8 @@ export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard 
         auth => {
           this.isAuthenticated.next(auth === true);
           this.isNotAuthenticated.next(auth === false);
-        })).pipe(switchMap(auth => {
+        }))
+      .pipe(mergeMap(auth => {
         if (auth) {
           return this.authService.getPermissions();
         } else {
@@ -79,15 +85,20 @@ export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard 
         } else {
           this.hasPermissions.next([]);
         }
+        if (this.isReady.getValue() === false) {
+          this.isReady.next(true);
+        }
       });
 
   }
+
 
   async onMessage(m: any) {
     if (m instanceof AuthMessage) {
       this._update();
     }
   }
+
 
   /**
    * Checks if a route can be accessed.
@@ -99,7 +110,7 @@ export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard 
     if (!this.authService.isEnabled() || !UserAuthHelper.hasRouteAuthCheck(route)) {
       return new BehaviorSubject(true);
     }
-    return this.checkAccess(route);
+    return this.checkAccess(route, false);
   }
 
 
@@ -138,28 +149,46 @@ export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard 
   }
 
 
-  private checkAccess(route: Route): Observable<boolean> {
+  private checkAccess(route: Route, subscribe: boolean = true): Observable<boolean> {
     const hasAuth = UserAuthHelper.checkIfAuthRequired(route);
     if (_.isBoolean(hasAuth)) {
-      const permissions = UserAuthHelper.getRoutePermissions(route);
-      if (_.isNull(permissions)) {
-        // no special permissions needed
-        if (hasAuth) {
-          return this.isAuthenticated;
-        } else {
-          return this.isNotAuthenticated;
-        }
+      if (this.isReady.getValue() === true) {
+        return this.validateAccess(hasAuth, route, subscribe);
       } else {
-        const x = new BehaviorSubject(false);
-        this.hasPermissions$.subscribe(async userPermission => {
-          const allowed = await PermissionHelper.checkPermissions(userPermission, permissions);
-          x.next(allowed);
-        });
-        return x;
+        // @ts-ignore
+        return this.isReady.pipe(filter(x => x)).pipe(mergeMap(x => {
+          return this.validateAccess(hasAuth, route, subscribe);
+        }));
       }
     }
     return new BehaviorSubject(true);
   }
 
-
+  private validateAccess(hasAuth: boolean, route: Route, subscribe: boolean = true): Observable<boolean> {
+    const permissions = UserAuthHelper.getRoutePermissions(route);
+    if (_.isNull(permissions)) {
+      // no special permissions needed
+      if (hasAuth) {
+        return this.isAuthenticated;
+      } else {
+        return this.isNotAuthenticated;
+      }
+    } else {
+      if (subscribe) {
+        const x = new BehaviorSubject(false);
+        this.hasPermissions$.subscribe(async userPermission => {
+          const allowed = await PermissionHelper.checkOnePermission(userPermission, permissions);
+          x.next(allowed);
+        });
+        return x;
+      } else {
+        const x = new Subject<boolean>();
+        this.hasPermissions$.subscribe(async userPermission => {
+          const allowed = await PermissionHelper.checkOnePermission(userPermission, permissions);
+          x.next(allowed);
+        });
+        return x;
+      }
+    }
+  }
 }
