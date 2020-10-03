@@ -25,6 +25,14 @@ initialise:
       roles:
         - admin
 
+    - username: dummy
+      password: dummy123
+      displayName: Dummy
+      adapter: default
+      mail: dummy@local.txs
+      roles:
+        - user
+
 auth:
   allowSignup: true
 
