@@ -25,8 +25,8 @@ const settingsTemplate = {
       database: 'auth',
       username: 'auth',
       port: 5234,
-      logger: 'simple-console',
-      logging: 'all',
+      // logger: 'simple-console',
+      // logging: 'all',
 
     }
   },
