@@ -1,10 +1,14 @@
 import {getTestBed, TestBed} from '@angular/core/testing';
-// import {expect} from 'jasmine';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {UserAuthService} from './user-auth.service';
 import {RouterTestingModule} from '@angular/router/testing';
-import {BaseModule} from '@typexs/ng-base';
+import {AuthService, BackendClientService, BaseModule} from '@typexs/ng-base';
 import {API_CTRL_SERVER_PING, API_CTRL_SERVER_ROUTES, IRoute} from '@typexs/server/browser';
+import {API_USER, API_USER_CONFIG, API_USER_IS_AUTHENTICATED} from '../../libs/Constants';
+import {IAuthMethodInfo} from '../../libs/auth/IAuthMethodInfo';
+import {HTTP_INTERCEPTORS} from '@angular/common/http';
+import {AuthTokenInterceptor} from './authtoken.interceptor';
+import {User} from '../../entities/User';
 
 
 /**
@@ -24,6 +28,7 @@ import {API_CTRL_SERVER_PING, API_CTRL_SERVER_ROUTES, IRoute} from '@typexs/serv
  */
 describe('UserAuthService', () => {
   let service: UserAuthService;
+  let backService: BackendClientService;
   let injector: TestBed;
   let httpMock: HttpTestingController;
 
@@ -33,14 +38,21 @@ describe('UserAuthService', () => {
       imports: [
         HttpClientTestingModule,
         RouterTestingModule,
-        BaseModule],
+        BaseModule
+      ],
       providers: [
-        UserAuthService
+        {provide: AuthService, useClass: UserAuthService},
+        {
+          provide: HTTP_INTERCEPTORS,
+          useClass: AuthTokenInterceptor,
+          multi: true
+        }
       ]
     });
 
     injector = getTestBed();
-    service = injector.get(UserAuthService);
+    backService = injector.get(BackendClientService);
+    service = injector.get(AuthService);
     httpMock = injector.get(HttpTestingController);
 
   });
@@ -51,7 +63,7 @@ describe('UserAuthService', () => {
   });
 
 
-  it('should have a service instance and load configuration', () => {
+  it('should have a service instance and not be initialised', () => {
     expect(service).not.toBeNull();
 
     service.isInitialized().subscribe(x => {
@@ -59,35 +71,175 @@ describe('UserAuthService', () => {
     });
 
     // app backend check calls ping
-    const reqPings = httpMock.match('/api' + API_CTRL_SERVER_PING);
-    reqPings.map(r => r.flush({time: new Date()}));
+    const reqPings = httpMock.expectOne('/api' + API_CTRL_SERVER_PING);
+    reqPings.flush({time: new Date()});
 
     // app backend check calls accessible routes
-    const reqRoutes = httpMock.match('/api' + API_CTRL_SERVER_ROUTES);
-    reqRoutes.map(r => r.flush(<IRoute[]>[]));
+    const reqRoutes = httpMock.expectOne('/api' + API_CTRL_SERVER_ROUTES);
+    reqRoutes.flush(<IRoute[]>[]);
 
   });
 
 
-  /*
-  it('should handle a simple async scenario', async(() => {
-    service.simpleAsync().then((result) => {
-      expect(result).toBe('Hi there');
+  it('check successfully initialise with no auth', done => {
+
+    service.init()
+      .subscribe(x => {
+        if (x) {
+          done();
+        }
+      }, error => {
+        console.error(error);
+      });
+
+
+    // app backend check calls ping
+    const reqPings = httpMock.expectOne(backService.apiUrl(API_CTRL_SERVER_PING));
+    reqPings.flush({time: new Date()});
+
+    // app backend check calls accessible routes
+    const reqRoutes = httpMock.match(backService.apiUrl(API_CTRL_SERVER_ROUTES));
+    reqRoutes.map(x => x.flush(<IRoute[]>[
+        // reqRoutes.flush([
+        {
+          route: backService.apiUrl(API_CTRL_SERVER_PING),
+          method: 'get',
+          context: 'api',
+          authorized: false
+        },
+        {
+          route: backService.apiUrl(API_CTRL_SERVER_ROUTES),
+          method: 'get',
+          context: 'api',
+          authorized: false
+        },
+        {
+          route: backService.apiUrl(API_USER_CONFIG),
+          method: 'get',
+          context: 'api',
+          authorized: false
+        },
+        {
+          route: backService.apiUrl(API_USER_IS_AUTHENTICATED),
+          method: 'get',
+          context: 'api',
+          authorized: false
+        }
+      ])
+    );
+
+    const reqCfg = httpMock.expectOne(backService.apiUrl(API_USER_CONFIG));
+    reqCfg.flush({
+      enabled: true,
+      authKey: 'txs',
+      methods: <IAuthMethodInfo[]>[]
     });
-  }));
 
-  it('should work with fakeAsync', fakeAsync(() => {
-    let value;
-    service.simpleAsync().then((result) => {
-      value = result;
+    const reqAuth = httpMock.expectOne(backService.apiUrl(API_USER_IS_AUTHENTICATED));
+    reqAuth.flush('false');
+
+  });
+
+
+  it('check successfully initialise with auth', done => {
+    // localStorage.setItem('token.txs', 'hallo_token');
+
+    service.init()
+      .subscribe(x => {
+        if (x) {
+          done();
+        }
+      }, error => {
+        console.error(error);
+      });
+
+
+    // app backend check calls ping
+    const reqPings = httpMock.expectOne(backService.apiUrl(API_CTRL_SERVER_PING));
+    reqPings.flush({time: new Date()});
+
+    // app backend check calls accessible routes
+    const reqRoutes = httpMock.match(backService.apiUrl(API_CTRL_SERVER_ROUTES));
+    reqRoutes.map(x => x.flush(<IRoute[]>[
+        // reqRoutes.flush([
+        {
+          route: backService.apiUrl(API_CTRL_SERVER_PING),
+          method: 'get',
+          context: 'api',
+          authorized: false
+        },
+        {
+          route: backService.apiUrl(API_CTRL_SERVER_ROUTES),
+          method: 'get',
+          context: 'api',
+          authorized: false
+        },
+        {
+          route: backService.apiUrl(API_USER_CONFIG),
+          method: 'get',
+          context: 'api',
+          authorized: false
+        },
+        {
+          route: backService.apiUrl(API_USER_IS_AUTHENTICATED),
+          method: 'get',
+          context: 'api',
+          authorized: false
+        }
+      ])
+    );
+
+    const reqCfg = httpMock.expectOne(backService.apiUrl(API_USER_CONFIG));
+    reqCfg.flush({
+      enabled: true,
+      authKey: 'txs',
+      methods: <IAuthMethodInfo[]>[]
     });
-    expect(value).not.toBeDefined();
 
-    tick(50);
-    expect(value).not.toBeDefined();
+    const reqAuth = httpMock.expectOne(backService.apiUrl(API_USER_IS_AUTHENTICATED));
+    reqAuth.flush('true');
 
-    tick(50);
-    expect(value).toBeDefined();
-  }));
-*/
+
+    // app backend check calls accessible routes
+    const reqAccessRoute = httpMock.expectOne(backService.apiUrl(API_CTRL_SERVER_ROUTES));
+    reqAccessRoute.flush(<IRoute[]>[
+      // reqRoutes.flush([
+      {
+        route: backService.apiUrl(API_CTRL_SERVER_PING),
+        method: 'get',
+        context: 'api',
+        authorized: false
+      },
+      {
+        route: backService.apiUrl(API_CTRL_SERVER_ROUTES),
+        method: 'get',
+        context: 'api',
+        authorized: false
+      },
+      {
+        route: backService.apiUrl(API_USER_CONFIG),
+        method: 'get',
+        context: 'api',
+        authorized: false
+      },
+      {
+        route: backService.apiUrl(API_USER_IS_AUTHENTICATED),
+        method: 'get',
+        context: 'api',
+        authorized: false
+      },
+      {
+        route: backService.apiUrl(API_USER),
+        method: 'get',
+        context: 'api',
+        authorized: true
+      }
+    ])
+    ;
+
+    const reqUserData = httpMock.expectOne(backService.apiUrl(API_USER));
+    reqUserData.flush(<User>{id: 1, username: 'bestuser'});
+
+  });
+
 });
