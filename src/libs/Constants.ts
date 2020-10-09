@@ -23,3 +23,7 @@ export const API_USER_LOGIN = API_USER + _API_USER_LOGIN;
 
 export const _API_USER_LOGOUT = '/logout';
 export const API_USER_LOGOUT = API_USER + _API_USER_LOGOUT;
+
+
+export const PERMISSION_ALLOW_ADMINISTER_PERMISSIONS = 'administer permissions';
+// export const PERMISSION_ALLOW_ADMINISTER_NAMED_PERMISSION = 'administer :name permission';

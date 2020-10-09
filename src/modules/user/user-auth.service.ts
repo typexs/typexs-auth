@@ -10,13 +10,14 @@ import {DefaultUserLogout} from '../../libs/models/DefaultUserLogout';
 import {Observable} from 'rxjs/Observable';
 import {IAuthServiceProvider} from '@typexs/ng-base/modules/base/api/auth/IAuthServiceProvider';
 import {User} from '../../entities/User';
-import {AuthMessage, BackendClientService, Log, LogMessage, MessageChannel, MessageService, MessageType} from '@typexs/ng-base';
+import {AuthMessage, BackendClientService, LogMessage, MessageChannel, MessageService, MessageType} from '@typexs/ng-base';
 import {BehaviorSubject, of, Subject} from 'rxjs';
-import {first, map, mergeMap} from 'rxjs/operators';
+import {filter, first, map, mergeMap} from 'rxjs/operators';
 import {IAuthSettings} from '../../libs/auth/IAuthSettings';
 import {API_USER, API_USER_CONFIG, API_USER_IS_AUTHENTICATED, API_USER_LOGIN, API_USER_LOGOUT, API_USER_SIGNUP} from '../../libs/Constants';
 import {ISecuredResource, PermissionHelper} from '@typexs/roles-api/index';
 import {UserAuthHelper} from './lib/UserAuthHelper';
+import {Subscription} from 'rxjs/Rx';
 
 
 function parseUser(user: any) {
@@ -40,6 +41,8 @@ export class UserAuthService implements IAuthServiceProvider {
 
   private _isAuthenticated$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
+  private prevAuth = false;
+
   private _config: IAuthSettings = {
     authKey: 'txs-auth',
     enabled: false,
@@ -61,6 +64,8 @@ export class UserAuthService implements IAuthServiceProvider {
   private authCheckLoading = false;
 
   private permissions: string[];
+
+  private authSubs: Subscription;
 
   constructor(private backendClientService: BackendClientService,
               private messageService: MessageService) {
@@ -88,6 +93,8 @@ export class UserAuthService implements IAuthServiceProvider {
       subject.next(true);
     }, error => {
       subject.error(error);
+    }, () => {
+      subject.complete();
     });
     return subject.asObservable();
   }
@@ -97,18 +104,37 @@ export class UserAuthService implements IAuthServiceProvider {
    * startup method to check if an existing token is still active
    */
   init() {
+    this.prevAuth = this._isAuthenticated$.getValue();
     if (this.isEnabled()) {
-      this.configure()
+      if (this.authSubs) {
+        this.authSubs.unsubscribe();
+      }
+      // fetch current accessible routes
+      this.backendClientService.getState()
+        .pipe(filter(x => x === 'online'))
         .pipe(first())
-        .pipe(mergeMap(x => this.checkAuthentication()))
+        .pipe(mergeMap(x => this.backendClientService.reloadRoutes()))
+        .pipe(mergeMap(x => {
+          return this.configure();
+        }))
+        // .pipe(first())
+        .pipe(mergeMap(x => {
+          return this.checkAuthentication();
+        }))
+        // .pipe(first())
         .subscribe(x => {
-          this._isAuthenticated$
-            .pipe(mergeMap(y => this.backendClientService.reloadRoutes()))
-            .subscribe(z => {
-              if (this._initialized$.getValue() === false) {
-                this._initialized$.next(true);
+          this.authSubs = this._isAuthenticated$
+            .subscribe(y => {
+              // reload routes on auth check
+              if (this.prevAuth !== y) {
+                this.prevAuth = y;
+                this.backendClientService.reloadRoutes();
               }
             });
+
+          if (this._initialized$.getValue() === false) {
+            this._initialized$.next(true);
+          }
         }, error => {
           this._initialized$.error(error);
         });
@@ -116,6 +142,44 @@ export class UserAuthService implements IAuthServiceProvider {
       this._initialized$.next(true);
     }
     return this._initialized$;
+  }
+
+
+  private checkAuthentication() {
+    this.connected = false;
+    this.authCheckLoading = true;
+    const checking = new Subject<boolean>();
+    this.backendClientService.callApi<boolean>(API_USER_IS_AUTHENTICATED)
+      .subscribe(
+        value => {
+          if (_.isString(value)) {
+            if (value === 'true') {
+              value = true;
+            } else {
+              value = false;
+            }
+          }
+          this.connected = value;
+          checking.next(value);
+          this._isAuthenticated$.next(value);
+          if (!value) {
+            this.clearStoredToken();
+          } else {
+            this.getUser();
+          }
+        },
+        error => {
+          // this.logChannel.publish(LogMessage.error(error, this, 'init'));
+          this.clearStoredToken();
+          this._isAuthenticated$.error(error);
+          checking.error(error);
+        },
+        () => {
+          this.authCheckLoading = false;
+          checking.complete();
+        }
+      );
+    return checking;
   }
 
 
@@ -219,35 +283,8 @@ export class UserAuthService implements IAuthServiceProvider {
     const token = this.getStoredToken();
     const validToken = token != null && token === this.token;
     if (token && (!validToken || !this.connected) && !this.authCheckLoading) {
-      this.checkAuthentication();
+      return this.checkAuthentication().pipe(mergeMap(x => this._isAuthenticated$));
     }
-    return this._isAuthenticated$;
-  }
-
-
-  private checkAuthentication() {
-    this.connected = false;
-    this.authCheckLoading = true;
-    this.backendClientService.callApi<boolean>(API_USER_IS_AUTHENTICATED)
-      .subscribe(
-        value => {
-          this.connected = value;
-          this._isAuthenticated$.next(value);
-          if (!value) {
-            this.clearStoredToken();
-          } else {
-            this.getUser();
-          }
-        },
-        error => {
-          // this.logChannel.publish(LogMessage.error(error, this, 'init'));
-          this.clearStoredToken();
-          this._isAuthenticated$.error(error);
-        },
-        () => {
-          this.authCheckLoading = false;
-        }
-      );
     return this._isAuthenticated$;
   }
 

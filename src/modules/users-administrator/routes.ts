@@ -1,6 +1,7 @@
 import {Routes} from '@angular/router';
 import {AuthGuardService} from '@typexs/ng-base';
 import {PermissionsRolesComponent} from './components/permissions-roles/permissions-roles.component';
+import {PERMISSION_ALLOW_ADMINISTER_PERMISSIONS} from '../..';
 
 /**
  * TODO
@@ -17,6 +18,7 @@ export const USER_ADMIN_ROUTES: Routes = [
     data: {
       label: 'Permissions',
       isAuthenticated: true,
+      permissions: [PERMISSION_ALLOW_ADMINISTER_PERMISSIONS],
       group: 'admin'
     }
   }
