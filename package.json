@@ -7,7 +7,7 @@
     "doc": "docs/de"
   },
   "scripts": {
-    "test": "npx nyc mocha test/**/*.spec.ts test/**/**/*.spec.ts && npx ng test typexs-auth --code-coverage=true --watch=false",
+    "test": "npx nyc mocha test/{**,**/**}/*.spec.ts && npx ng test typexs-auth --code-coverage=true --watch=false",
     "posttest": "npx nyc report --reporter=json && npx codecov -f coverage/backend/*.json && npx codecov -f coverage/karma/*.json",
     "ng": "npx ng",
     "serve": "npx ng serve",
@@ -15,7 +15,7 @@
     "build": "npx ng build --prod",
     "lint": "npx ng lint",
     "e2e": "npx ng e2e",
-    "mocha": "npx mocha test/**/*.spec.ts test/**/**/*.spec.ts",
+    "mocha": "npx mocha test/{**,**/**}/*.spec.ts",
     "karma": "npx ng test typexs-auth --code-coverage=true --watch=false",
     "build:lib": "npx ng-packagr -p bundles/package.json"
   },
@@ -59,12 +59,12 @@
     "@types/string-template": "^1.0.2",
     "@types/superagent": "^4.1.10",
     "@types/supertest": "^2.0.10",
-    "@typexs/base": "^1.2.31",
+    "@typexs/base": "^1.2.33",
     "@typexs/ng": "^1.0.12",
     "@typexs/ng-base": "^1.0.12",
-    "@typexs/roles": "^1.0.14",
-    "@typexs/schema": "^1.0.14",
-    "@typexs/server": "^1.0.12",
+    "@typexs/roles": "^1.0.16",
+    "@typexs/schema": "^1.0.15",
+    "@typexs/server": "^1.0.13",
     "animate.css": "^4.1.1",
     "body-parser": "^1.19.0",
     "bootstrap": "^4.5.2",
@@ -118,15 +118,15 @@
     "typescript": "3.5.3"
   },
   "dependencies": {
-    "@typexs/roles-api": "^1.0.14",
+    "@typexs/roles-api": "^1.0.16",
     "bcrypt": "^5.0.0",
     "jsonwebtoken": "^8.5.1"
   },
   "peerDependencies": {
     "@typexs/ng": "^1.0.12",
-    "@typexs/schema": "^1.0.14",
-    "@typexs/server": "^1.0.12",
-    "@typexs/roles": "^1.0.14"
+    "@typexs/schema": "^1.0.15",
+    "@typexs/server": "^1.0.13",
+    "@typexs/roles": "^1.0.16"
   },
   "private": true,
   "nyc": {
