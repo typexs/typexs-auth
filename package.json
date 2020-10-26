@@ -69,8 +69,7 @@
     "@types/string-template": "^1.0.2",
     "@types/superagent": "^4.1.10",
     "@types/supertest": "^2.0.10",
-    "@typexs/base": "^1.2.33",
-    "@typexs/ng": "^1.0.12",
+    "@typexs/ng": "^1.1.0",
     "@typexs/ng-base": "^1.1.0",
     "@typexs/roles": "^1.0.16",
     "@typexs/schema": "^1.0.15",
@@ -129,7 +128,8 @@
   "dependencies": {
     "@typexs/roles-api": "^1.0.16",
     "bcrypt": "^5.0.0",
-    "jsonwebtoken": "^8.5.1"
+    "jsonwebtoken": "^8.5.1",
+    "@typexs/base": "^1.2.0"
   },
   "peerDependencies": {
     "@typexs/ng": "^1.1.0",
