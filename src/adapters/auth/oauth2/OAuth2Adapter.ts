@@ -1,21 +1,17 @@
-//import * as passport from "passport";
-import * as _ from "lodash";
-import {AuthMethod} from "../../../entities/AuthMethod";
-import {DefaultUserLogin} from "../../../libs/models/DefaultUserLogin";
-import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
+import * as _ from 'lodash';
+import {DefaultUserLogin} from '../../../libs/models/DefaultUserLogin';
+import {AbstractAuthAdapter} from '../../../libs/adapter/AbstractAuthAdapter';
 
 
-import {Inject, Log} from "@typexs/base";
-import {IOAuth2Options} from "./IOAuth2Options";
-import {IApplication, IRequest, IResponse} from "@typexs/server";
-import {T_AUTH_ADAPTER_STAGE} from "../../../libs/adapter/IAuthAdapter";
+import {Inject, Log} from '@typexs/base';
+import {IOAuth2Options} from './IOAuth2Options';
+import {IApplication, IRequest, IResponse} from '@typexs/server';
+import {T_AUTH_ADAPTER_STAGE} from '../../../libs/adapter/IAuthAdapter';
 
-import {IAuthConfiguration} from "../../../libs/adapter/IAuthConfiguration";
-import {IAuthMethod} from "../../../libs/models/IAuthMethod";
-import {Auth} from "../../../middleware/Auth";
-import {AuthSession} from "../../../entities/AuthSession";
-import {User} from "../../../entities/User";
-import {AuthDataContainer} from "../../../libs/auth/AuthDataContainer";
+import {IAuthConfiguration} from '../../../libs/adapter/IAuthConfiguration';
+import {IAuthMethod} from '../../../libs/models/IAuthMethod';
+import {Auth} from '../../../middleware/Auth';
+import {AuthDataContainer} from '../../../libs/auth/AuthDataContainer';
 
 export const K_AUTH_OAUTH2 = 'oauth2';
 
@@ -30,6 +26,9 @@ const DEFAULTS: IOAuth2Options = {
 
 export class OAuth2Adapter extends AbstractAuthAdapter {
 
+  static passport: any;
+
+  static OAuth2Strategy: any;
 
 
   @Inject('Auth')
@@ -38,10 +37,6 @@ export class OAuth2Adapter extends AbstractAuthAdapter {
   type: string = K_AUTH_OAUTH2;
 
   options: IOAuth2Options;
-
-  static passport: any;
-
-  static OAuth2Strategy: any;
 
   strategy: any;
 
@@ -99,11 +94,11 @@ export class OAuth2Adapter extends AbstractAuthAdapter {
 
 
   use(app: IApplication, stage: T_AUTH_ADAPTER_STAGE) {
-    if (stage == 'after') {
+    if (stage === 'after') {
       app.use(OAuth2Adapter.passport.initialize());
       app.use(OAuth2Adapter.passport.session());
-      let self = this;
-      let authId = this.authId;
+      const self = this;
+      const authId = this.authId;
 
       (<any>app).get('/api/auth/' + authId,
         OAuth2Adapter.passport.authenticate(this.options.authId)
@@ -120,7 +115,7 @@ export class OAuth2Adapter extends AbstractAuthAdapter {
               return next(err);
             }
 
-            let login = new DefaultUserLogin();
+            const login = new DefaultUserLogin();
             let container = new AuthDataContainer(login);
             login.username = user.identifier;
             login.password = 'XXXXXXXXXXXXXXX';

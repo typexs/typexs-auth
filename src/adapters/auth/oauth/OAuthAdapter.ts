@@ -1,14 +1,11 @@
-//import * as passport from "passport";
-import * as _ from "lodash";
-import {AuthMethod} from "../../../entities/AuthMethod";
-import {DefaultUserLogin} from "../../../libs/models/DefaultUserLogin";
-import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
-import {Log} from "@typexs/base";
-import {IOAuthOptions} from "./IOAuthOptions";
-import {IApplication} from "@typexs/server";
-import {T_AUTH_ADAPTER_STAGE} from "../../../libs/adapter/IAuthAdapter";
-import {User} from "../../../entities/User";
-import {AuthDataContainer} from "../../../libs/auth/AuthDataContainer";
+import * as _ from 'lodash';
+import {DefaultUserLogin} from '../../../libs/models/DefaultUserLogin';
+import {AbstractAuthAdapter} from '../../../libs/adapter/AbstractAuthAdapter';
+import {Log} from '@typexs/base';
+import {IOAuthOptions} from './IOAuthOptions';
+import {IApplication} from '@typexs/server';
+import {T_AUTH_ADAPTER_STAGE} from '../../../libs/adapter/IAuthAdapter';
+import {AuthDataContainer} from '../../../libs/auth/AuthDataContainer';
 
 export const K_AUTH_OAUTH = 'oauth';
 
@@ -17,7 +14,7 @@ const DEFAULTS: IOAuthOptions = {
 
   type: K_AUTH_OAUTH,
 
-  client_id: "MUST_BE_SET",
+  client_id: 'MUST_BE_SET',
 
   scopes: []
 
@@ -25,6 +22,10 @@ const DEFAULTS: IOAuthOptions = {
 
 
 export class OAuthAdapter extends AbstractAuthAdapter {
+
+  static passport: any;
+
+  static OAuthStrategy: any;
 
 
   type: string = K_AUTH_OAUTH;
@@ -35,17 +36,14 @@ export class OAuthAdapter extends AbstractAuthAdapter {
 
   oauthStrategy: any;
 
-  static passport: any;
-
-  static OAuthStrategy: any;
-
 
   hasRequirements() {
     try {
       OAuthAdapter.passport = require('passport');
       OAuthAdapter.OAuthStrategy = require('passport-oauth').OAuthStrategy;
     } catch (e) {
-      Log.error(e);
+      Log.warn('OAuth adapter necassary modules "passport" or "passport-oauth" are missing. Skip loading.');
+      return false;
     }
     return true;
   }
@@ -62,8 +60,8 @@ export class OAuthAdapter extends AbstractAuthAdapter {
   }
 
 
-  onAuthentication(token:any, tokenSecret:any, profile:any, done:Function){
-    Log.info('OAuth->onAuthentication ',token,tokenSecret,profile);
+  onAuthentication(token: any, tokenSecret: any, profile: any, done: Function) {
+    Log.info('OAuth->onAuthentication ', token, tokenSecret, profile);
     done();
   }
 
@@ -88,7 +86,6 @@ export class OAuthAdapter extends AbstractAuthAdapter {
   createOnLogin(login: DefaultUserLogin): boolean {
     return true;
   }
-
 
 
 }

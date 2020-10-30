@@ -1,15 +1,12 @@
-//import * as passport from "passport";
-import * as _ from "lodash";
-import {AuthMethod} from "../../../entities/AuthMethod";
-import {DefaultUserLogin} from "../../../libs/models/DefaultUserLogin";
-import {AbstractAuthAdapter} from "../../../libs/adapter/AbstractAuthAdapter";
+import * as _ from 'lodash';
+import {DefaultUserLogin} from '../../../libs/models/DefaultUserLogin';
+import {AbstractAuthAdapter} from '../../../libs/adapter/AbstractAuthAdapter';
 
-import {ILdapAuthOptions} from "./ILdapAuthOptions";
+import {ILdapAuthOptions} from './ILdapAuthOptions';
 
-import {AsyncWorkerQueue, IQueueProcessor, IQueueWorkload, Log, NestedException} from "@typexs/base";
-import {User} from "../../../entities/User";
-import {AuthDataContainer} from "../../../libs/auth/AuthDataContainer";
-import {UserNotFoundError} from "../../../libs/exceptions/UserNotFoundError";
+import {AsyncWorkerQueue, IQueueProcessor, NestedException} from '@typexs/base';
+import {AuthDataContainer} from '../../../libs/auth/AuthDataContainer';
+import {UserNotFoundError} from '../../../libs/exceptions/UserNotFoundError';
 
 export const K_AUTH_LDAP = 'ldap';
 
@@ -18,7 +15,7 @@ const DEFAULTS: ILdapAuthOptions = {
 
   type: K_AUTH_LDAP,
 
-  url: "ldap://localhost:389",
+  url: 'ldap://localhost:389',
 
 
 //  uidAttr: 'uid',
@@ -60,7 +57,6 @@ const DEFAULTS: ILdapAuthOptions = {
 };
 
 
-
 export class LdapAdapter extends AbstractAuthAdapter implements IQueueProcessor<AuthDataContainer<DefaultUserLogin>> {
 
   static clazz: Function;
@@ -99,13 +95,13 @@ export class LdapAdapter extends AbstractAuthAdapter implements IQueueProcessor<
 
   async authenticate(container: AuthDataContainer<DefaultUserLogin>): Promise<boolean> {
     let queueJob = this.queue.push(container);
-    try{
+    try {
       await queueJob.done();
-    }catch (e) {
+    } catch (e) {
       // retry 3
-      let r = _.get(container,'retry',3);
-      if(r > 0){
-        _.set(container,'retry',--r);
+      let r = _.get(container, 'retry', 3);
+      if (r > 0) {
+        _.set(container, 'retry', --r);
         return this.authenticate(container);
       }
     }
@@ -118,7 +114,7 @@ export class LdapAdapter extends AbstractAuthAdapter implements IQueueProcessor<
     let mail = null;
     if (_.has(ldapData, this.options.mailAttr)) {
       // set mail field @see Auth.ts:createUser
-      mail = _.get(ldapData, this.options.mailAttr)
+      mail = _.get(ldapData, this.options.mailAttr);
     }
 
     if (_.isNull(login.data) || _.isNull(mail)) {
@@ -155,32 +151,32 @@ export class LdapAdapter extends AbstractAuthAdapter implements IQueueProcessor<
       }
     } catch (err) {
 
-      if(err instanceof UserNotFoundError){
+      if (err instanceof UserNotFoundError) {
         container.addError({
-          property: "username", // Object's property that haven't pass validation.
-          value: "username", // Value that haven't pass a validation.
+          property: 'username', // Object's property that haven't pass validation.
+          value: 'username', // Value that haven't pass a validation.
           constraints: { // Constraints that failed validation with error messages.
-            exists: "username not found"
+            exists: 'username not found'
           }
-        })
+        });
       } else if (err instanceof Error) {
 
         if (/Invalid Credentials/.test((<any>err).lde_message)) {
           // TODO handle error messages in error classes and not here
           container.addError({
-            property: "password", // Object's property that haven't pass validation.
-            value: "password", // Value that haven't pass a validation.
+            property: 'password', // Object's property that haven't pass validation.
+            value: 'password', // Value that haven't pass a validation.
             constraints: { // Constraints that failed validation with error messages.
-              exists: "username or password is wrong."
+              exists: 'username or password is wrong.'
             }
           });
 
         } else {
-          throw new NestedException(err, "UNKNOWN");
+          throw new NestedException(err, 'UNKNOWN');
         }
 
       } else {
-        throw new NestedException(err, "UNKNOWN");
+        throw new NestedException(err, 'UNKNOWN');
       }
 
 
@@ -193,7 +189,6 @@ export class LdapAdapter extends AbstractAuthAdapter implements IQueueProcessor<
     }
     return container.isAuthenticated;
   }
-
 
 
 }

@@ -1,4 +1,3 @@
-// import * as passport from "passport";
 import * as bcrypt from 'bcrypt';
 import * as _ from 'lodash';
 import {Inject, Invoker, NestedException} from '@typexs/base';
