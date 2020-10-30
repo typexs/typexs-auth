@@ -7,8 +7,8 @@ export class UserAuthHelper {
 
 
   static getRoutePermissions(route: ActivatedRouteSnapshot | Route, replaceParams: boolean = true) {
-    let perms = _.get(route, 'data.' + K_PERMISSIONS, []);
-    if (replaceParams && route instanceof ActivatedRouteSnapshot) {
+    let perms = _.get(route, 'data.' + K_PERMISSIONS, null);
+    if (perms && _.isArray(perms) && replaceParams && route instanceof ActivatedRouteSnapshot) {
       perms = perms.map((x: string) => {
         let y = x;
         route.paramMap.keys.forEach(k => {
