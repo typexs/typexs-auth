@@ -7,7 +7,8 @@ import {
   CTXT_ROUTE_USER_PROFILE,
   DistributedStorageModule,
   EntityModule,
-  StorageModule
+  StorageModule,
+  TasksModule
 } from '@typexs/ng-base';
 import {BatAuthLoginComponent} from './demos/bat-auth-login/bat-auth-login.component';
 import {BatAuthSignupComponent} from './demos/bat-auth-signup/bat-auth-signup.component';
@@ -83,6 +84,8 @@ export const APP_ROUTES: Routes = [
   {
     path: 'admin',
     children: [
+
+      ...TasksModule.getRoutes(),
       ...StorageModule.getRoutes(),
       ...EntityModule.getRoutes(),
       ...DistributedStorageModule.getRoutes(),
