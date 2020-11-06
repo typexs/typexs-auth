@@ -63,17 +63,19 @@ export class UserSignupComponent implements OnInit, OnDestroy {
     return this.getUserAuthService().isLoggedIn();
   }
 
+
   redirectOnSuccess() {
     if (_.isString(this.successUrl)) {
       const nav = this.navigatorService.entries.find(e => e.path && e.path.includes(<string>this.successUrl));
       if (nav) {
-        this.router.navigate([nav.getFullPath()]);
+        return this.router.navigate([nav.getFullPath()]);
       } else {
-        this.router.navigate([this.successUrl]);
+        return this.router.navigate([this.successUrl]);
       }
     } else if (_.isArray(this.successUrl)) {
-      this.router.navigate(this.successUrl);
+      return this.router.navigate(this.successUrl);
     }
+    return null;
   }
 
 
