@@ -1,10 +1,11 @@
 import * as _ from 'lodash';
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {DefaultUserLogin} from '../../../../libs/models/DefaultUserLogin';
 import {Router} from '@angular/router';
 import {UserAuthService} from './../../user-auth.service';
 import {AuthService, IMessage, LogMessage, MessageChannel, MessageService, MessageType, NavigatorService} from '@typexs/ng-base';
 import {mergeMap} from 'rxjs/operators';
+import {Subscription} from 'rxjs/Rx';
 
 @Component({
   selector: 'txs-user-login',
@@ -21,10 +22,15 @@ export class UserLoginComponent implements OnInit, OnDestroy {
 
   formMessage: MessageChannel<IMessage>;
 
+  subscription: Subscription;
+
+  authenticated: boolean;
+
   constructor(private authService: AuthService,
               private router: Router,
               private navigatorService: NavigatorService,
-              private messageService: MessageService) {
+              private messageService: MessageService,
+              private changeRef: ChangeDetectorRef) {
 
   }
 
@@ -39,9 +45,11 @@ export class UserLoginComponent implements OnInit, OnDestroy {
     this.logChannel = this.messageService.getLogService();
     this.formMessage = this.messageService.get('form.user-login-form');
     this.user = this.getUserAuthService().newUserLogin();
-    this.authService.isInitialized()
+    this.subscription = this.authService.isInitialized()
       .pipe(mergeMap(x => this.isAuthenticated()))
       .subscribe(async x => {
+        this.authenticated = x;
+        this.changeRef.detectChanges();
         if (x) {
           await this.redirectOnSuccess();
         }
@@ -51,7 +59,9 @@ export class UserLoginComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.formMessage.finish();
-    // this.logChannel.finish();
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
 
@@ -63,19 +73,19 @@ export class UserLoginComponent implements OnInit, OnDestroy {
     if (_.isString(this.successUrl)) {
       const nav = this.navigatorService.entries.find(e => e.path && e.path.includes(<string>this.successUrl));
       if (nav) {
-        this.router.navigate([nav.getFullPath()]);
+        return this.router.navigate([nav.getFullPath()]);
       } else {
-        this.router.navigate([this.successUrl]);
+        return this.router.navigate([this.successUrl]);
       }
     } else if (_.isArray(this.successUrl)) {
-      this.router.navigate(this.successUrl);
+      return this.router.navigate(this.successUrl);
     }
+    return null;
   }
 
+
   onSubmit($event: any) {
-
     if ($event.data.isSuccessValidated) {
-
       this.getUserAuthService().authenticate(this.user).subscribe(user => {
           let state: any = null;
           if (user) {
@@ -99,7 +109,6 @@ export class UserLoginComponent implements OnInit, OnDestroy {
           }
         },
         error => {
-          console.log(error);
           this.logChannel.publish(LogMessage.error(error, this, 'onSubmit'));
         });
     }
