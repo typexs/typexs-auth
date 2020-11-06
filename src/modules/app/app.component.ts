@@ -1,5 +1,5 @@
 import {Component, OnInit, ViewEncapsulation} from '@angular/core';
-import {AuthService} from '@typexs/ng-base';
+import {AppService, AuthService} from '@typexs/ng-base';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +10,8 @@ import {AuthService} from '@typexs/ng-base';
 export class AppComponent implements OnInit {
   title = 'app';
 
-  constructor(public auth: AuthService) {
+  constructor(public auth: AuthService, private appService: AppService) {
+    appService.getViewContext().subscribe(x => console.log(x));
   }
 
 

@@ -17,16 +17,6 @@ import {PERM_ALLOW_ACCESS_USER_LIST} from './lib/Constants';
 import {UsersListComponent} from './demos/bat-auth-users-list/users-list.component';
 
 
-export function wrapInArray(value: any[]): any[] {
-  // for (let i = 0; i < value.length; i++) {
-  //   // value[i].path = 'admin/' + value[i].path;
-  //   // if (!x.data.skip) {
-  //   //   x.data.group = 'admin';
-  //   // }
-  // }
-  return value;
-}
-
 export const APP_ROUTES: Routes = [
   {
     path: 'demo',

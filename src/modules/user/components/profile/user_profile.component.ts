@@ -28,7 +28,6 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    console.log('user profile');
     this.subscription = this.getUserAuthService().isInitialized()
       .pipe(mergeMap(x => this.getUserAuthService().isLoggedIn()))
       .pipe(mergeMap(x => x ? this.getUserAuthService().getUser() : of(null)))

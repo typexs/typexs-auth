@@ -6,7 +6,7 @@ import {ModuleWithProviders, Type} from '@angular/core';
 import {UserModule} from '../user/module';
 import {
   AdminModule,
-  BaseAdminThemeModule,
+  BaseAdminThemeModule, BaseModule,
   DistributedStorageModule,
   EntityModule,
   FormsModule,
@@ -15,19 +15,23 @@ import {
   ViewsModule
 } from '@typexs/ng-base';
 import {UserAdminModule} from '../users-administrator/module';
+import {HttpClientModule} from '@angular/common/http';
 
 
 export const APP_MODULES: Array<Type<any> | ModuleWithProviders | any[]> = [
   BrowserModule,
-  UserModule.forRoot(),
+  HttpClientModule,
   NavigatorModule,
   FormsModule,
   ViewsModule,
   RouterModule.forRoot(APP_ROUTES),
   AdminModule,
-  UserAdminModule.forRoot(),
+  BaseModule.forRoot(),
   BaseAdminThemeModule,
   StorageModule,
   EntityModule,
-  DistributedStorageModule
+  DistributedStorageModule,
+  UserModule.forRoot(),
+  UserAdminModule.forRoot(),
+
 ];

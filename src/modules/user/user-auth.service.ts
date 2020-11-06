@@ -35,8 +35,6 @@ function parseUser(user: any) {
 @Injectable()
 export class UserAuthService implements IAuthServiceProvider {
 
-  // private _configured$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-
   private _initialized$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   private _isAuthenticated$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
@@ -61,7 +59,7 @@ export class UserAuthService implements IAuthServiceProvider {
 
   private loading = false;
 
-  private authCheckLoading = false;
+  private authCheckLoading = new BehaviorSubject(false);
 
   private permissions: string[];
 
@@ -131,7 +129,6 @@ export class UserAuthService implements IAuthServiceProvider {
                 this.backendClientService.reloadRoutes();
               }
             });
-
           if (this._initialized$.getValue() === false) {
             this._initialized$.next(true);
           }
@@ -147,7 +144,7 @@ export class UserAuthService implements IAuthServiceProvider {
 
   private checkAuthentication() {
     this.connected = false;
-    this.authCheckLoading = true;
+    this.authCheckLoading.next(true);
     const checking = new Subject<boolean>();
     this.backendClientService.callApi<boolean>(API_USER_IS_AUTHENTICATED)
       .subscribe(
@@ -169,13 +166,12 @@ export class UserAuthService implements IAuthServiceProvider {
           }
         },
         error => {
-          // this.logChannel.publish(LogMessage.error(error, this, 'init'));
           this.clearStoredToken();
           this._isAuthenticated$.error(error);
           checking.error(error);
         },
         () => {
-          this.authCheckLoading = false;
+          this.authCheckLoading.next(false);
           checking.complete();
         }
       );
@@ -220,8 +216,8 @@ export class UserAuthService implements IAuthServiceProvider {
       this.channel.publish(msg);
     }
     return this.cacheUser;
-
   }
+
 
   resetUser() {
     this.permissions = undefined;
@@ -282,10 +278,13 @@ export class UserAuthService implements IAuthServiceProvider {
   isAuthenticated() {
     const token = this.getStoredToken();
     const validToken = token != null && token === this.token;
-    if (token && (!validToken || !this.connected) && !this.authCheckLoading) {
+    if (token && (!validToken || !this.connected) && !this.authCheckLoading.getValue()) {
       return this.checkAuthentication().pipe(mergeMap(x => this._isAuthenticated$));
+    } else if (this.authCheckLoading.getValue()) {
+      return this.authCheckLoading.pipe(filter(x => !x)).pipe(first()).pipe(mergeMap(x => this._isAuthenticated$));
+    } else {
+      return this._isAuthenticated$;
     }
-    return this._isAuthenticated$;
   }
 
 

@@ -13,7 +13,8 @@ import {APP_ROUTES} from './routes';
 import {UserAuthService} from './user-auth.service';
 
 const PROVIDERS = [
-  UserAuthService,
+  // UserAuthService,
+  // UserAuthGuardService,
   {
     provide: AuthService,
     useClass: UserAuthService
@@ -38,9 +39,7 @@ const PROVIDERS = [
     UserLogoutComponent
   ],
   imports: [
-    // RouterModule.forChild(APP_ROUTES),
     CommonModule,
-    HttpClientModule,
     NgFormsModule,
     FormsModule,
     BaseModule,

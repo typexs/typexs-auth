@@ -2,7 +2,7 @@ import {NgModule} from '@angular/core';
 import {AppComponent} from './app.component';
 import {APP_MODULES} from './app.used.modules';
 import {DemosComponent} from './demos/demos.component';
-import {AuthService, DistributedStorageService, EntityService, NavigatorService, StorageService} from '@typexs/ng-base';
+import {AuthGuardService, AuthService, DistributedStorageService, EntityService, NavigatorService, StorageService} from '@typexs/ng-base';
 import {BatAuthProfileComponent} from './demos/bat-auth-profile/bat-auth-profile.component';
 import {BatAuthSignupComponent} from './demos/bat-auth-signup/bat-auth-signup.component';
 import {BatAuthLoginComponent} from './demos/bat-auth-login/bat-auth-login.component';
@@ -26,6 +26,7 @@ export class AppModule {
 
   constructor(
     private authService: AuthService,
+    private authGuardService: AuthGuardService,
     private navigatorService: NavigatorService,
     private storageService: StorageService,
     private entityService: EntityService,
@@ -40,7 +41,7 @@ export class AppModule {
     this.navigatorService.addGroupEntry('admin/distributed-storage/.*', {label: 'Distributed Storage', group: 'admin'});
 
     authService.init();
-    // navigatorService.addGroupEntry('tables', {label: 'Tables', group: 'demo'});
+    // authGuardService.init();
   }
 
 

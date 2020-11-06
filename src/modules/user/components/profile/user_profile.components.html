@@ -1,13 +1,47 @@
 <div class="user-profile-wrapper">
 
-  <div *ngIf="(isAuthenticated() | async) && user">
-    User {{ user.username }} is authenicated.
-
-    <pre>
-        {{user|json}}
-      </pre>
-
+  <div class="alert alert-success" *ngIf="(isAuthenticated() | async) && user">
+    You are autheticated as <strong>{{ user.username }}</strong>.
   </div>
+
+  <div class="container-fluid" *ngIf="user">
+    <div class="row">
+      <div class="col-md-3">Username</div>
+      <div class="col-md-auto">{{ user.username }}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-3">Mail</div>
+      <div class="col-md-auto">{{ user.mail }}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-3">Created</div>
+      <div class="col-md-auto">{{ user.created_at | date }}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-3">Updated</div>
+      <div class="col-md-auto">{{ user.updated_at | date }}</div>
+    </div>
+    <div class="row">
+      <div class="col-md-3">Roles</div>
+      <div class="col-md-auto">
+        <ul class="list-unstyled">
+          <li *ngFor="let role of user.getRoles()">{{role.displayName}}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="text-right">
+      <span class="badge badge-success">JSON</span>
+    </div>
+    <div>
+    <pre class="language-json">
+        {{user|json}}
+    </pre>
+    </div>
+  </div>
+
 
   <div *ngIf="!(isAuthenticated() | async)">
     User is not authenicated.

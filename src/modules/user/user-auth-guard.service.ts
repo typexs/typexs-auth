@@ -1,4 +1,4 @@
-import {AuthMessage, AuthService, IAuthGuardProvider, IMenuLinkGuard, Log, NavEntry} from '@typexs/ng-base';
+import {AuthMessage, AuthService, IAuthGuardProvider, IMenuLinkGuard, NavEntry} from '@typexs/ng-base';
 import {ActivatedRouteSnapshot, RouterStateSnapshot} from '@angular/router';
 import {Observable} from 'rxjs/Observable';
 import {BehaviorSubject} from 'rxjs/BehaviorSubject';
@@ -6,7 +6,7 @@ import {of} from 'rxjs';
 import {Injectable} from '@angular/core';
 import * as _ from 'lodash';
 import {Subject, Subscription} from 'rxjs/Rx';
-import {filter, mergeMap, single, tap} from 'rxjs/operators';
+import {filter, mergeMap, tap} from 'rxjs/operators';
 import {PermissionHelper} from '@typexs/roles-api';
 import {UserAuthHelper} from './lib/UserAuthHelper';
 import {Route} from '@angular/compiler/src/core';
@@ -79,7 +79,6 @@ export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard 
         }
       }))
       .subscribe(async permissions => {
-
         if (permissions && !_.isBoolean(permissions)) {
           this.hasPermissions.next(permissions);
         } else {
@@ -89,7 +88,6 @@ export class UserAuthGuardService implements IAuthGuardProvider, IMenuLinkGuard 
           this.isReady.next(true);
         }
       });
-
   }
 
 
