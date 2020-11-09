@@ -325,12 +325,14 @@ export class UserAuthService implements IAuthServiceProvider {
           this.connected = true;
           this.saveStoredToken(user.$state.token);
           this.setUser(user.$state.user);
+          this._isAuthenticated$.next(true);
           subject.next(user);
         },
         error => {
           // login.addError({property: 'error', value: error.message, error: error});
           login.resetSecret();
           this.clearStoredToken();
+          this._isAuthenticated$.next(false);
           subject.error(error);
         },
         () => {
@@ -350,11 +352,13 @@ export class UserAuthService implements IAuthServiceProvider {
       (user: AbstractUserLogout) => {
         this.loading = false;
         this.clearStoredToken();
+        this._isAuthenticated$.next(false);
         subject.next(user);
       },
       error => {
         this.loading = false;
         this.clearStoredToken();
+        this._isAuthenticated$.next(false);
         subject.error(error);
       },
       () => {

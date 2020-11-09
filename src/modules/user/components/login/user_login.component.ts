@@ -30,7 +30,8 @@ export class UserLoginComponent implements OnInit, OnDestroy {
               private router: Router,
               private navigatorService: NavigatorService,
               private messageService: MessageService,
-              private changeRef: ChangeDetectorRef) {
+              private changeRef: ChangeDetectorRef
+  ) {
 
   }
 
@@ -49,9 +50,12 @@ export class UserLoginComponent implements OnInit, OnDestroy {
       .pipe(mergeMap(x => this.isAuthenticated()))
       .subscribe(async x => {
         this.authenticated = x;
-        this.changeRef.detectChanges();
-        if (x) {
-          await this.redirectOnSuccess();
+        let success = false;
+        if (x && this.successUrl) {
+          success = await this.redirectOnSuccess();
+        }
+        if (!success) {
+          this.changeRef.detectChanges();
         }
       });
   }
