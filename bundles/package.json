@@ -1,6 +1,6 @@
 {
   "name": "@typexs/ng-auth",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "$schema": "../node_modules/ng-packagr/package.schema.json",
   "ngPackage": {
     "lib": {
