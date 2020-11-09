@@ -6,9 +6,10 @@ node_js:
   - 11
   - 12
   - 13
+  - 14
 
 env:
-  - DOCKER_COMPOSE_VERSION=1.23.1
+  - DOCKER_COMPOSE_VERSION=1.25.1
 
 services:
   - docker
