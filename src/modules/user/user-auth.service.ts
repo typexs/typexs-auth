@@ -322,10 +322,16 @@ export class UserAuthService implements IAuthServiceProvider {
       .subscribe(
         (user: AbstractUserLogin) => {
           this.loading = false;
+          const isAuthenticated = _.get(user, '$state.isAuthenticated', false);
           this.connected = true;
-          this.saveStoredToken(user.$state.token);
-          this.setUser(user.$state.user);
-          this._isAuthenticated$.next(true);
+          if (isAuthenticated) {
+            this.saveStoredToken(user.$state.token);
+            this.setUser(user.$state.user);
+          } else {
+            login.resetSecret();
+            this.clearStoredToken();
+          }
+          this._isAuthenticated$.next(isAuthenticated);
           subject.next(user);
         },
         error => {

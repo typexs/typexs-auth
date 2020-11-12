@@ -2,6 +2,7 @@ import {Routes} from '@angular/router';
 import {DemosComponent} from './demos/demos.component';
 import {UserLogoutComponent} from '../user/components/logout/user_logout.component';
 import {
+  AdminComponent,
   AuthGuardService,
   CTXT_ROUTE_USER_LOGOUT,
   CTXT_ROUTE_USER_PROFILE,
@@ -72,7 +73,9 @@ export const APP_ROUTES: Routes = [
     ]
   },
   {
-    path: 'admin',
+    path: 'admin', component: AdminComponent,
+    canActivate: [AuthGuardService],
+    data: {label: 'Admin', group: 'admin'},
     children: [
 
       ...TasksModule.getRoutes(),
