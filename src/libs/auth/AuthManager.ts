@@ -110,7 +110,7 @@ export class AuthManager {
                   authAdapter.updateOptions(methodOptions);
                 }
 
-                const adapterInstance = <IAuthAdapter>Injector.get(cls);
+                const adapterInstance = <IAuthAdapter>Injector.create(cls);
                 adapterInstance.authId = authId;
                 this.adapters.push(adapterInstance);
                 await adapterInstance.prepare(methodOptions);
