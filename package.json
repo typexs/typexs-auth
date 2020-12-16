@@ -65,11 +65,12 @@
     "@types/string-template": "^1.0.2",
     "@types/superagent": "^4.1.10",
     "@types/supertest": "^2.0.10",
-    "@typexs/ng": "^1.1.7",
-    "@typexs/ng-base": "^1.1.7",
-    "@typexs/roles": "^1.0.19",
-    "@typexs/schema": "^1.0.19",
-    "@typexs/server": "^1.0.16",
+    "@typexs/ng": "^1.1.21",
+    "@typexs/ng-base": "^1.1.21",
+    "@typexs/base": "^1.2.49",
+    "@typexs/roles": "^1.0.20",
+    "@typexs/schema": "^1.0.22",
+    "@typexs/server": "^1.0.19",
     "ajv": "^6.12.4",
     "animate.css": "^4.1.1",
     "body-parser": "^1.19.0",
@@ -128,14 +129,14 @@
   "dependencies": {
     "@typexs/roles-api": "^1.0.19",
     "bcrypt": "^5.0.0",
-    "jsonwebtoken": "^8.5.1",
-    "@typexs/base": "^1.2.0"
+    "jsonwebtoken": "^8.5.1"
   },
   "peerDependencies": {
+    "@typexs/base": "^1.2.0",
     "@typexs/ng": "^1.1.7",
-    "@typexs/schema": "^1.0.19",
-    "@typexs/server": "^1.0.16",
-    "@typexs/roles": "^1.0.19"
+    "@typexs/schema": "^1.0.0",
+    "@typexs/server": "^1.0.0",
+    "@typexs/roles": "^1.0.0"
   },
   "private": true,
   "nyc": {
