@@ -9,6 +9,6 @@
     "dest": "../build/ngPackage"
   },
   "peerDependencies": {
-    "@typexs/ng-base": "^1.2.1"
+    "@typexs/ng-base": "~1.2.2"
   }
 }
