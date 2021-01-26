@@ -2,7 +2,7 @@ import {getTestBed, TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {UserAuthService} from './user-auth.service';
 import {RouterTestingModule} from '@angular/router/testing';
-import {AuthService, BackendClientService, BaseModule} from '@typexs/ng-base';
+import {AuthService, BackendService, BaseModule, HttpBackendService} from '@typexs/ng-base';
 import {API_CTRL_SERVER_PING, API_CTRL_SERVER_ROUTES, IRoute} from '@typexs/server/browser';
 import {API_USER, API_USER_CONFIG, API_USER_IS_AUTHENTICATED} from '../../libs/Constants';
 import {IAuthMethodInfo} from '../../libs/auth/IAuthMethodInfo';
@@ -28,7 +28,7 @@ import {User} from '../../entities/User';
  */
 describe('UserAuthService', () => {
   let service: UserAuthService;
-  let backService: BackendClientService;
+  let backService: HttpBackendService;
   let injector: TestBed;
   let httpMock: HttpTestingController;
 
@@ -41,6 +41,7 @@ describe('UserAuthService', () => {
         BaseModule
       ],
       providers: [
+        {provide: BackendService, useClass: HttpBackendService},
         {provide: AuthService, useClass: UserAuthService},
         {
           provide: HTTP_INTERCEPTORS,
@@ -51,7 +52,8 @@ describe('UserAuthService', () => {
     });
 
     injector = getTestBed();
-    backService = injector.get(BackendClientService);
+    backService = injector.get(BackendService);
+
     service = injector.get(AuthService);
     httpMock = injector.get(HttpTestingController);
 

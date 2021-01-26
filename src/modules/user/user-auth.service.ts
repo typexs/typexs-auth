@@ -10,7 +10,7 @@ import {DefaultUserLogout} from '../../libs/models/DefaultUserLogout';
 import {Observable} from 'rxjs/Observable';
 import {IAuthServiceProvider} from '@typexs/ng-base/modules/base/api/auth/IAuthServiceProvider';
 import {User} from '../../entities/User';
-import {AuthMessage, BackendClientService, LogMessage, MessageChannel, MessageService, MessageType} from '@typexs/ng-base';
+import {AuthMessage, LogMessage, MessageChannel, MessageService, MessageType, BackendService} from '@typexs/ng-base';
 import {BehaviorSubject, of, Subject} from 'rxjs';
 import {filter, first, map, mergeMap} from 'rxjs/operators';
 import {IAuthSettings} from '../../libs/auth/IAuthSettings';
@@ -65,7 +65,7 @@ export class UserAuthService implements IAuthServiceProvider {
 
   private authSubs: Subscription;
 
-  constructor(private backendClientService: BackendClientService,
+  constructor(private backendClientService: BackendService,
               private messageService: MessageService) {
     this.logChannel = this.messageService.getLogService();
   }

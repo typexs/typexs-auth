@@ -11,8 +11,7 @@ import {
   EntityModule,
   FormsModule,
   NavigatorModule,
-  StorageModule,
-  ViewsModule
+  StorageModule
 } from '@typexs/ng-base';
 import {UserAdminModule} from '../users-administrator/module';
 import {HttpClientModule} from '@angular/common/http';
@@ -23,7 +22,6 @@ export const APP_MODULES: Array<Type<any> | ModuleWithProviders | any[]> = [
   HttpClientModule,
   NavigatorModule,
   FormsModule,
-  ViewsModule,
   RouterModule.forRoot(APP_ROUTES),
   AdminModule,
   BaseModule.forRoot(),
