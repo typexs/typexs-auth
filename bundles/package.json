@@ -1,6 +1,6 @@
 {
   "name": "@typexs/ng-auth",
-  "version": "1.1.0",
+  "version": "1.0.8",
   "$schema": "../node_modules/ng-packagr/package.schema.json",
   "ngPackage": {
     "lib": {
@@ -9,6 +9,6 @@
     "dest": "../build/ngPackage"
   },
   "peerDependencies": {
-    "@typexs/ng-base": "^1.1.0"
+    "@typexs/ng-base": "^1.2.1"
   }
 }
