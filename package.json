@@ -27,7 +27,8 @@
   "license": "MIT",
   "keywords": [
     "commons",
-    "typescript"
+    "typescript",
+    "auth"
   ],
   "bugs": {
     "url": "https://github.com/typexs/typexs-auth/issues"
@@ -65,8 +66,8 @@
     "@types/string-template": "^1.0.2",
     "@types/superagent": "^4.1.10",
     "@types/supertest": "^2.0.10",
-    "@typexs/ng": "^1.1.23",
-    "@typexs/ng-base": "^1.1.23",
+    "@typexs/ng": "^1.2.1",
+    "@typexs/ng-base": "^1.2.1",
     "@typexs/base": "^1.2.53",
     "@typexs/roles": "^1.0.20",
     "@typexs/schema": "^1.0.23",
