@@ -12,13 +12,13 @@ module.exports = function (config) {
       // require('karma-sinon'),
       // require('karma-sinon-chai'),
       require('karma-jasmine-html-reporter'),
-      require('karma-coverage-istanbul-reporter'),
+      require('karma-coverage'),
       require('@angular-devkit/build-angular/plugins/karma')
     ],
     client: {
       clearContext: false // leave Jasmine Spec Runner output visible in browser
     },
-    coverageIstanbulReporter: {
+    coverage: {
       dir: require('path').join(__dirname, './coverage/karma'),
       reports: ['html', 'lcovonly', 'text-summary'],
       fixWebpackSourcePaths: true
