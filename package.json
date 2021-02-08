@@ -115,6 +115,7 @@
     "prismjs": "^1.23.0",
     "protractor": "~7.0.0",
     "reflect-metadata": "^0.1.13",
+    "routing-controllers": "^0.8.1",
     "rxjs": "^6.6.3",
     "rxjs-compat": "^6.6.3",
     "sinon": "^9.2.4",
