@@ -1,5 +1,5 @@
 import {ClassesLoader, Config, Inject, Injector, Log, RuntimeLoader} from '@typexs/base';
-import {CryptUtils} from 'commons-base';
+import {CryptUtils} from '@allgemein/base';
 
 import {K_LIB_AUTH_ADAPTERS, K_LIB_AUTH_CONFIGURATIONS} from '../Constants';
 import {IAuthConfiguration} from '../adapter/IAuthConfiguration';
