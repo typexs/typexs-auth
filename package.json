@@ -118,6 +118,7 @@
     "routing-controllers": "^0.8.1",
     "rxjs": "^6.6.3",
     "rxjs-compat": "^6.6.3",
+    "rxjs-tslint": "^0.1.8",
     "sinon": "^9.2.4",
     "sinon-chai": "^3.5.0",
     "source-map": "^0.7.3",

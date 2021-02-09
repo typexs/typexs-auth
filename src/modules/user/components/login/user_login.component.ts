@@ -5,7 +5,7 @@ import {Router} from '@angular/router';
 import {UserAuthService} from './../../user-auth.service';
 import {AuthService, IMessage, LogMessage, MessageChannel, MessageService, MessageType, NavigatorService} from '@typexs/ng-base';
 import {mergeMap} from 'rxjs/operators';
-import {Subscription} from 'rxjs/Rx';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'txs-user-login',

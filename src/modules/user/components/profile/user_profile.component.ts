@@ -5,7 +5,7 @@ import {User} from '../../../../entities/User';
 import {UserAuthService} from './../../user-auth.service';
 import {AuthService} from '@typexs/ng-base';
 import {mergeMap} from 'rxjs/operators';
-import {Subscription} from 'rxjs/Rx';
+import {Subscription} from 'rxjs';
 import {of} from 'rxjs/internal/observable/of';
 
 

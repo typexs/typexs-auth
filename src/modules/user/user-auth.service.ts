@@ -7,17 +7,15 @@ import {DefaultUserSignup} from '../../libs/models/DefaultUserSignup';
 import {AbstractUserLogin} from '../../libs/models/AbstractUserLogin';
 import {AbstractUserLogout} from '../../libs/models/AbstractUserLogout';
 import {DefaultUserLogout} from '../../libs/models/DefaultUserLogout';
-import {Observable} from 'rxjs/Observable';
+import {Observable, BehaviorSubject, of, Subject, Subscription} from 'rxjs';
 import {IAuthServiceProvider} from '@typexs/ng-base/modules/base/api/auth/IAuthServiceProvider';
 import {User} from '../../entities/User';
 import {AuthMessage, LogMessage, MessageChannel, MessageService, MessageType, BackendService} from '@typexs/ng-base';
-import {BehaviorSubject, of, Subject} from 'rxjs';
 import {filter, first, map, mergeMap} from 'rxjs/operators';
 import {IAuthSettings} from '../../libs/auth/IAuthSettings';
 import {API_USER, API_USER_CONFIG, API_USER_IS_AUTHENTICATED, API_USER_LOGIN, API_USER_LOGOUT, API_USER_SIGNUP} from '../../libs/Constants';
 import {ISecuredResource, PermissionHelper} from '@typexs/roles-api/index';
 import {UserAuthHelper} from './lib/UserAuthHelper';
-import {Subscription} from 'rxjs/Rx';
 
 
 function parseUser(user: any) {
