@@ -17,8 +17,8 @@
   },
   "include": [
     "src/dummy.ts",
-    "src/app/**/*.ts",
-    "src/modules/**/*.ts"
+    "src/app/polyfills.ts",
+    "src/app/main.ts"
   ],
   "exclude": [
     "src/app/test.ts",
