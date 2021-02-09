@@ -14,7 +14,7 @@ import {AuthMessage, LogMessage, MessageChannel, MessageService, MessageType, Ba
 import {filter, first, map, mergeMap} from 'rxjs/operators';
 import {IAuthSettings} from '../../libs/auth/IAuthSettings';
 import {API_USER, API_USER_CONFIG, API_USER_IS_AUTHENTICATED, API_USER_LOGIN, API_USER_LOGOUT, API_USER_SIGNUP} from '../../libs/Constants';
-import {ISecuredResource, PermissionHelper} from '@typexs/roles-api/index';
+import {ISecuredResource, PermissionHelper} from '@typexs/roles-api';
 import {UserAuthHelper} from './lib/UserAuthHelper';
 
 

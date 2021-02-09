@@ -13,8 +13,6 @@ import {APP_ROUTES} from './routes';
 import {UserAuthService} from './user-auth.service';
 
 const PROVIDERS = [
-  // UserAuthService,
-  // UserAuthGuardService,
   {
     provide: AuthService,
     useClass: UserAuthService
@@ -68,8 +66,6 @@ export class UserModule {
   }
 
   constructor(private authService: AuthService) {
-    // init findet schon in base.module statt<
-    // (<UserAuthService><any>authService).startup();
   }
 
 
